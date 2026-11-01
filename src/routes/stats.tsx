@@ -5,7 +5,7 @@ import { loadGames, clearGames, saveGame, SavedGame } from "@/lib/store";
 import { fetchLichessGames, fetchChessComGames } from "@/lib/game-import";
 import { GradeIcon, Panel } from "@/components/chess/parts";
 import { Grade } from "@/lib/chess-logic";
-import { syncCloudGames } from "@/lib/supabase";
+import { deleteCloudGames, syncCloudGames } from "@/lib/supabase";
 import {
   Trophy,
   Gauge,
@@ -52,7 +52,7 @@ function StatsPage() {
       }
     };
     void refreshCloudHistory();
-    const onGamesUpdated = () => setGames(loadGames());
+    const onGamesUpdated = () => { void refreshCloudHistory(); };
     const onAuthChanged = () => { void refreshCloudHistory(); };
     window.addEventListener("berserk-games-updated", onGamesUpdated);
     window.addEventListener("berserk-auth-change", onAuthChanged);
@@ -175,10 +175,12 @@ function StatsPage() {
     }
   };
 
-  const handleClear = () => {
-    if (confirm("Reset match history?")) {
+  const handleClear = async () => {
+    if (confirm("Delete your saved match history from this device and your Berserk account?")) {
       clearGames();
       setGames([]);
+      try { await deleteCloudGames(); }
+      catch (error) { setImportMessage(error instanceof Error ? error.message : "Could not delete cloud history."); }
     }
   };
 
