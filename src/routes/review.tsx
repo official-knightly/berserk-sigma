@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Board } from "@/components/chess/Board";
 import { MoveList, EvalBar, GradeIcon } from "@/components/chess/parts";
 import { parseGame, useGameReview, summarize } from "@/lib/use-analysis";
-import { takePendingPgn } from "@/lib/store";
+import { takePendingPgn, takePendingChessProfile } from "@/lib/store";
 import { identifyOpening } from "@/lib/openings";
 import {
   fetchLichessGames,
@@ -109,6 +109,28 @@ export function GameReviewPage() {
     if (!pendingPgn) return;
     setSource("pgn");
     loadGame(parsePgnGame(pendingPgn));
+  }, [loadGame]);
+
+  // A saved chess profile can open its recent games directly from Settings.
+  useEffect(() => {
+    const profile = takePendingChessProfile();
+    if (!profile) return;
+    let active = true;
+    setSource(profile.provider);
+    setUsername(profile.username);
+    setLoading(true);
+    setError(null);
+    const fetchGames = profile.provider === "lichess" ? fetchLichessGames : fetchChessComGames;
+    fetchGames(profile.username)
+      .then((fetched) => {
+        if (!active) return;
+        setGames(fetched);
+        if (fetched[0]) loadGame(fetched[0]);
+        else setError(`No public games with PGN were found for "${profile.username}".`);
+      })
+      .catch((err) => { if (active) setError(err instanceof Error ? err.message : "Could not load this chess profile."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, [loadGame]);
 
   const currentFen = useMemo(() => {
