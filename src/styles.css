@@ -123,7 +123,7 @@
   .btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 1px 0 oklch(0 0 0 / 68%), 0 2px 4px -3px oklch(0 0 0 / 75%); }
   .btn:disabled { box-shadow: none; }
   .btn-primary { border-color: oklch(1 0 0 / 12%); }
-  .btn-secondary, .btn-ghost { border-color: oklch(1 0 0 / 13%); box-shadow: 0 4px 0 oklch(0 0 0 / 68%), 0 7px 14px -6px oklch(0 0 0 / 78%), 0 1px 0 oklch(1 0 0 / 10%) inset; }
+  .btn-secondary, .btn-ghost { border-color: oklch(1 0 0 / 13%); box-shadow: 0 5px 0 oklch(0 0 0 / 70%), 0 9px 18px -6px oklch(0 0 0 / 82%), 0 1px 0 oklch(1 0 0 / 12%) inset; }
   .btn:disabled { opacity: .45; cursor: not-allowed; }
   .btn:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
   .btn-primary { background: var(--primary); color: var(--primary-foreground); }
