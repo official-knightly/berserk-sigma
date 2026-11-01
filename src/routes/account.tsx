@@ -28,7 +28,7 @@ function AccountPage() {
         const localBeforeAuth = loadGames();
         const data = await signUp(email.trim(), password, name.trim());
         if (!data.access_token) {
-          setMessage("Check your email to confirm your account, then come back and sign in.");
+          setError("Instant signup is not enabled yet. Turn off Confirm email in Supabase → Authentication → Sign In / Providers → Email, then try again.");
         } else {
           await saveProfile(data.user, name.trim());
           const games = await syncCloudGames(localBeforeAuth);
@@ -39,7 +39,7 @@ function AccountPage() {
       } else {
         const localBeforeAuth = loadGames();
         const signedIn = await signIn(email.trim(), password);
-        if (signedIn.user_metadata?.display_name) await saveProfile(signedIn, signedIn.user_metadata.display_name);
+        await saveProfile(signedIn, signedIn.user_metadata?.display_name || signedIn.email?.split("@")[0] || "Berserk Player");
         const games = await syncCloudGames(localBeforeAuth);
         saveLocalGames(games);
         window.dispatchEvent(new Event("berserk-games-updated"));
@@ -71,6 +71,7 @@ function AccountPage() {
               <div className="flex items-center gap-2 text-sm font-semibold"><ShieldCheck className="h-4 w-4 text-primary" /> Signed in</div>
               <p className="mt-1 text-sm">{user.email}</p>
               <p className="mt-1 text-xs text-muted-foreground">Cloud history is enabled for this account.</p>
+              <a href={`/player/${user.id}`} className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">View public player profile ↗</a>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="stat"><div className="stat-label">Saved locally</div><div className="stat-value">{loadGames().length}</div></div>
