@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Chess } from "chess.js";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Flag, Loader2, Microscope, Play as PlayIcon, Plus, RotateCcw, Shuffle, Swords, User, X } from "lucide-react";
+import { Flag, Lightbulb, Loader2, Microscope, Play as PlayIcon, Plus, RotateCcw, Shuffle, Swords, Undo2, User, X } from "lucide-react";
 import { Board, type Premove } from "@/components/chess/Board";
 import { EngineBadge, GradeIcon, MoveList, Panel, PlayerStrip, useEngineStatus } from "@/components/chess/parts";
 import { Logo } from "@/components/AppShell";
@@ -37,6 +37,8 @@ function PlayPage() {
   const [result, setResult] = useState<string | null>(null);
   const [reviews, setReviews] = useState<Record<number, Review>>({});
   const [lastEval, setLastEval] = useState<number | null>(null);
+  const [hint, setHint] = useState<{ from: string; to: string; san: string } | null>(null);
+  const [hintLoading, setHintLoading] = useState(false);
   const tokenRef = useRef(0);
   const beforeRef = useRef<{ fen: string; p: Promise<SearchResult> } | null>(null);
   const premoveRef = useRef<Premove | null>(null);
@@ -132,6 +134,7 @@ function PlayPage() {
     } catch {
       return false; // invalid premove: silently cleared
     }
+    setHint(null);
     sync();
     if (!checkOver()) engineTurn();
     return true;
@@ -148,6 +151,8 @@ function PlayPage() {
     setReviews({});
     setPremove(null);
     setLastEval(null);
+    setHint(null);
+    setHintLoading(false);
     setBusy(false);
     setStarted(true);
     sync();
@@ -158,7 +163,54 @@ function PlayPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started, human]);
 
-  function newGame() { tokenRef.current++; gameRef.current = new Chess(); setStarted(false); setResult(null); setReviews({}); setPremove(null); setBusy(false); setLastEval(null); sync(); }
+  function newGame() { tokenRef.current++; gameRef.current = new Chess(); setStarted(false); setResult(null); setReviews({}); setPremove(null); setBusy(false); setLastEval(null); setHint(null); setHintLoading(false); sync(); }
+
+  function undo() {
+    const g = gameRef.current;
+    if (!started || g.history().length === 0) return;
+
+    tokenRef.current++;
+    const engineWasThinking = g.turn() !== human;
+    setBusy(false);
+    setPremove(null);
+    setResult(null);
+    setHint(null);
+    setHintLoading(false);
+    g.undo();
+
+    // Undo the human's previous move too when Berserk has already replied.
+    if (!engineWasThinking && g.history().length > 0 && g.turn() !== human) g.undo();
+
+    sync();
+    const remainingPly = g.history().length;
+    setReviews((current) => Object.fromEntries(Object.entries(current).filter(([ply]) => Number(ply) <= remainingPly)));
+    beforeRef.current = null;
+
+    if (g.turn() === human) prepareBefore();
+    else engineTurn();
+  }
+
+  async function showHint() {
+    const g = gameRef.current;
+    if (!started || result || busy || g.turn() !== human || hintLoading) return;
+    const position = g.fen();
+    const token = tokenRef.current;
+    setHintLoading(true);
+    setHint(null);
+    try {
+      const search = await engine.search(position, Math.max(1000, settings.think * 1000), 1);
+      if (token !== tokenRef.current || gameRef.current.fen() !== position) return;
+      const uci = search.candidates?.[0]?.uci || search.bestmove;
+      if (!uci || uci === "(none)" || uci === "0000") return;
+      const move = new Chess(position).move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] ?? "q" });
+      if (move) setHint({ from: move.from, to: move.to, san: move.san });
+    } catch {
+      // Leave the board unchanged if the engine cannot provide a hint.
+    } finally {
+      if (token === tokenRef.current) setHintLoading(false);
+    }
+  }
+
   function resign() { if (started && !result) finish(human === "w" ? "0-1 · You resigned" : "1-0 · You resigned"); }
   function review() { setPendingPgn(gameRef.current.pgn()); navigate({ to: "/review" }); }
 
@@ -187,7 +239,9 @@ function PlayPage() {
           premove={premove} onPremove={setPremove}
           onMove={(m) => humanMove(m)}
           lastMove={last ? { from: last.from, to: last.to } : null}
+          arrows={hint ? [{ from: hint.from, to: hint.to, tone: "best" }] : []}
           badge={lastReview && history[lastReview.ply - 1] ? { square: history[lastReview.ply - 1].to, icon: `/classification/${gradeFile(lastReview.grade)}`, label: lastReview.grade } : null} />
+        {hint && <p className="px-1 text-xs text-muted-foreground">Hint: <span className="font-semibold text-foreground">{hint.san}</span></p>}
         {youBottom}
       </div>
 
@@ -245,7 +299,9 @@ function PlayPage() {
             )}
             <MoveList className="h-56 lg:h-72" ply={history.length}
               moves={history.map((h, i) => ({ san: h.san, grade: reviews[i + 1]?.grade }))} />
-            <div className="grid grid-cols-3 gap-2 border-t border-border p-3">
+            <div className="grid grid-cols-5 gap-2 border-t border-border p-3">
+              <button type="button" className="btn btn-ghost btn-sm" disabled={!history.length} onClick={undo}><Undo2 className="h-4 w-4" />Undo</button>
+              <button type="button" className="btn btn-ghost btn-sm" disabled={!!result || busy || game.turn() !== human || hintLoading} onClick={showHint}>{hintLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lightbulb className="h-4 w-4" />}Hint</button>
               <button type="button" className="btn btn-ghost btn-sm" onClick={newGame}><Plus className="h-4 w-4" />New</button>
               <button type="button" className="btn btn-ghost btn-sm" onClick={() => start(human)}><RotateCcw className="h-4 w-4" />Restart</button>
               <button type="button" className="btn btn-danger btn-sm" disabled={!!result} onClick={resign}><Flag className="h-4 w-4" />Resign</button>
