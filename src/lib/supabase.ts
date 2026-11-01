@@ -243,3 +243,22 @@ export async function removeChessAccount(id: string) {
     headers: { Prefer: "return=minimal" },
   });
 }
+
+export type PublicPlayerProfile = {
+  id: string;
+  display_name: string | null;
+  chess_accounts: ChessAccount[];
+};
+
+export async function getPublicPlayerProfile(userId: string): Promise<PublicPlayerProfile | null> {
+  if (!/^[0-9a-f-]{36}$/i.test(userId)) return null;
+  const headers = { apikey: SUPABASE_KEY, Accept: "application/json" };
+  const [profileResponse, accountsResponse] = await Promise.all([
+    fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=id,display_name&limit=1`, { headers }),
+    fetch(`${SUPABASE_URL}/rest/v1/chess_accounts?user_id=eq.${encodeURIComponent(userId)}&select=id,platform,username,profile_url&order=platform.asc`, { headers }),
+  ]);
+  if (!profileResponse.ok || !accountsResponse.ok) throw new Error("Could not load this Berserk profile.");
+  const profiles = await profileResponse.json();
+  if (!profiles.length) return null;
+  return { ...profiles[0], chess_accounts: await accountsResponse.json() };
+}
