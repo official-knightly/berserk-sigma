@@ -39,7 +39,7 @@ function AccountPage() {
       } else {
         const localBeforeAuth = loadGames();
         const signedIn = await signIn(email.trim(), password);
-        await saveProfile(signedIn, signedIn.user_metadata?.display_name || "");
+        if (signedIn.user_metadata?.display_name) await saveProfile(signedIn, signedIn.user_metadata.display_name);
         const games = await syncCloudGames(localBeforeAuth);
         saveLocalGames(games);
         window.dispatchEvent(new Event("berserk-games-updated"));
