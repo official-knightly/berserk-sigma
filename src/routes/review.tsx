@@ -1,9 +1,9 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Chess } from "chess.js";
 import { Board } from "@/components/chess/Board";
 import { MoveList, EvalBar, GradeIcon } from "@/components/chess/parts";
-import { useGameReview, summarize } from "@/lib/use-analysis";
+import { parseGame, useGameReview, summarize } from "@/lib/use-analysis";
+import { takePendingPgn } from "@/lib/store";
 import { identifyOpening } from "@/lib/openings";
 import {
   fetchLichessGames,
@@ -33,6 +33,8 @@ export const Route = createFileRoute("/review")({
 
 type SourceTab = "lichess" | "chesscom" | "worldchess" | "pgn";
 
+const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
 function GameReviewPage() {
   const [source, setSource] = useState<SourceTab>("lichess");
   const [username, setUsername] = useState("");
@@ -43,10 +45,11 @@ function GameReviewPage() {
   const [selectedGame, setSelectedGame] = useState<ImportedGame | null>(null);
 
   const [moves, setMoves] = useState<{ san: string; uci: string; fenAfter: string }[]>([]);
+  const [startFen, setStartFen] = useState(START_FEN);
   const [currentPly, setCurrentPly] = useState(0);
 
   const sans = useMemo(() => moves.map((m) => m.san), [moves]);
-  const { reviews, running, progress } = useGameReview(sans);
+  const { reviews, running, progress } = useGameReview(sans, startFen);
   const summary = useMemo(() => summarize(reviews), [reviews]);
   const opening = useMemo(() => identifyOpening(sans), [sans]);
 
@@ -81,31 +84,36 @@ function GameReviewPage() {
     }
   };
 
-  const loadGame = (game: ImportedGame) => {
+  const loadGame = useCallback((game: ImportedGame) => {
     setSelectedGame(game);
     setError(null);
-    const chess = new Chess();
     try {
-      chess.loadPgn(game.pgn);
-      const history = chess.history({ verbose: true });
-      const items = history.map((m) => ({
+      const parsed = parseGame(game.pgn);
+      const items = parsed.moves.map((m) => ({
         san: m.san,
         uci: `${m.from}${m.to}${m.promotion || ""}`,
         fenAfter: m.after,
       }));
+      setStartFen(parsed.startFen);
       setMoves(items);
       setCurrentPly(0);
     } catch {
       setError("Could not parse this game's moves.");
     }
-  };
+  }, []);
+
+  // Restore a PGN sent from the Live page when opening Game Review.
+  useEffect(() => {
+    const pendingPgn = takePendingPgn();
+    if (!pendingPgn) return;
+    setSource("pgn");
+    loadGame(parsePgnGame(pendingPgn));
+  }, [loadGame]);
 
   const currentFen = useMemo(() => {
-    if (currentPly === 0 || moves.length === 0) {
-      return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    }
-    return moves[currentPly - 1]?.fenAfter || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-  }, [moves, currentPly]);
+    if (currentPly === 0 || moves.length === 0) return startFen;
+    return moves[currentPly - 1]?.fenAfter || startFen;
+  }, [moves, currentPly, startFen]);
 
   const activeReview = currentPly > 0 ? reviews[currentPly - 1] : undefined;
   const currentEval = activeReview?.afterWhite ?? 0;
