@@ -1,12 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { GameReviewPage } from "./review";
 
 export const Route = createFileRoute("/analysis")({
-  head: () => ({ meta: [{ title: "Analysis — Berserk Web" }, { name: "description", content: "Analysis with the Berserk chess engine." }, { property: "og:title", content: "Analysis — Berserk Web" }, { property: "og:description", content: "Analysis with the Berserk chess engine." }] }),
-  component: () => (
-    <div className="mx-auto max-w-xl panel p-6 text-center">
-      <h1 className="font-display text-2xl font-semibold">Analysis</h1>
-      <p className="mt-2 text-sm text-muted-foreground">This section is being rebuilt and isn't finished yet.</p>
-      <Link to="/play" className="btn btn-primary mt-4">Play Berserk</Link>
-    </div>
-  ),
+  head: () => ({
+    meta: [
+      { title: "Analysis — Berserk Web" },
+      { name: "description", content: "Import and analyze chess games with the Berserk engine." },
+      { property: "og:title", content: "Analysis — Berserk Web" },
+      { property: "og:description", content: "Import and analyze chess games with the Berserk engine." },
+    ],
+  }),
+  component: GameReviewPage,
 });
