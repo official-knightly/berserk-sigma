@@ -131,7 +131,7 @@ export function chooseEngineMove(fen: string, result: SearchResult, elo: number,
     return { uci: c.uci, rank: c.rank, score: (c.scoreCp || 0) + bias };
   });
   adjusted.sort((a, b) => (b.score !== a.score ? b.score - a.score : a.rank - b.rank));
-  const n = (elo - 400) / 2600;
+  const n = Math.max(0, Math.min(1, (elo - 400) / 3100));
   const maxCount = Math.max(1, Math.min(adjusted.length, 1 + Math.round((1 - n) * 7)));
   const choices = adjusted.slice(0, maxCount);
   if (elo >= 2950 || choices.length === 1) return choices[0].uci;
@@ -146,7 +146,7 @@ export function chooseEngineMove(fen: string, result: SearchResult, elo: number,
 }
 
 export function multiPvForElo(elo: number) {
-  return Math.max(1, Math.min(8, Math.ceil((3000 - elo) / 400) + 1));
+  return Math.max(1, Math.min(8, Math.ceil((3500 - elo) / 400) + 1));
 }
 
 /** Convert a UCI PV to SAN for display. */
