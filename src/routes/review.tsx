@@ -22,9 +22,9 @@ import {
 export const Route = createFileRoute("/review")({
   head: () => ({
     meta: [
-      { title: "Game Review — Berserk Web" },
+      { title: "Game Review — Berserk Sigma" },
       { name: "description", content: "Review and evaluate games with the Berserk chess engine." },
-      { property: "og:title", content: "Game Review — Berserk Web" },
+      { property: "og:title", content: "Game Review — Berserk Sigma" },
       { property: "og:description", content: "Review and evaluate games with the Berserk chess engine." },
     ],
   }),
