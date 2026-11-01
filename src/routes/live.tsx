@@ -3,7 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Chess } from "chess.js";
 import { Board } from "@/components/chess/Board";
 import { EvalBar, MoveList, EngineBadge } from "@/components/chess/parts";
-import { engine, Candidate } from "@/lib/engine";
+import { engine, type Candidate } from "@/lib/engine";
 import { identifyOpening } from "@/lib/openings";
 import { setPendingPgn } from "@/lib/store";
 import {
