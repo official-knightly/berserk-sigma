@@ -329,7 +329,7 @@ function gradeFile(g: Grade) {
 export function EngineSliders({ settings, update }: { settings: { elo: number; attack: number; think: number }; update: (p: Partial<{ elo: number; attack: number; think: number }>) => void }) {
   return (
     <div className="space-y-4">
-      <Slider label="Strength" value={`${settings.elo} Elo`} min={400} max={3000} step={100} v={settings.elo} onChange={(elo) => update({ elo })} lo="400" hi="3000" />
+      <Slider label="Strength" value={`${settings.elo} Elo`} min={400} max={3500} step={100} v={settings.elo} onChange={(elo) => update({ elo })} lo="400" hi="3500" />
       <Slider label="Attack level" value={`${settings.attack} / 10`} min={1} max={10} step={1} v={settings.attack} onChange={(attack) => update({ attack })} lo="Positional" hi="Aggressive" />
       <Slider label="Thinking time" value={`${settings.think.toFixed(1)} s`} min={0.1} max={10} step={0.1} v={settings.think} onChange={(think) => update({ think })} lo="0.1 s" hi="10 s" />
     </div>
