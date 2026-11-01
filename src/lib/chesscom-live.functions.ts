@@ -5,7 +5,7 @@ type ChessComGameType = "live" | "daily";
 /** Fetch a public Chess.com game on the server because its callback endpoint does not expose browser CORS. */
 export const fetchChessComGamePgn = createServerFn({ method: "GET" })
   .validator((input: { gameType: ChessComGameType; gameId: string }) => {
-    if (!/^(live|daily)$/.test(input.gameType) || !/^\\d+$/.test(input.gameId)) {
+    if (!/^(live|daily)$/.test(input.gameType) || !/^\d+$/.test(input.gameId)) {
       throw new Error("Invalid Chess.com game URL.");
     }
     return input;
@@ -23,7 +23,7 @@ export const fetchChessComGamePgn = createServerFn({ method: "GET" })
       const payload = JSON.parse(body) as { pgn?: string; game?: { pgn?: string } };
       pgn = payload.game?.pgn || payload.pgn || "";
     } catch {
-      if (/^\\s*\\[Event\\s+/m.test(body)) pgn = body;
+      if (/^\s*\[Event\s+/m.test(body)) pgn = body;
     }
     if (!pgn.trim()) {
       throw new Error("Chess.com did not return a PGN for this game. Try again or use its PGN export.");
