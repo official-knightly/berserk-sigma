@@ -198,3 +198,48 @@ export async function saveProfile(user: AuthUser, displayName: string) {
     body: JSON.stringify({ id: user.id, display_name: displayName || null }),
   });
 }
+
+export type ChessAccount = { id: string; platform: "lichess" | "chesscom"; username: string; profile_url: string };
+
+export async function getChessAccounts(): Promise<ChessAccount[]> {
+  return await databaseRequest("chess_accounts?select=id,platform,username,profile_url&order=platform.asc") as ChessAccount[];
+}
+
+export async function saveChessAccount(platform: "lichess" | "chesscom", username: string) {
+  const session = await getValidSession();
+  if (!session) throw new Error("Sign in to connect a chess account.");
+  const clean = username.trim();
+  if (!clean || !/^[a-zA-Z0-9_-]{2,30}$/.test(clean)) throw new Error("Enter a valid public username.");
+  const profileUrl = platform === "lichess"
+    ? `https://lichess.org/@/${encodeURIComponent(clean)}`
+    : `https://www.chess.com/member/${encodeURIComponent(clean)}`;
+  const endpoint = platform === "lichess"
+    ? `https://lichess.org/api/user/${encodeURIComponent(clean)}`
+    : `https://api.chess.com/pub/player/${encodeURIComponent(clean)}`;
+  const response = await fetch(endpoint, { headers: { Accept: "application/json" } });
+  if (response.status === 404) throw new Error("That public chess username was not found.");
+  if (!response.ok) throw new Error("Could not verify that chess profile right now. Try again.");
+  const profile = await response.json();
+  const returnedName = platform === "lichess" ? profile.username : profile.username;
+  if (!returnedName || returnedName.toLowerCase() !== clean.toLowerCase()) {
+    throw new Error("The chess platform returned a different username. Check the spelling.");
+  }
+  await databaseRequest("chess_accounts?on_conflict=user_id,platform", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+    body: JSON.stringify({
+      user_id: session.user.id,
+      platform,
+      username: returnedName,
+      profile_url: profileUrl,
+    }),
+  });
+  return { platform, username: returnedName, profile_url: profileUrl };
+}
+
+export async function removeChessAccount(id: string) {
+  await databaseRequest(`chess_accounts?id=eq.${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    headers: { Prefer: "return=minimal" },
+  });
+}
