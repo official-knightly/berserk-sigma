@@ -3,7 +3,7 @@ import { Swords } from "lucide-react";
 import { Logo } from "@/components/AppShell";
 
 export const Route = createFileRoute("/")({
-  head: () => ({ meta: [{ title: "Berserk Web — Chess Engine Lab" }, { name: "description", content: "Play and analyze chess against the Berserk engine in your browser." }, { property: "og:title", content: "Berserk Web — Chess Engine Lab" }, { property: "og:description", content: "Play and analyze chess against the Berserk engine." }] }),
+  head: () => ({ meta: [{ title: "Berserk Sigma — Chess Engine Lab" }, { name: "description", content: "Play and analyze chess against the Berserk engine in your browser." }, { property: "og:title", content: "Berserk Sigma — Chess Engine Lab" }, { property: "og:description", content: "Play and analyze chess against the Berserk engine." }] }),
   component: Home,
 });
 
