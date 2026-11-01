@@ -21,9 +21,9 @@ import {
 export const Route = createFileRoute("/live")({
   head: () => ({
     meta: [
-      { title: "Live Games — Berserk Web" },
+      { title: "Live Games — Berserk Sigma" },
       { name: "description", content: "Watch live chess games with real-time Berserk engine evaluation and best-move analysis." },
-      { property: "og:title", content: "Live Games — Berserk Web" },
+      { property: "og:title", content: "Live Games — Berserk Sigma" },
       { property: "og:description", content: "Watch live chess games with real-time Berserk engine evaluation." },
     ],
   }),
