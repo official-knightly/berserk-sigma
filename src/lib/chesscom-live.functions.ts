@@ -13,7 +13,7 @@ export const fetchChessComGamePgn = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const response = await fetch(
       `https://www.chess.com/callback/${data.gameType}/game/${data.gameId}`,
-      { headers: { Accept: "application/json", Referer: "https://www.chess.com/" } },
+      { headers: { Accept: "application/json", Referer: "https://www.chess.com/" }, cache: "no-store" },
     );
     if (!response.ok) throw new Error(`Chess.com game request failed (${response.status}).`);
 
