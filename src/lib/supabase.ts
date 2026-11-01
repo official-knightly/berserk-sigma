@@ -138,7 +138,17 @@ export async function saveCloudGame(game: SavedGame) {
 export async function syncCloudGames(localGames: SavedGame[]) {
   const session = await getValidSession();
   if (!session) return localGames;
-  for (const game of localGames) await saveCloudGame(game);
+  if (localGames.length) {
+    await databaseRequest("games?on_conflict=user_id,source_id", {
+      method: "POST",
+      headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+      body: JSON.stringify(localGames.map((game) => ({
+        user_id: session.user.id, source_id: game.id, pgn: game.pgn, result: game.result,
+        human_side: game.humanSide, elo: game.elo, accuracy: game.accuracy,
+        grades: game.grades || {}, played_at: new Date(game.date).toISOString(),
+      }))),
+    });
+  }
   const rows = await databaseRequest("games?select=source_id,pgn,result,human_side,elo,accuracy,grades,played_at&order=played_at.desc&limit=200") as any[];
   const remoteGames: SavedGame[] = (rows || []).map((row) => ({
     id: row.source_id,
@@ -153,6 +163,12 @@ export async function syncCloudGames(localGames: SavedGame[]) {
   const merged = new Map<string, SavedGame>();
   for (const game of [...remoteGames, ...localGames]) if (!merged.has(game.id)) merged.set(game.id, game);
   return [...merged.values()].sort((a, b) => b.date - a.date).slice(0, 200);
+}
+
+export async function deleteCloudGames() {
+  const session = await getValidSession();
+  if (!session) return;
+  await databaseRequest(`games?user_id=eq.${encodeURIComponent(session.user.id)}`, { method: "DELETE", headers: { Prefer: "return=minimal" } });
 }
 
 export async function saveProfile(user: AuthUser, displayName: string) {
