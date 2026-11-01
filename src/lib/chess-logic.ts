@@ -64,11 +64,6 @@ export function accuracyFromLoss(loss: number) {
 }
 
 const VALUES: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
-function material(chess: Chess, color: "w" | "b") {
-  let s = 0;
-  for (const row of chess.board()) for (const p of row) if (p && p.color === color) s += VALUES[p.type];
-  return s;
-}
 
 export type MoveInfo = { from: string; to: string; san: string; promotion?: string; color: "w" | "b" };
 
@@ -97,16 +92,14 @@ export function classify(
     const second: Candidate | undefined = before.candidates?.[1];
     // Great: the only good move — engine's second choice is much worse.
     if (second && best && best.scoreCp - second.scoreCp >= 150 && Math.abs(best.scoreCp) < MATE_CP - 1000) grade = "Great";
-    // Brilliant: best move that gives up material while staying sound.
+    // Brilliant: best move that leaves a piece (minor or larger) en prise while staying sound.
     const c = new Chess(beforeFen);
-    const mBefore = material(c, move.color) - material(c, move.color === "w" ? "b" : "w");
-    c.move({ from: move.from, to: move.to, promotion: move.promotion ?? "q" });
-    const mAfter = material(c, move.color) - material(c, move.color === "w" ? "b" : "w");
-    const moverEval = sign * afterWhite;
-    if (playedBest && mAfter < mBefore - 1 && moverEval >= -50 && !c.isCheckmate()) {
-      // Require the opponent's best reply to not simply recapture into a clearly worse position.
-      grade = "Brilliant";
-    }
+    const m = c.move({ from: move.from, to: move.to, promotion: move.promotion ?? "q" });
+    const opp = move.color === "w" ? "b" : "w";
+    const pieceVal = VALUES[m.promotion ?? m.piece];
+    const gained = m.captured ? VALUES[m.captured] : 0;
+    const hanging = c.isAttacked(m.to as never, opp) && pieceVal >= 3 && pieceVal > gained + 1;
+    if (playedBest && hanging && sign * afterWhite >= -50 && !c.isCheckmate()) grade = "Brilliant";
   }
   return {
     grade,
