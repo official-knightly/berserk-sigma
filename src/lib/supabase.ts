@@ -3,6 +3,7 @@ import type { SavedGame } from "./store";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://qfnjmhdvfwwyexhnovts.supabase.co";
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_H5fOeQJ7jVgE50ZQjg1MYg_pWzwOs7z";
 const SESSION_KEY = "berserk.supabase.session";
+let refreshInFlight: Promise<AuthSession | null> | null = null;
 
 export type AuthUser = { id: string; email?: string; user_metadata?: { display_name?: string } };
 export type AuthSession = {
@@ -72,18 +73,24 @@ export async function signOut() {
 }
 
 export async function getValidSession(): Promise<AuthSession | null> {
-  let session = readSession();
+  const session = readSession();
   if (!session) return null;
   if (session.expires_at > Math.floor(Date.now() / 1000) + 60) return session;
-  try {
-    const data = await authRequest("token?grant_type=refresh_token", { refresh_token: session.refresh_token });
-    session = normalizeSession(data);
-    writeSession(session);
-    return session;
-  } catch {
-    writeSession(null);
-    return null;
-  }
+  if (refreshInFlight) return refreshInFlight;
+  refreshInFlight = (async () => {
+    try {
+      const data = await authRequest("token?grant_type=refresh_token", { refresh_token: session.refresh_token });
+      const refreshed = normalizeSession(data);
+      writeSession(refreshed);
+      return refreshed;
+    } catch {
+      writeSession(null);
+      return null;
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+  return refreshInFlight;
 }
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
@@ -95,8 +102,8 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
       const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${accessToken}` } });
       if (response.ok) {
         const user = await response.json() as AuthUser;
-        writeSession({ access_token: accessToken, refresh_token: refreshToken, expires_at: Number(params.get("expires_at") || Math.floor(Date.now() / 1000) + Number(params.get("expires_in") || 3600)), user });
         window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+        writeSession({ access_token: accessToken, refresh_token: refreshToken, expires_at: Number(params.get("expires_at") || Math.floor(Date.now() / 1000) + Number(params.get("expires_in") || 3600)), user });
       }
     }
   }
