@@ -197,7 +197,12 @@ function GameReviewPage() {
                     source === tab ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
                   }`}
                 >
-                  {tab === "chesscom" ? "Chess.com" : tab}
+                  <img
+                    src={tab === "chesscom" ? "/chesscom.png" : tab === "lichess" ? "/lichess.jpg" : tab === "worldchess" ? "/worldchess.webp" : "/favicon.png"}
+                    alt=""
+                    className="h-4 w-4 rounded-sm object-contain"
+                  />
+                  {tab === "chesscom" ? "Chess.com" : tab === "pgn" ? "PGN / Other" : tab === "worldchess" ? "World Chess" : "Lichess"}
                 </button>
               ))}
             </div>
