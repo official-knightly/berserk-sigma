@@ -35,7 +35,7 @@ type SourceTab = "lichess" | "chesscom" | "worldchess" | "pgn";
 
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-function GameReviewPage() {
+export function GameReviewPage() {
   const [source, setSource] = useState<SourceTab>("lichess");
   const [username, setUsername] = useState("");
   const [rawPgn, setRawPgn] = useState("");
@@ -58,15 +58,14 @@ function GameReviewPage() {
     setLoading(true);
     setError(null);
     try {
-      if (source === "lichess") {
-        const fetched = await fetchLichessGames(username);
-        setGames(fetched);
-        if (fetched[0]) loadGame(fetched[0]);
-      } else if (source === "chesscom") {
-        const fetched = await fetchChessComGames(username);
-        setGames(fetched);
-        if (fetched[0]) loadGame(fetched[0]);
-      }
+      const fetched = source === "lichess"
+        ? await fetchLichessGames(username)
+        : source === "chesscom"
+          ? await fetchChessComGames(username)
+          : [];
+      setGames(fetched);
+      if (fetched[0]) loadGame(fetched[0]);
+      else setError(`No public games with PGN were found for "${username}".`);
     } catch (err: any) {
       setError(err?.message || "Failed to fetch games");
     } finally {
@@ -79,26 +78,28 @@ function GameReviewPage() {
     try {
       const g = parsePgnGame(rawPgn);
       loadGame(g);
-    } catch {
-      setError("Invalid PGN text");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Invalid PGN text. Paste a complete PGN game.");
     }
   };
 
   const loadGame = useCallback((game: ImportedGame) => {
-    setSelectedGame(game);
     setError(null);
     try {
+      if (!game.pgn?.trim()) throw new Error("This game does not include PGN moves. Try downloading the PGN from the chess site.");
       const parsed = parseGame(game.pgn);
+      if (!parsed.moves.length) throw new Error("No chess moves were found in this PGN. Paste a complete game PGN.");
       const items = parsed.moves.map((m) => ({
         san: m.san,
         uci: `${m.from}${m.to}${m.promotion || ""}`,
         fenAfter: m.after,
       }));
+      setSelectedGame(game);
       setStartFen(parsed.startFen);
       setMoves(items);
       setCurrentPly(0);
-    } catch {
-      setError("Could not parse this game's moves.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not parse this game's moves.");
     }
   }, []);
 
