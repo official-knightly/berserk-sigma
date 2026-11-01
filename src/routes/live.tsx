@@ -212,9 +212,9 @@ function LiveGamesPage() {
   // Current position FEN
   const currentFen = useMemo(() => {
     if (currentPly === 0 || moves.length === 0) {
-      return game?.startFen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKbnr w KQkq - 0 1";
+      return game?.startFen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     }
-    return moves[currentPly - 1]?.fenAfter || game?.startFen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKbnr w KQkq - 0 1";
+    return moves[currentPly - 1]?.fenAfter || game?.startFen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
   }, [moves, currentPly, game?.startFen]);
 
   const sans = useMemo(() => moves.slice(0, currentPly).map((m) => m.san), [moves, currentPly]);
