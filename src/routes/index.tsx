@@ -1,24 +1,19 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Swords } from "lucide-react";
+import { Logo } from "@/components/AppShell";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({ meta: [{ title: "Berserk Web — Chess Engine Lab" }, { name: "description", content: "Play and analyze chess against the Berserk engine in your browser." }, { property: "og:title", content: "Berserk Web — Chess Engine Lab" }, { property: "og:description", content: "Play and analyze chess against the Berserk engine." }] }),
+  component: Home,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function Home() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="mx-auto max-w-3xl py-10 text-center">
+      <div className="flex justify-center"><Logo size={72} /></div>
+      <h1 className="mt-4 font-display text-4xl font-bold">Berserk</h1>
+      <p className="mt-2 text-muted-foreground">A chess engine that runs right in your browser. Set its strength, style and thinking time, then play.</p>
+      <Link to="/play" className="btn btn-primary mt-6"><Swords className="h-4 w-4" />Play Berserk</Link>
     </div>
   );
 }
