@@ -234,7 +234,7 @@ function LiveGamesPage() {
     pollTimerRef.current = setInterval(() => {
       if (game.provider === "chesscom" && game.sourceId && game.gameType) {
         fetchChessComGamePgn({ data: { gameType: game.gameType, gameId: game.sourceId } })
-          .then((pgn) => {
+          .then(async (pgn) => {
             if (pgn && !isActivePgn(pgn)) {
               await switchToLiveTv(game.id);
               return;
