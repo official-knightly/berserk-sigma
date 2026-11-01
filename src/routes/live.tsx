@@ -6,6 +6,7 @@ import { EvalBar, MoveList, EngineBadge } from "@/components/chess/parts";
 import { engine, type Candidate } from "@/lib/engine";
 import { identifyOpening } from "@/lib/openings";
 import { setPendingPgn } from "@/lib/store";
+import { fetchChessComGamePgn } from "@/lib/chesscom-live.functions";
 import {
   Radio,
   Search,
@@ -37,6 +38,9 @@ type LiveGameData = {
   pgn: string;
   fen: string;
   speed: string;
+  provider: "lichess" | "chesscom";
+  sourceId?: string;
+  gameType?: "live" | "daily";
 };
 
 const FEATURED_CHANNELS = [
@@ -66,26 +70,41 @@ function LiveGamesPage() {
   // Polling ref for live game updates
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Fetch live game by username or TV channel
+  // Accept a Lichess username or a Chess.com live/daily game URL.
   const loadUserLiveGame = async (targetUser: string) => {
-    const clean = targetUser.trim().toLowerCase();
-    if (!clean) return;
+    const input = targetUser.trim();
+    if (!input) return;
     setSearching(true);
     setError(null);
 
     try {
-      const res = await fetch(`https://lichess.org/api/user/${clean}/current-game`);
+      const chessComMatch = input.match(/chess\\.com\\/(?:game\\/|analysis\\/game\\/)(live|daily)\\/(\\d+)/i);
+      if (chessComMatch) {
+        const gameType = chessComMatch[1].toLowerCase() as "live" | "daily";
+        const gameId = chessComMatch[2];
+        const pgn = await fetchChessComGamePgn({ data: { gameType, gameId } });
+        if (!pgn || pgn.length < 10) throw new Error("Chess.com returned an empty game.");
+        applyPgnToLiveState(pgn, `chesscom-${gameId}`, { provider: "chesscom", sourceId: gameId, gameType });
+        return;
+      }
+
+      const lichessMatch = input.match(/lichess\\.org\\/@\\/([^/?#]+)/i);
+      const clean = (lichessMatch?.[1] || input).toLowerCase();
+      if (clean.includes("chess.com")) {
+        throw new Error("Paste a Chess.com game URL ending in /game/live/ID or /game/daily/ID.");
+      }
+
+      const res = await fetch(`https://lichess.org/api/user/${encodeURIComponent(clean)}/current-game`);
       if (res.status === 404) {
-        throw new Error(`Player "${targetUser}" is not currently in an active game.`);
+        throw new Error(`Player "${clean}" is not currently in an active Lichess game.`);
       }
       if (!res.ok) throw new Error("Could not fetch player's live game.");
 
       const pgn = await res.text();
       if (!pgn || pgn.length < 10) {
-        throw new Error(`No active live game found for ${targetUser}.`);
+        throw new Error(`No active live game found for ${clean}.`);
       }
-
-      applyPgnToLiveState(pgn, `user-${clean}`);
+      applyPgnToLiveState(pgn, `user-${clean}`, { provider: "lichess", sourceId: clean });
     } catch (e: any) {
       setError(e?.message || "Failed to find live game.");
     } finally {
@@ -109,7 +128,11 @@ function LiveGamesPage() {
     }
   };
 
-  const applyPgnToLiveState = (pgn: string, gameId: string) => {
+  const applyPgnToLiveState = (
+    pgn: string,
+    gameId: string,
+    source: { provider: "lichess" | "chesscom"; sourceId?: string; gameType?: "live" | "daily" } = { provider: "lichess" },
+  ) => {
     const chess = new Chess();
     try {
       chess.loadPgn(pgn);
@@ -133,6 +156,9 @@ function LiveGamesPage() {
         pgn,
         fen: chess.fen(),
         speed: getHeader("Event", "Live"),
+        provider: source.provider,
+        sourceId: source.sourceId,
+        gameType: source.gameType,
       });
 
       setMoves(items);
@@ -144,15 +170,27 @@ function LiveGamesPage() {
     }
   };
 
-  // Poll for updates every 2.5s if a live game is active
+  // Refresh the selected provider's game while it is in progress.
   useEffect(() => {
     if (!game) return;
     pollTimerRef.current = setInterval(() => {
-      if (username) {
-        fetch(`https://lichess.org/api/user/${encodeURIComponent(username.trim().toLowerCase())}/current-game`)
+      if (game.provider === "chesscom" && game.sourceId && game.gameType) {
+        fetchChessComGamePgn({ data: { gameType: game.gameType, gameId: game.sourceId } })
+          .then((pgn) => {
+            if (pgn && pgn !== game.pgn) {
+              applyPgnToLiveState(pgn, game.id, {
+                provider: "chesscom", sourceId: game.sourceId, gameType: game.gameType,
+              });
+            }
+          })
+          .catch(() => {});
+      } else if (game.provider === "lichess" && game.sourceId) {
+        fetch(`https://lichess.org/api/user/${encodeURIComponent(game.sourceId)}/current-game`)
           .then((r) => (r.ok ? r.text() : ""))
           .then((pgn) => {
-            if (pgn && pgn !== game.pgn) applyPgnToLiveState(pgn, game.id);
+            if (pgn && pgn !== game.pgn) {
+              applyPgnToLiveState(pgn, game.id, { provider: "lichess", sourceId: game.sourceId });
+            }
           })
           .catch(() => {});
       }
@@ -161,7 +199,7 @@ function LiveGamesPage() {
     return () => {
       if (pollTimerRef.current) clearInterval(pollTimerRef.current);
     };
-  }, [game?.id, game?.pgn, username, autoFollow]);
+  }, [game?.id, game?.pgn, game?.provider, game?.sourceId, game?.gameType, autoFollow]);
 
   // Current position FEN
   const currentFen = useMemo(() => {
