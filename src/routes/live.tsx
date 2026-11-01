@@ -78,6 +78,11 @@ function LiveGamesPage() {
     setError(null);
 
     try {
+      if (/^\\s*\\[Event\\s+/m.test(input)) {
+        applyPgnToLiveState(input, `pgn-${Date.now()}`, { provider: "lichess" });
+        return;
+      }
+
       const chessComMatch = input.match(/chess\.com\/(?:game\/|analysis\/game\/)(live|daily)\/(\d+)/i);
       if (chessComMatch) {
         const gameType = chessComMatch[1].toLowerCase() as "live" | "daily";
