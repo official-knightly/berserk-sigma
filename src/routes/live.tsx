@@ -50,6 +50,18 @@ const FEATURED_CHANNELS = [
   { id: "rapid", label: "Rapid TV" },
 ];
 
+function isActivePgn(pgn: string) {
+  const result = pgn.match(/^\[Result\s+"([^"]+)"\]/im)?.[1] || "*";
+  if (result !== "*") return false;
+  try {
+    const chess = new Chess();
+    chess.loadPgn(pgn);
+    return !chess.isGameOver();
+  } catch {
+    return false;
+  }
+}
+
 function LiveGamesPage() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
@@ -118,6 +130,30 @@ function LiveGamesPage() {
     }
   };
 
+  const switchToLiveTv = async (excludeId?: string) => {
+    for (const channel of ["top", "blitz", "rapid"]) {
+      try {
+        const res = await fetch(`https://lichess.org/api/tv/${channel}?pgnInJson=true`);
+        if (!res.ok) continue;
+        const data = await res.json();
+        const pgn = typeof data.pgn === "string" ? data.pgn : "";
+        const nextId = String(data.id || "");
+        if (!pgn || !isActivePgn(pgn) || (excludeId && nextId === excludeId)) continue;
+        applyPgnToLiveState(pgn, nextId || `tv-${channel}`, {
+          provider: "lichess",
+          sourceId: `tv:${channel}`,
+        });
+        return true;
+      } catch {
+        // Try the next live channel.
+      }
+    }
+    setGame(null);
+    setMoves([]);
+    setCurrentPly(0);
+    return false;
+  };
+
   const loadTvChannel = async (channel: string) => {
     setSearching(true);
     setError(null);
@@ -125,8 +161,15 @@ function LiveGamesPage() {
       const res = await fetch(`https://lichess.org/api/tv/${channel}?pgnInJson=true`);
       if (!res.ok) throw new Error("Could not load TV game.");
       const data = await res.json();
-      const pgn = data.pgn || "";
-      applyPgnToLiveState(pgn, data.id || "tv-game");
+      const pgn = typeof data.pgn === "string" ? data.pgn : "";
+      if (!pgn || !isActivePgn(pgn)) {
+        await switchToLiveTv(String(data.id || ""));
+        return;
+      }
+      applyPgnToLiveState(pgn, data.id || "tv-game", {
+        provider: "lichess",
+        sourceId: `tv:${channel}`,
+      });
     } catch (e: any) {
       setError(e?.message || "Could not load TV channel.");
     } finally {
@@ -154,6 +197,13 @@ function LiveGamesPage() {
         const m = pgn.match(new RegExp(`\\[${h}\\s+"([^"]+)"\\]`, "i"));
         return m ? m[1] : fallback;
       };
+
+      if (!isActivePgn(pgn)) {
+        setGame(null);
+        setMoves([]);
+        setCurrentPly(0);
+        return;
+      }
 
       setGame({
         id: gameId,
@@ -185,6 +235,10 @@ function LiveGamesPage() {
       if (game.provider === "chesscom" && game.sourceId && game.gameType) {
         fetchChessComGamePgn({ data: { gameType: game.gameType, gameId: game.sourceId } })
           .then((pgn) => {
+            if (pgn && !isActivePgn(pgn)) {
+              await switchToLiveTv(game.id);
+              return;
+            }
             if (pgn && pgn !== game.pgn) {
               applyPgnToLiveState(pgn, game.id, {
                 provider: "chesscom", sourceId: game.sourceId, gameType: game.gameType,
@@ -192,11 +246,41 @@ function LiveGamesPage() {
             }
           })
           .catch(() => {});
+      } else if (game.provider === "lichess" && game.sourceId?.startsWith("tv:")) {
+        const channel = game.sourceId.slice(3);
+        fetch(`https://lichess.org/api/tv/${channel}?pgnInJson=true`)
+          .then((r) => (r.ok ? r.json() : null))
+          .then(async (data) => {
+            const pgn = typeof data?.pgn === "string" ? data.pgn : "";
+            const nextId = String(data?.id || "");
+            if (!pgn || !isActivePgn(pgn)) {
+              await switchToLiveTv(game.id);
+              return;
+            }
+            if (nextId !== game.id || pgn !== game.pgn) {
+              applyPgnToLiveState(pgn, nextId || game.id, {
+                provider: "lichess",
+                sourceId: `tv:${channel}`,
+              });
+            }
+          })
+          .catch(() => {});
       } else if (game.provider === "lichess" && game.sourceId) {
         fetch(`https://lichess.org/api/user/${encodeURIComponent(game.sourceId)}/current-game`)
-          .then((r) => (r.ok ? r.text() : ""))
-          .then((pgn) => {
-            if (pgn && pgn !== game.pgn) {
+          .then(async (r) => {
+            if (r.status === 404) {
+              await switchToLiveTv(game.id);
+              return "";
+            }
+            return r.ok ? r.text() : "";
+          })
+          .then(async (pgn) => {
+            if (!pgn) return;
+            if (!isActivePgn(pgn)) {
+              await switchToLiveTv(game.id);
+              return;
+            }
+            if (pgn !== game.pgn) {
               applyPgnToLiveState(pgn, game.id, { provider: "lichess", sourceId: game.sourceId });
             }
           })
