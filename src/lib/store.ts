@@ -1,6 +1,7 @@
 // Small local persistence for settings and finished games (Statistics page).
 import { useEffect, useState } from "react";
 import type { Grade } from "./chess-logic";
+import { saveCloudGame } from "./supabase";
 
 export type Settings = { elo: number; attack: number; think: number; side: "w" | "b" | "random"; reviewMs: number; coords: boolean };
 export const DEFAULT_SETTINGS: Settings = { elo: 1800, attack: 5, think: 1, side: "w", reviewMs: 300, coords: true };
@@ -33,6 +34,7 @@ export function loadGames(): SavedGame[] {
 export function saveGame(g: SavedGame) {
   const all = [g, ...loadGames()].slice(0, 200);
   localStorage.setItem("berserk.games", JSON.stringify(all));
+  void saveCloudGame(g).catch((error) => console.warn("Berserk cloud save failed:", error));
 }
 export function clearGames() { localStorage.removeItem("berserk.games"); }
 
