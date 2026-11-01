@@ -111,7 +111,7 @@ export function useGameReview(
       if (move) parsed.push(move);
     }
     return parsed;
-  }, [sans]);
+  }, [sans, startFen]);
 
   const analysis = useGameAnalysis(moves, startFen, 150, sans.length > 0);
   return {
