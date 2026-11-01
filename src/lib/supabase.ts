@@ -87,6 +87,19 @@ export async function getValidSession(): Promise<AuthSession | null> {
 }
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
+  if (typeof window !== "undefined" && window.location.hash.includes("access_token=")) {
+    const params = new URLSearchParams(window.location.hash.slice(1));
+    const accessToken = params.get("access_token");
+    const refreshToken = params.get("refresh_token");
+    if (accessToken && refreshToken) {
+      const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${accessToken}` } });
+      if (response.ok) {
+        const user = await response.json() as AuthUser;
+        writeSession({ access_token: accessToken, refresh_token: refreshToken, expires_at: Number(params.get("expires_at") || Math.floor(Date.now() / 1000) + Number(params.get("expires_in") || 3600)), user });
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+      }
+    }
+  }
   const session = await getValidSession();
   if (!session) return null;
   const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
