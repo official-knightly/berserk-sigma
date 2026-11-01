@@ -202,6 +202,7 @@ function LiveGamesPage() {
         setGame(null);
         setMoves([]);
         setCurrentPly(0);
+        void switchToLiveTv(gameId);
         return;
       }
 
