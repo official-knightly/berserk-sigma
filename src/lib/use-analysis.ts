@@ -90,6 +90,32 @@ export function useGameAnalysis(moves: Move[], startFen: string, ms: number, ena
   return { positions, reviews, running, progress: fens.length ? done / fens.length : 0, total: fens.length, done };
 }
 
+
+/**
+ * Review a SAN move list from the starting position.
+ * This adapter keeps the review route API small while reusing the same
+ * Berserk-backed position analysis and move classification as live analysis.
+ */
+export function useGameReview(sans: string[]) {
+  const startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  const moves = useMemo(() => {
+    const chess = new Chess(startFen);
+    const parsed: Move[] = [];
+    for (const san of sans) {
+      const move = chess.move(san);
+      if (move) parsed.push(move);
+    }
+    return parsed;
+  }, [sans]);
+
+  const analysis = useGameAnalysis(moves, startFen, 150, sans.length > 0);
+  return {
+    reviews: analysis.reviews,
+    running: analysis.running,
+    progress: analysis.progress,
+  };
+}
+
 export function summarize(reviews: (MoveReview | undefined)[]) {
   const side = (c: "w" | "b") => {
     const list = reviews.filter((r): r is MoveReview => !!r && r.color === c);
