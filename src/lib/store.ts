@@ -27,16 +27,27 @@ export function useSettings() {
   return [s, update] as const;
 }
 
+function gamesStorageKey() {
+  if (typeof window === "undefined") return "berserk.games";
+  try {
+    const session = JSON.parse(localStorage.getItem("berserk.supabase.session") || "null");
+    return session?.user?.id ? `berserk.games.${session.user.id}` : "berserk.games";
+  } catch { return "berserk.games"; }
+}
+
 export function loadGames(): SavedGame[] {
   if (typeof window === "undefined") return [];
-  try { return JSON.parse(localStorage.getItem("berserk.games") || "[]"); } catch { return []; }
+  try { return JSON.parse(localStorage.getItem(gamesStorageKey()) || "[]"); } catch { return []; }
+}
+export function saveLocalGames(games: SavedGame[]) {
+  if (typeof window !== "undefined") localStorage.setItem(gamesStorageKey(), JSON.stringify(games.slice(0, 200)));
 }
 export function saveGame(g: SavedGame) {
   const all = [g, ...loadGames()].slice(0, 200);
-  localStorage.setItem("berserk.games", JSON.stringify(all));
+  saveLocalGames(all);
   void saveCloudGame(g).catch((error) => console.warn("Berserk cloud save failed:", error));
 }
-export function clearGames() { localStorage.removeItem("berserk.games"); }
+export function clearGames() { localStorage.removeItem(gamesStorageKey()); }
 
 /** Hand-off of a PGN from Play / Live to the Review page. */
 export function setPendingPgn(pgn: string) { sessionStorage.setItem("berserk.pendingPgn", pgn); }
