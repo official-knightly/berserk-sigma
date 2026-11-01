@@ -6,6 +6,27 @@ import { saveCloudGame } from "./supabase";
 export type Settings = { elo: number; attack: number; think: number; side: "w" | "b" | "random"; reviewMs: number; coords: boolean };
 export const DEFAULT_SETTINGS: Settings = { elo: 1800, attack: 5, think: 1, side: "w", reviewMs: 300, coords: true };
 
+export type ChessAccount = { provider: "lichess" | "chesscom"; username: string };
+const CHESS_ACCOUNTS_KEY = "berserk.chess.accounts";
+export function getConnectedChessAccounts(): ChessAccount[] {
+  if (typeof window === "undefined") return [];
+  try { return JSON.parse(localStorage.getItem(CHESS_ACCOUNTS_KEY) || "[]") as ChessAccount[]; } catch { return []; }
+}
+export function saveConnectedChessAccounts(accounts: ChessAccount[]) {
+  if (typeof window !== "undefined") localStorage.setItem(CHESS_ACCOUNTS_KEY, JSON.stringify(accounts));
+}
+export function setPendingChessProfile(account: ChessAccount) {
+  if (typeof window !== "undefined") sessionStorage.setItem("berserk.pendingChessProfile", JSON.stringify(account));
+}
+export function takePendingChessProfile(): ChessAccount | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem("berserk.pendingChessProfile");
+    sessionStorage.removeItem("berserk.pendingChessProfile");
+    return raw ? JSON.parse(raw) as ChessAccount : null;
+  } catch { return null; }
+}
+
 export type SavedGame = {
   id: string; date: number; pgn: string; result: string; humanSide: "w" | "b";
   elo: number; accuracy: number | null; grades: Partial<Record<Grade, number>>;
