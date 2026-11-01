@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { engine } from "@/lib/engine";
-import { loadGames, clearGames, SavedGame } from "@/lib/store";
+import { loadGames, clearGames, saveGame, SavedGame } from "@/lib/store";
+import { fetchLichessGames, fetchChessComGames } from "@/lib/game-import";
 import { GradeIcon, Panel } from "@/components/chess/parts";
 import { Grade } from "@/lib/chess-logic";
 import {
@@ -14,6 +15,8 @@ import {
   Zap,
   BarChart3,
   Award,
+  Download,
+  Loader2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/stats")({
@@ -30,6 +33,48 @@ export const Route = createFileRoute("/stats")({
 
 function StatsPage() {
   const [games, setGames] = useState<SavedGame[]>(() => loadGames());
+  const [importSource, setImportSource] = useState<"lichess" | "chesscom">("lichess");
+  const [importUsername, setImportUsername] = useState("");
+  const [importBusy, setImportBusy] = useState(false);
+  const [importMessage, setImportMessage] = useState<string | null>(null);
+
+  const handleImportGames = async () => {
+    const username = importUsername.trim();
+    if (!username || importBusy) return;
+    setImportBusy(true);
+    setImportMessage(null);
+    try {
+      const imported = importSource === "lichess"
+        ? await fetchLichessGames(username)
+        : await fetchChessComGames(username);
+      if (!imported.length) {
+        setImportMessage(`No public games found for ${username}.`);
+        return;
+      }
+      const existing = new Set(loadGames().map((game) => game.id));
+      let added = 0;
+      for (const game of imported) {
+        const whiteMatch = game.white.name.toLowerCase() === username.toLowerCase();
+        const blackMatch = game.black.name.toLowerCase() === username.toLowerCase();
+        const humanSide = whiteMatch ? "w" : blackMatch ? "b" : "w";
+        const id = `${importSource}:${game.id}`;
+        if (existing.has(id) || !game.pgn) continue;
+        saveGame({
+          id, date: Date.now(), pgn: game.pgn, result: game.result,
+          humanSide, elo: (humanSide === "w" ? game.white.rating : game.black.rating) || 0,
+          accuracy: null, grades: {},
+        });
+        existing.add(id);
+        added++;
+      }
+      setGames(loadGames());
+      setImportMessage(added ? `Imported ${added} new games from ${importSource === "lichess" ? "Lichess" : "Chess.com"}.` : "Those games are already imported, or no PGNs were available.");
+    } catch (error) {
+      setImportMessage(error instanceof Error ? error.message : "Could not import games. Try again.");
+    } finally {
+      setImportBusy(false);
+    }
+  };
 
   // Benchmark state
   const [benchRunning, setBenchRunning] = useState(false);
@@ -179,6 +224,29 @@ function StatsPage() {
             Author: <span className="text-foreground font-medium">Jay Honnold</span> • Top TCEC & CCRL Contender
           </p>
         </div>
+      </div>
+
+      {/* Import games for profile statistics */}
+      <div className="panel p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <div>
+            <h2 className="text-sm font-semibold">Import Your Games</h2>
+            <p className="text-xs text-muted-foreground mt-1">Import recent public games to add them to your Berserk statistics.</p>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => setImportSource("lichess")} className={`btn text-xs ${importSource === "lichess" ? "btn-primary" : "btn-secondary"}`}>Lichess</button>
+            <button onClick={() => setImportSource("chesscom")} className={`btn text-xs ${importSource === "chesscom" ? "btn-primary" : "btn-secondary"}`}>Chess.com</button>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <input className="input text-sm flex-1 min-w-0" value={importUsername} onChange={(event) => setImportUsername(event.target.value)} onKeyDown={(event) => event.key === "Enter" && handleImportGames()} placeholder={`${importSource === "lichess" ? "Lichess" : "Chess.com"} username`} />
+          <button onClick={handleImportGames} disabled={importBusy || !importUsername.trim()} className="btn btn-primary text-xs">
+            {importBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            {importBusy ? "Importing..." : "Import Games"}
+          </button>
+        </div>
+        {importMessage && <p className="mt-2 text-xs text-muted-foreground" role="status">{importMessage}</p>}
+        <p className="mt-2 text-[11px] text-muted-foreground">Imported games add to your match record and move totals. Accuracy and move grades appear only after a game has been analyzed.</p>
       </div>
 
       {/* WASM Performance Benchmark */}
