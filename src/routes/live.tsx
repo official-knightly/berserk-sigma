@@ -78,7 +78,7 @@ function LiveGamesPage() {
     setError(null);
 
     try {
-      const chessComMatch = input.match(/chess\\.com\\/(?:game\\/|analysis\\/game\\/)(live|daily)\\/(\\d+)/i);
+      const chessComMatch = input.match(/chess\.com\/(?:game\/|analysis\/game\/)(live|daily)\/(\d+)/i);
       if (chessComMatch) {
         const gameType = chessComMatch[1].toLowerCase() as "live" | "daily";
         const gameId = chessComMatch[2];
@@ -88,7 +88,7 @@ function LiveGamesPage() {
         return;
       }
 
-      const lichessMatch = input.match(/lichess\\.org\\/@\\/([^/?#]+)/i);
+      const lichessMatch = input.match(/lichess\.org\/@\/([^/?#]+)/i);
       const clean = (lichessMatch?.[1] || input).toLowerCase();
       if (clean.includes("chess.com")) {
         throw new Error("Paste a Chess.com game URL ending in /game/live/ID or /game/daily/ID.");
