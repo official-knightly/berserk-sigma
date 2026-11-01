@@ -60,7 +60,10 @@ export function useGameAnalysis(moves: Move[], startFen: string, ms: number, ena
           const r = await engine.search(fens[i], ms, 3);
           if (cancelled || token !== tokenRef.current) return;
           setPositions((p) => { const n = p.slice(); n[i] = Object.assign(r, { fen: fens[i] }); return n; });
-        } catch { return; }
+        } catch {
+          if (!cancelled && token === tokenRef.current) setRunning(false);
+          return;
+        }
       }
       if (!cancelled && token === tokenRef.current) setRunning(false);
     })();
@@ -96,8 +99,10 @@ export function useGameAnalysis(moves: Move[], startFen: string, ms: number, ena
  * This adapter keeps the review route API small while reusing the same
  * Berserk-backed position analysis and move classification as live analysis.
  */
-export function useGameReview(sans: string[]) {
-  const startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+export function useGameReview(
+  sans: string[],
+  startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+) {
   const moves = useMemo(() => {
     const chess = new Chess(startFen);
     const parsed: Move[] = [];
