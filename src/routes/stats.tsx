@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { engine } from "@/lib/engine";
-import { loadGames, clearGames, saveGame, SavedGame } from "@/lib/store";
+import { loadGames, clearGames, saveGame, saveLocalGames, SavedGame } from "@/lib/store";
 import { fetchLichessGames, fetchChessComGames } from "@/lib/game-import";
 import { GradeIcon, Panel } from "@/components/chess/parts";
 import { Grade } from "@/lib/chess-logic";
@@ -45,7 +45,7 @@ function StatsPage() {
       try {
         const merged = await syncCloudGames(loadGames());
         if (!active) return;
-        localStorage.setItem("berserk.games", JSON.stringify(merged));
+        saveLocalGames(merged);
         setGames(merged);
       } catch (error) {
         console.warn("Berserk cloud history sync failed:", error);
