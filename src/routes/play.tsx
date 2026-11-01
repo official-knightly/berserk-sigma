@@ -40,6 +40,7 @@ function PlayPage() {
   const tokenRef = useRef(0);
   const beforeRef = useRef<{ fen: string; p: Promise<SearchResult> } | null>(null);
   const premoveRef = useRef<Premove | null>(null);
+  const humanMoveRef = useRef<(m: Premove) => boolean>(() => false);
   premoveRef.current = premove;
 
   const game = gameRef.current;
@@ -115,7 +116,7 @@ function PlayPage() {
       const pm = premoveRef.current;
       if (pm) {
         setPremove(null);
-        setTimeout(() => { if (token === tokenRef.current) humanMove(pm, true); }, 60);
+        setTimeout(() => { if (token === tokenRef.current) humanMoveRef.current(pm); }, 60);
       }
     } catch {
       if (token === tokenRef.current) setBusy(false);
@@ -123,7 +124,7 @@ function PlayPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.think, settings.elo, settings.attack, checkOver]);
 
-  function humanMove(m: { from: string; to: string; promotion?: string }, fromPremove = false) {
+  function humanMove(m: { from: string; to: string; promotion?: string }) {
     const g = gameRef.current;
     if (!started || result || g.turn() !== human) return false;
     try {
@@ -131,11 +132,12 @@ function PlayPage() {
     } catch {
       return false; // invalid premove: silently cleared
     }
-    void fromPremove;
     sync();
     if (!checkOver()) engineTurn();
     return true;
   }
+
+  humanMoveRef.current = humanMove;
 
   function start(side = settings.side) {
     tokenRef.current++;
