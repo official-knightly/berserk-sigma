@@ -1,10 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { engine } from "@/lib/engine";
 import { loadGames, clearGames, saveGame, SavedGame } from "@/lib/store";
 import { fetchLichessGames, fetchChessComGames } from "@/lib/game-import";
 import { GradeIcon, Panel } from "@/components/chess/parts";
 import { Grade } from "@/lib/chess-logic";
+import { deleteCloudGames, syncCloudGames } from "@/lib/supabase";
 import {
   Trophy,
   Gauge,
@@ -37,6 +38,29 @@ function StatsPage() {
   const [importUsername, setImportUsername] = useState("");
   const [importBusy, setImportBusy] = useState(false);
   const [importMessage, setImportMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const refreshCloudHistory = async () => {
+      try {
+        const merged = await syncCloudGames(loadGames());
+        if (!active) return;
+        setGames(merged);
+      } catch (error) {
+        console.warn("Berserk cloud history sync failed:", error);
+      }
+    };
+    void refreshCloudHistory();
+    const onGamesUpdated = () => { void refreshCloudHistory(); };
+    const onAuthChanged = () => { void refreshCloudHistory(); };
+    window.addEventListener("berserk-games-updated", onGamesUpdated);
+    window.addEventListener("berserk-auth-change", onAuthChanged);
+    return () => {
+      active = false;
+      window.removeEventListener("berserk-games-updated", onGamesUpdated);
+      window.removeEventListener("berserk-auth-change", onAuthChanged);
+    };
+  }, []);
 
   const handleImportGames = async () => {
     const username = importUsername.trim();
@@ -150,10 +174,12 @@ function StatsPage() {
     }
   };
 
-  const handleClear = () => {
-    if (confirm("Reset match history?")) {
+  const handleClear = async () => {
+    if (confirm("Delete your saved match history from this device and your Berserk account?")) {
       clearGames();
       setGames([]);
+      try { await deleteCloudGames(); }
+      catch (error) { setImportMessage(error instanceof Error ? error.message : "Could not delete cloud history."); }
     }
   };
 
