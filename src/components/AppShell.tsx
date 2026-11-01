@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { BarChart3, Crosshair, Home, Microscope, Radio, Settings, Swords } from "lucide-react";
+import { BarChart3, Crosshair, Home, Microscope, Radio, Settings, Swords, UserRound } from "lucide-react";
+import { useAuth } from "./AuthProvider";
 import { EngineBadge } from "./chess/parts";
 
 const NAV = [
@@ -9,6 +10,7 @@ const NAV = [
   { to: "/review", label: "Game Review", short: "Review", icon: Microscope },
   { to: "/live", label: "Live Games", short: "Live", icon: Radio },
   { to: "/stats", label: "Statistics", short: "Stats", icon: BarChart3 },
+  { to: "/account", label: "Account", short: "Account", icon: UserRound },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
@@ -17,6 +19,7 @@ export function Logo({ size = 32 }: { size?: number }) {
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   return (
     <div className="flex min-h-dvh">
       <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-3 lg:flex">
@@ -39,6 +42,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="text-xs text-muted-foreground">Engine</div>
           <EngineBadge />
           <p className="text-[11px] leading-snug text-muted-foreground">Berserk runs locally in your browser via WebAssembly.</p>
+          <div className="border-t border-sidebar-border pt-2 text-[11px] text-muted-foreground">{user ? `Signed in: ${user.email || "Berserk player"}` : "Local mode · Sign in to sync games"}</div>
         </div>
       </aside>
 
@@ -56,7 +60,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="flex-1 px-3 pb-24 pt-3 sm:px-5 lg:px-6 lg:pb-6 lg:pt-5">{children}</main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-border bg-sidebar/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-7 border-t border-border bg-sidebar/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
         {NAV.filter((n) => n.to !== "/settings").map((n) => (
           <Link key={n.to} to={n.to} className="mnav-item" activeOptions={{ exact: n.to === "/" }}>
             <n.icon className="h-5 w-5" />
