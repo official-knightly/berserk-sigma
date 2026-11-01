@@ -14,6 +14,7 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as PlayRouteImport } from './routes/play'
+import { Route as PlayerUserIdRouteImport } from './routes/player.$userId'
 import { Route as ReviewRouteImport } from './routes/review'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StatsRouteImport } from './routes/stats'
@@ -38,6 +39,11 @@ const LiveRoute = LiveRouteImport.update({
   path: '/live',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlayerUserIdRoute = PlayerUserIdRouteImport.update({
+  id: '/player/$userId',
+  path: '/player/$userId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlayRoute = PlayRouteImport.update({
   id: '/play',
   path: '/play',
@@ -60,6 +66,7 @@ const StatsRoute = StatsRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/player/$userId': typeof PlayerUserIdRoute
   '/account': typeof AccountRoute
   '/': typeof IndexRoute
   '/analysis': typeof AnalysisRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/stats': typeof StatsRoute
 }
 export interface FileRoutesByTo {
+  '/player/$userId': typeof PlayerUserIdRoute
   '/account': typeof AccountRoute
   '/': typeof IndexRoute
   '/analysis': typeof AnalysisRoute
@@ -80,6 +88,7 @@ export interface FileRoutesByTo {
   '/stats': typeof StatsRoute
 }
 export interface FileRoutesById {
+  '/player/$userId': typeof PlayerUserIdRoute
   '/account': typeof AccountRoute
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
@@ -93,12 +102,13 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
+    '/player/$userId' | '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
   fileRoutesByTo: FileRoutesByTo
-  to: '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
+  to: '/player/$userId' | '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
   id:
     | '__root__'
     | '/account'
+    | '/player/$userId'
     | '/'
     | '/analysis'
     | '/live'
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  PlayerUserIdRoute: typeof PlayerUserIdRoute
   AccountRoute: typeof AccountRoute
   IndexRoute: typeof IndexRoute
   AnalysisRoute: typeof AnalysisRoute
@@ -121,6 +132,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/player/$userId': {
+      id: '/player/$userId'
+      path: '/player/$userId'
+      fullPath: '/player/$userId'
+      preLoaderRoute: typeof PlayerUserIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account': {
       id: '/account'
       path: '/account'
@@ -181,6 +199,7 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  PlayerUserIdRoute: PlayerUserIdRoute,
   AccountRoute: AccountRoute,
   IndexRoute: IndexRoute,
   AnalysisRoute: AnalysisRoute,
