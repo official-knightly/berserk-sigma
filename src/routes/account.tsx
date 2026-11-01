@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Cloud, Loader2, LogIn, LogOut, ShieldCheck, UserPlus } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
-import { loadGames } from "@/lib/store";
+import { loadGames, saveLocalGames } from "@/lib/store";
 import { saveProfile, signIn, signOut, signUp, syncCloudGames } from "@/lib/supabase";
 
 export const Route = createFileRoute("/account")({
@@ -25,21 +25,23 @@ function AccountPage() {
     setBusy(true); setError(""); setMessage("");
     try {
       if (mode === "signup") {
+        const localBeforeAuth = loadGames();
         const data = await signUp(email.trim(), password, name.trim());
         if (!data.access_token) {
           setMessage("Check your email to confirm your account, then come back and sign in.");
         } else {
           await saveProfile(data.user, name.trim());
-          const games = await syncCloudGames(loadGames());
-          localStorage.setItem("berserk.games", JSON.stringify(games));
+          const games = await syncCloudGames(localBeforeAuth);
+          saveLocalGames(games);
           window.dispatchEvent(new Event("berserk-games-updated"));
           setMessage("Account created. Your game history is now syncing.");
         }
       } else {
+        const localBeforeAuth = loadGames();
         const signedIn = await signIn(email.trim(), password);
         await saveProfile(signedIn, signedIn.user_metadata?.display_name || "");
-        const games = await syncCloudGames(loadGames());
-        localStorage.setItem("berserk.games", JSON.stringify(games));
+        const games = await syncCloudGames(localBeforeAuth);
+        saveLocalGames(games);
         window.dispatchEvent(new Event("berserk-games-updated"));
         setMessage("Signed in. Your games are synced across devices.");
       }
