@@ -332,7 +332,7 @@ function LiveGamesPage() {
     return () => {
       if (pollTimerRef.current) clearInterval(pollTimerRef.current);
     };
-  }, [game?.id, game?.pgn, game?.provider, game?.sourceId, game?.gameType, autoFollow]);
+  }, [game?.id, game?.pgn, game?.provider, game?.sourceId, game?.gameType, autoFollow, autoTv]);
 
   // Current position FEN
   const currentFen = useMemo(() => {
