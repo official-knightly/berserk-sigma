@@ -57,34 +57,51 @@ const FEATURED_CHANNELS = [
 const LICHESS_TV_API = "https://lichess.org/api";
 
 async function fetchLichessTvGame(channel: string): Promise<{ id: string; pgn: string }> {
+  // Lichess TV returns newline-delimited JSON for pgnInJson. Requesting
+  // application/json here can be rejected by its content negotiation.
   const response = await fetch(
-    `${LICHESS_TV_API}/tv/${encodeURIComponent(channel)}?pgnInJson=true&nb=1&moves=true&tags=true&clocks=true`,
+    `${LICHESS_TV_API}/tv/${encodeURIComponent(channel)}?pgnInJson=true&nb=1&moves=true&tags=true&clocks=true&opening=true`,
     {
-      headers: { Accept: "application/json" },
+      headers: { Accept: "application/x-ndjson" },
       cache: "no-store",
     },
   );
   if (!response.ok) {
-    throw new Error(`Lichess ${channel} channel request failed (${response.status}).`);
+    const detail = await response.text().catch(() => "");
+    throw new Error(`Lichess ${channel} channel request failed (${response.status})${detail ? `: ${detail.slice(0, 120)}` : ""}.`);
   }
 
-  const body = await response.text();
-  let payload: any;
+  const body = (await response.text()).trim();
+  if (!body) throw new Error(`Lichess returned no games for the ${channel} channel.`);
+
+  // The endpoint is NDJSON: parse each non-empty line independently.
+  // Keep compatibility with a JSON object/array response as well.
+  const records: any[] = [];
   try {
-    payload = JSON.parse(body);
+    const parsed = JSON.parse(body);
+    if (Array.isArray(parsed)) records.push(...parsed);
+    else records.push(parsed?.game ?? parsed);
   } catch {
-    throw new Error(`Lichess returned an unexpected response for the ${channel} channel.`);
+    for (const line of body.split(/\\r?\\n/)) {
+      if (!line.trim()) continue;
+      try { records.push(JSON.parse(line)); } catch { /* A plain PGN response is handled below. */ }
+    }
   }
 
-  // The documented pgnInJson response is a GameJson object. Accept a wrapped
-  // game as well, so a harmless API response envelope cannot break the viewer.
-  const game = Array.isArray(payload) ? payload[0] : payload?.game ?? payload;
-  const id = String(game?.id ?? game?.gameId ?? "");
-  const pgn = typeof game?.pgn === "string" ? game.pgn : "";
-  if (!id || !pgn.trim()) {
-    throw new Error(`No active game was returned for the ${channel} channel.`);
+  for (const record of records) {
+    const id = String(record?.id ?? record?.gameId ?? "");
+    const pgn = typeof record?.pgn === "string" ? record.pgn : "";
+    if (id && pgn.trim()) return { id, pgn };
   }
-  return { id, pgn };
+
+  // Defensive fallback if a proxy/API negotiation returns plain PGN.
+  if (/^\\[Event\\s+/m.test(body)) {
+    const id = body.match(/^\\[GameId\\s+"([^"]+)"\\]/im)?.[1]
+      || body.match(/^\\[Site\\s+"https?:\\/\\/lichess\\.org\\/(?:game|[A-Za-z0-9]+)\\/([^"]+)"\\]/im)?.[1];
+    if (id) return { id, pgn: body };
+  }
+
+  throw new Error(`Lichess returned no usable live game for the ${channel} channel.`);
 }
 
 function isActivePgn(pgn: string) {
