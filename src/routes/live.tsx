@@ -45,9 +45,13 @@ type LiveGameData = {
 };
 
 const FEATURED_CHANNELS = [
-  { id: "top", label: "Top GM TV" },
-  { id: "blitz", label: "Blitz TV" },
-  { id: "rapid", label: "Rapid TV" },
+  { id: "top", label: "Top GM" },
+  { id: "blitz", label: "Blitz" },
+  { id: "rapid", label: "Rapid" },
+  { id: "classical", label: "Classical" },
+  { id: "bullet", label: "Bullet" },
+  { id: "ultraBullet", label: "UltraBullet" },
+  { id: "chess960", label: "Chess960" },
 ];
 
 function isActivePgn(pgn: string) {
@@ -68,6 +72,8 @@ function LiveGamesPage() {
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [game, setGame] = useState<LiveGameData | null>(null);
+  const [autoTv, setAutoTv] = useState(true);
+  const seenGameIdsRef = useRef<Set<string>>(new Set());
 
   // Board navigation state
   const [moves, setMoves] = useState<{ san: string; uci: string; fenAfter: string }[]>([]);
@@ -131,7 +137,36 @@ function LiveGamesPage() {
   };
 
   const switchToLiveTv = async (excludeId?: string) => {
-    for (const channel of ["top", "blitz", "rapid"]) {
+    if (!autoTv) {
+      setError("The game has ended. Turn Auto TV back on to continue to another live game.");
+      return false;
+    }
+
+    const channels = FEATURED_CHANNELS.map((channel) => channel.id);
+    // Try unseen channels first so automatic broadcasts do not bounce between the same match.
+    for (const channel of channels) {
+      try {
+        const res = await fetch(`https://lichess.org/api/tv/${channel}?pgnInJson=true`);
+        if (!res.ok) continue;
+        const data = await res.json();
+        const pgn = typeof data.pgn === "string" ? data.pgn : "";
+        const nextId = String(data.id || "");
+        if (!pgn || !isActivePgn(pgn) || (excludeId && nextId === excludeId) || seenGameIdsRef.current.has(nextId)) continue;
+        seenGameIdsRef.current.add(nextId);
+        applyPgnToLiveState(pgn, nextId || `tv-${channel}`, {
+          provider: "lichess",
+          sourceId: `tv:${channel}`,
+        });
+        setError(null);
+        return true;
+      } catch {
+        // A channel can be temporarily unavailable; continue to the next source.
+      }
+    }
+
+    // If the channel rotation has been exhausted, allow a previously seen match
+    // again, but never immediately return to the game that just ended.
+    for (const channel of channels) {
       try {
         const res = await fetch(`https://lichess.org/api/tv/${channel}?pgnInJson=true`);
         if (!res.ok) continue;
@@ -139,18 +174,22 @@ function LiveGamesPage() {
         const pgn = typeof data.pgn === "string" ? data.pgn : "";
         const nextId = String(data.id || "");
         if (!pgn || !isActivePgn(pgn) || (excludeId && nextId === excludeId)) continue;
+        seenGameIdsRef.current.add(nextId);
         applyPgnToLiveState(pgn, nextId || `tv-${channel}`, {
           provider: "lichess",
           sourceId: `tv:${channel}`,
         });
+        setError(null);
         return true;
       } catch {
-        // Try the next live channel.
+        // Keep searching the remaining channels.
       }
     }
+
     setGame(null);
     setMoves([]);
     setCurrentPly(0);
+    setError("No active game is available in the selected TV channels right now. Try another channel or come back shortly.");
     return false;
   };
 
@@ -206,6 +245,7 @@ function LiveGamesPage() {
         return;
       }
 
+      seenGameIdsRef.current.add(gameId);
       setGame({
         id: gameId,
         white: { name: getHeader("White", "White"), rating: parseInt(getHeader("WhiteElo", "0"), 10) || undefined },
@@ -399,9 +439,17 @@ function LiveGamesPage() {
             <div className="flex items-center gap-2">
               <Tv className="h-4 w-4 text-primary" />
               <h1 className="font-display text-base font-semibold tracking-wide">BERSERK CHESS TV</h1>
-              <span className="status-pill status-ready"><span className="status-dot" />AUTO TV</span>
+              <button
+                type="button"
+                onClick={() => setAutoTv((value) => !value)}
+                aria-pressed={autoTv}
+                className={`status-pill transition-colors ${autoTv ? "status-ready" : "opacity-60"}`}
+                title="Automatically switch to another active TV game when the current game ends"
+              >
+                <span className="status-dot" />{autoTv ? "AUTO TV ON" : "AUTO TV OFF"}
+              </button>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">Continuous chess broadcasts with live Berserk analysis. When a game ends, Berserk looks for the next active TV game.</p>
+            <p className="mt-1 text-xs text-muted-foreground">Continuous broadcasts, live engine arrows and move explanations. Auto TV moves to another active channel when a game ends.</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -424,9 +472,9 @@ function LiveGamesPage() {
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted-foreground mr-1 flex items-center gap-1">
-              <Tv className="w-3.5 h-3.5" /> TV channels:
+              <Tv className="w-3.5 h-3.5" /> Channels:
             </span>
             {FEATURED_CHANNELS.map((ch) => (
               <button
@@ -453,7 +501,10 @@ function LiveGamesPage() {
             {/* Player Info (Top - Black) */}
             <div className="w-full max-w-[560px] flex justify-between items-center text-xs font-semibold py-2 px-1 text-muted-foreground">
               <span className="text-foreground">{game.black.name} ({game.black.rating || "?"})</span>
-              <span className="text-[10px] font-mono">{game.speed}</span>
+              <span className="flex items-center gap-2 text-[10px] font-mono">
+                <span className="rounded border border-border px-1.5 py-0.5 uppercase">{game.provider === "chesscom" ? "Chess.com" : "Lichess"}</span>
+                {game.speed}
+              </span>
             </div>
 
             <div className="w-full max-w-[560px] flex items-stretch gap-3">
@@ -476,7 +527,7 @@ function LiveGamesPage() {
             </div>
 
             {/* Move Controls */}
-            <div className="flex items-center gap-2 mt-3">
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
               <button onClick={() => { setCurrentPly(0); setAutoFollow(false); }} disabled={currentPly === 0} className="btn btn-secondary text-xs">|&lt;</button>
               <button onClick={() => { setCurrentPly((p) => Math.max(0, p - 1)); setAutoFollow(false); }} disabled={currentPly === 0} className="btn btn-secondary text-xs">&lt; Prev</button>
               <span className="text-sm font-mono px-3">{currentPly} / {moves.length}</span>
@@ -485,7 +536,7 @@ function LiveGamesPage() {
 
               <button
                 onClick={() => setAutoFollow(!autoFollow)}
-                className={`btn text-xs ml-3 ${autoFollow ? "btn-primary" : "btn-secondary"}`}
+                className={`btn text-xs ${autoFollow ? "btn-primary" : "btn-secondary"}`}
               >
                 {autoFollow ? "Following Live" : "Follow Live"}
               </button>
