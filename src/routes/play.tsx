@@ -85,12 +85,8 @@ function PlayPage() {
     beforeRef.current.p.then((r) => {
       if (token !== tokenRef.current || gameRef.current.fen() !== f) return;
       setLastEval(toWhite(scoreOf(r), f));
-      const uci = r.candidates?.[0]?.uci || r.bestmove;
-      if (!uci || uci === "(none)" || uci === "0000") return;
-      try {
-        const move = new Chess(f).move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] ?? "q" });
-        if (move) setHint({ from: move.from, to: move.to, san: move.san });
-      } catch { /* Keep the board usable if the engine returns an invalid suggestion. */ }
+      // This background search grades the position only. A board arrow is
+      // shown exclusively after the player explicitly presses the Hint button.
     }).catch(() => {});
   };
 
