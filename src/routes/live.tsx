@@ -45,7 +45,7 @@ type LiveGameData = {
 };
 
 const FEATURED_CHANNELS = [
-  { id: "top", label: "Top GM" },
+  { id: "best", label: "Top GM" },
   { id: "blitz", label: "Blitz" },
   { id: "rapid", label: "Rapid" },
   { id: "classical", label: "Classical" },
@@ -53,6 +53,39 @@ const FEATURED_CHANNELS = [
   { id: "ultraBullet", label: "UltraBullet" },
   { id: "chess960", label: "Chess960" },
 ];
+
+const LICHESS_TV_API = "https://lichess.org/api";
+
+async function fetchLichessTvGame(channel: string): Promise<{ id: string; pgn: string }> {
+  const response = await fetch(
+    `${LICHESS_TV_API}/tv/${encodeURIComponent(channel)}?pgnInJson=true&nb=1&moves=true&tags=true&clocks=true`,
+    {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`Lichess ${channel} channel request failed (${response.status}).`);
+  }
+
+  const body = await response.text();
+  let payload: any;
+  try {
+    payload = JSON.parse(body);
+  } catch {
+    throw new Error(`Lichess returned an unexpected response for the ${channel} channel.`);
+  }
+
+  // The documented pgnInJson response is a GameJson object. Accept a wrapped
+  // game as well, so a harmless API response envelope cannot break the viewer.
+  const game = Array.isArray(payload) ? payload[0] : payload?.game ?? payload;
+  const id = String(game?.id ?? game?.gameId ?? "");
+  const pgn = typeof game?.pgn === "string" ? game.pgn : "";
+  if (!id || !pgn.trim()) {
+    throw new Error(`No active game was returned for the ${channel} channel.`);
+  }
+  return { id, pgn };
+}
 
 function isActivePgn(pgn: string) {
   const result = pgn.match(/^\[Result\s+"([^"]+)"\]/im)?.[1] || "*";
@@ -143,46 +176,37 @@ function LiveGamesPage() {
     }
 
     const channels = FEATURED_CHANNELS.map((channel) => channel.id);
-    // Try unseen channels first so automatic broadcasts do not bounce between the same match.
+    // Rotate through every real Lichess TV channel, preferring games not shown yet.
     for (const channel of channels) {
       try {
-        const res = await fetch(`https://lichess.org/api/tv/${channel}?pgnInJson=true`);
-        if (!res.ok) continue;
-        const data = await res.json();
-        const pgn = typeof data.pgn === "string" ? data.pgn : "";
-        const nextId = String(data.id || "");
-        if (!pgn || !isActivePgn(pgn) || (excludeId && nextId === excludeId) || seenGameIdsRef.current.has(nextId)) continue;
+        const { id: nextId, pgn } = await fetchLichessTvGame(channel);
+        if (!isActivePgn(pgn) || (excludeId && nextId === excludeId) || seenGameIdsRef.current.has(nextId)) continue;
         seenGameIdsRef.current.add(nextId);
-        applyPgnToLiveState(pgn, nextId || `tv-${channel}`, {
+        applyPgnToLiveState(pgn, nextId, {
           provider: "lichess",
           sourceId: `tv:${channel}`,
         });
         setError(null);
         return true;
       } catch {
-        // A channel can be temporarily unavailable; continue to the next source.
+        // Keep checking other channels if one has no active game or is unavailable.
       }
     }
 
-    // If the channel rotation has been exhausted, allow a previously seen match
-    // again, but never immediately return to the game that just ended.
+    // After a full rotation, allow a previously watched active game again.
     for (const channel of channels) {
       try {
-        const res = await fetch(`https://lichess.org/api/tv/${channel}?pgnInJson=true`);
-        if (!res.ok) continue;
-        const data = await res.json();
-        const pgn = typeof data.pgn === "string" ? data.pgn : "";
-        const nextId = String(data.id || "");
-        if (!pgn || !isActivePgn(pgn) || (excludeId && nextId === excludeId)) continue;
+        const { id: nextId, pgn } = await fetchLichessTvGame(channel);
+        if (!isActivePgn(pgn) || (excludeId && nextId === excludeId)) continue;
         seenGameIdsRef.current.add(nextId);
-        applyPgnToLiveState(pgn, nextId || `tv-${channel}`, {
+        applyPgnToLiveState(pgn, nextId, {
           provider: "lichess",
           sourceId: `tv:${channel}`,
         });
         setError(null);
         return true;
       } catch {
-        // Keep searching the remaining channels.
+        // Continue through the channel list.
       }
     }
 
@@ -197,15 +221,13 @@ function LiveGamesPage() {
     setSearching(true);
     setError(null);
     try {
-      const res = await fetch(`https://lichess.org/api/tv/${channel}?pgnInJson=true`);
-      if (!res.ok) throw new Error("Could not load TV game.");
-      const data = await res.json();
-      const pgn = typeof data.pgn === "string" ? data.pgn : "";
-      if (!pgn || !isActivePgn(pgn)) {
-        await switchToLiveTv(String(data.id || ""));
+      const { id, pgn } = await fetchLichessTvGame(channel);
+      if (!isActivePgn(pgn)) {
+        await switchToLiveTv(id);
         return;
       }
-      applyPgnToLiveState(pgn, data.id || "tv-game", {
+      seenGameIdsRef.current.add(id);
+      applyPgnToLiveState(pgn, id, {
         provider: "lichess",
         sourceId: `tv:${channel}`,
       });
@@ -289,17 +311,15 @@ function LiveGamesPage() {
           .catch(() => {});
       } else if (game.provider === "lichess" && game.sourceId?.startsWith("tv:")) {
         const channel = game.sourceId.slice(3);
-        fetch(`https://lichess.org/api/tv/${channel}?pgnInJson=true`)
-          .then((r) => (r.ok ? r.json() : null))
-          .then(async (data) => {
-            const pgn = typeof data?.pgn === "string" ? data.pgn : "";
-            const nextId = String(data?.id || "");
-            if (!pgn || !isActivePgn(pgn)) {
+        fetchLichessTvGame(channel)
+          .then(async ({ id: nextId, pgn }) => {
+            if (!isActivePgn(pgn)) {
               await switchToLiveTv(game.id);
               return;
             }
             if (nextId !== game.id || pgn !== game.pgn) {
-              applyPgnToLiveState(pgn, nextId || game.id, {
+              seenGameIdsRef.current.add(nextId);
+              applyPgnToLiveState(pgn, nextId, {
                 provider: "lichess",
                 sourceId: `tv:${channel}`,
               });
