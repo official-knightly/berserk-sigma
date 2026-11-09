@@ -309,6 +309,8 @@ function LiveGamesPage() {
   useEffect(() => {
     let active = true;
     setEngineBusy(true);
+    setBestMove(null);
+    setCandidates([]);
 
     engine
       .search(currentFen, 500, 3)
@@ -341,13 +343,25 @@ function LiveGamesPage() {
   }, [currentFen]);
 
   const bestArrow = useMemo(() => {
-    if (!bestMove?.uci) return [];
-    return [{
+    const arrows = bestMove?.uci ? [{
       from: bestMove.uci.slice(0, 2),
       to: bestMove.uci.slice(2, 4),
       tone: "best" as const,
-    }];
-  }, [bestMove]);
+    }] : [];
+    // Show the engine's next two alternatives as quieter blue arrows.
+    // Ignore duplicate destinations so the board never becomes a pile of arrows.
+    const seen = new Set(arrows.map((a) => `${a.from}-${a.to}`));
+    for (const candidate of candidates.slice(1, 3)) {
+      const from = candidate.uci.slice(0, 2);
+      const to = candidate.uci.slice(2, 4);
+      const key = `${from}-${to}`;
+      if (from.length === 2 && to.length === 2 && !seen.has(key)) {
+        arrows.push({ from, to, tone: "alt" as const });
+        seen.add(key);
+      }
+    }
+    return arrows;
+  }, [bestMove, candidates]);
 
   const handleReviewClick = () => {
     if (!game?.pgn) return;
