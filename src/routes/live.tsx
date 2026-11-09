@@ -363,6 +363,27 @@ function LiveGamesPage() {
     return arrows;
   }, [bestMove, candidates]);
 
+  const bestMoveExplanation = useMemo(() => {
+    if (!bestMove?.uci) return "";
+    try {
+      const position = new Chess(currentFen);
+      const move = position.move({
+        from: bestMove.uci.slice(0, 2),
+        to: bestMove.uci.slice(2, 4),
+        promotion: bestMove.uci[4] ?? "q",
+      });
+      if (!move) return "Berserk's highest-ranked continuation for this position.";
+      if (position.isCheckmate()) return "A forced checkmate — the game is over with best play.";
+      if (move.promotion) return "Promotes the pawn, creating a new major piece.";
+      if (move.captured) return `Wins the ${move.captured === "q" ? "queen" : move.captured === "r" ? "rook" : move.captured === "b" ? "bishop" : move.captured === "n" ? "knight" : "pawn"}.`;
+      if (move.flags.includes("k") || move.flags.includes("q")) return "Castles to improve king safety and connect the rooks.";
+      if (move.san.includes("+")) return "Gives check and forces the opponent to respond.";
+      return "Berserk ranks this as the strongest continuation after comparing the available legal moves.";
+    } catch {
+      return "Berserk's highest-ranked continuation for this position.";
+    }
+  }, [bestMove, currentFen]);
+
   const handleReviewClick = () => {
     if (!game?.pgn) return;
     setPendingPgn(game.pgn);
@@ -371,13 +392,23 @@ function LiveGamesPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
-      {/* Top Search & Presets Bar */}
+      {/* Berserk Chess TV controls */}
       <div className="panel p-4 mb-6">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="flex items-center gap-2">
+              <Tv className="h-4 w-4 text-primary" />
+              <h1 className="font-display text-base font-semibold tracking-wide">BERSERK CHESS TV</h1>
+              <span className="status-pill status-ready"><span className="status-dot" />AUTO TV</span>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">Continuous chess broadcasts with live Berserk analysis. When a game ends, Berserk looks for the next active TV game.</p>
+          </div>
+        </div>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2 flex-1 max-w-md">
             <input
               type="text"
-              placeholder="Enter Lichess username (e.g. DrNykterstein)"
+              placeholder="Lichess username or Chess.com live game URL"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && loadUserLiveGame(username)}
@@ -395,7 +426,7 @@ function LiveGamesPage() {
 
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground mr-1 flex items-center gap-1">
-              <Tv className="w-3.5 h-3.5" /> Watch Top:
+              <Tv className="w-3.5 h-3.5" /> TV channels:
             </span>
             {FEATURED_CHANNELS.map((ch) => (
               <button
@@ -483,6 +514,9 @@ function LiveGamesPage() {
                     <span>Depth: {bestMove.depth}</span>
                     <span>Eval: {evalCp !== null ? `${evalCp > 0 ? "+" : ""}${(evalCp / 100).toFixed(2)}` : "0.00"}</span>
                   </div>
+                  <p className="mt-2 border-t border-border/40 pt-2 text-xs leading-relaxed text-muted-foreground">
+                    <span className="font-semibold text-foreground">Why this move?</span> {bestMoveExplanation}
+                  </p>
                 </div>
               ) : (
                 <div className="text-xs text-muted-foreground py-4 text-center">Berserk is calculating...</div>
