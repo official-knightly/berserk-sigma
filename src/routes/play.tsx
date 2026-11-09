@@ -80,8 +80,18 @@ function PlayPage() {
   /** Start a background evaluation of the position the human is about to move in. */
   const prepareBefore = () => {
     const f = gameRef.current.fen();
-    beforeRef.current = { fen: f, p: engine.search(f, 300, 2) };
-    beforeRef.current.p.then((r) => setLastEval(toWhite(scoreOf(r), f))).catch(() => {});
+    const token = tokenRef.current;
+    beforeRef.current = { fen: f, p: engine.search(f, 500, 3) };
+    beforeRef.current.p.then((r) => {
+      if (token !== tokenRef.current || gameRef.current.fen() !== f) return;
+      setLastEval(toWhite(scoreOf(r), f));
+      const uci = r.candidates?.[0]?.uci || r.bestmove;
+      if (!uci || uci === "(none)" || uci === "0000") return;
+      try {
+        const move = new Chess(f).move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] ?? "q" });
+        if (move) setHint({ from: move.from, to: move.to, san: move.san });
+      } catch { /* Keep the board usable if the engine returns an invalid suggestion. */ }
+    }).catch(() => {});
   };
 
   const engineTurn = useCallback(async () => {
@@ -241,7 +251,7 @@ function PlayPage() {
           lastMove={last ? { from: last.from, to: last.to } : null}
           arrows={hint ? [{ from: hint.from, to: hint.to, tone: "best" }] : []}
           badge={lastReview && history[lastReview.ply - 1] ? { square: history[lastReview.ply - 1].to, icon: `/classification/${gradeFile(lastReview.grade)}`, label: lastReview.grade } : null} />
-        {hint && <p className="px-1 text-xs text-muted-foreground">Hint: <span className="font-semibold text-foreground">{hint.san}</span></p>}
+        {hint && <p className="px-1 text-xs text-muted-foreground">Berserk suggestion: <span className="font-semibold text-foreground">{hint.san}</span></p>}
         {youBottom}
       </div>
 
