@@ -82,7 +82,7 @@ async function fetchLichessTvGame(channel: string): Promise<{ id: string; pgn: s
     if (Array.isArray(parsed)) records.push(...parsed);
     else records.push(parsed?.game ?? parsed);
   } catch {
-    for (const line of body.split(/\\r?\\n/)) {
+    for (const line of body.split(/\r?\n/)) {
       if (!line.trim()) continue;
       try { records.push(JSON.parse(line)); } catch { /* A plain PGN response is handled below. */ }
     }
@@ -95,9 +95,9 @@ async function fetchLichessTvGame(channel: string): Promise<{ id: string; pgn: s
   }
 
   // Defensive fallback if a proxy/API negotiation returns plain PGN.
-  if (/^\\[Event\\s+/m.test(body)) {
-    const id = body.match(/^\\[GameId\\s+"([^"]+)"\\]/im)?.[1]
-      || body.match(/^\\[Site\\s+"https?:\\/\\/lichess\\.org\\/(?:game|[A-Za-z0-9]+)\\/([^"]+)"\\]/im)?.[1];
+  if (/^\[Event\s+/m.test(body)) {
+    const id = body.match(/^\[GameId\s+"([^"]+)"\]/im)?.[1]
+      || body.match(/^\[Site\s+"https?:\/\/lichess\.org\/(?:game|[A-Za-z0-9]+)\/([^"]+)"\]/im)?.[1];
     if (id) return { id, pgn: body };
   }
 
