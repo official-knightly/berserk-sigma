@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { BarChart3, Crosshair, Home, Microscope, Radio, Settings, Swords, UserRound } from "lucide-react";
 import { useAuth } from "./AuthProvider";
 import { EngineBadge } from "./chess/parts";
@@ -20,6 +21,29 @@ export function Logo({ size = 32 }: { size?: number }) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+
+  useEffect(() => {
+    const mount = document.getElementById("bmc-button-mount");
+    if (!mount || mount.querySelector("script[data-name='bmc-button']")) return;
+
+    const script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = "https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js";
+    script.dataset.name = "bmc-button";
+    script.dataset.slug = "Officialknightly";
+    script.dataset.color = "#FFDD00";
+    script.dataset.emoji = "";
+    script.dataset.font = "Cookie";
+    script.dataset.text = "Buy me a coffee";
+    script.dataset.outlineColor = "#000000";
+    script.dataset.fontColor = "#000000";
+    script.dataset.coffeeColor = "#ffffff";
+    mount.appendChild(script);
+
+    return () => {
+      mount.replaceChildren();
+    };
+  }, []);
   return (
     <div className="flex min-h-dvh">
       <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-3 lg:flex">
@@ -58,6 +82,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
         <main className="flex-1 px-3 pb-24 pt-3 sm:px-5 lg:px-6 lg:pb-6 lg:pt-5">{children}</main>
+        <footer className="border-t border-border px-4 py-5 sm:px-6">
+          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
+            <div className="text-center sm:text-left">
+              <p className="text-sm font-semibold text-foreground">Support Berserk Sigma</p>
+              <p className="mt-1 text-xs text-muted-foreground">Enjoying the project? Support independent development.</p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <div id="bmc-button-mount" className="flex min-h-10 items-center" />
+              <a
+                href="https://linktr.ee/OfficialKnightly"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center rounded-md border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+              >
+                OfficialKnightly Links
+              </a>
+            </div>
+          </div>
+        </footer>
       </div>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-7 border-t border-border bg-sidebar/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
