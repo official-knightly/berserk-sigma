@@ -1,6 +1,8 @@
 import type { Candidate, SearchResult } from "./engine";
 
 type ParsedInfo = Candidate & { multipv: number; nodes: string };
+type SearchRun = { result: SearchResult; firstEvalMs: number | null; fixedDepthMs: number | null };
+type TimingTarget = { firstEvalDepth?: number; targetDepth?: number };
 
 function parseInfo(line: string): ParsedInfo | null {
   if (!line.startsWith("info ")) return null;
@@ -33,16 +35,26 @@ function parseInfo(line: string): ParsedInfo | null {
   };
 }
 
+const BENCHMARK_POSITIONS = [
+  "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+  "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+  "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
+];
+
 class StockfishBrowserEngine {
   private worker: Worker | null = null;
   private initPromise: Promise<void> | null = null;
   private pendingSearch: {
-    resolve: (result: SearchResult) => void;
+    resolve: (result: SearchResult, firstEvalMs: number | null, fixedDepthMs: number | null) => void;
     reject: (error: Error) => void;
     infos: Map<number, ParsedInfo>;
     depth: number;
     nodes: string;
     startedAt: number;
+    firstEvalDepth?: number;
+    targetDepth?: number;
+    firstEvalMs: number | null;
+    fixedDepthMs: number | null;
   } | null = null;
   private queue: Promise<unknown> = Promise.resolve();
   private readyState = false;
@@ -77,6 +89,13 @@ class StockfishBrowserEngine {
               if (!previous || info.depth >= previous.depth) active.infos.set(info.multipv, info);
               active.depth = Math.max(active.depth, info.depth);
               active.nodes = info.nodes;
+              const elapsed = performance.now() - active.startedAt;
+              if (active.firstEvalDepth && info.depth >= active.firstEvalDepth && active.firstEvalMs === null) {
+                active.firstEvalMs = elapsed;
+              }
+              if (active.targetDepth && info.depth >= active.targetDepth && active.fixedDepthMs === null) {
+                active.fixedDepthMs = elapsed;
+              }
             }
           } else if (line.startsWith("bestmove ")) {
             const active = this.pendingSearch;
@@ -94,7 +113,7 @@ class StockfishBrowserEngine {
               candidates,
             };
             this.pendingSearch = null;
-            active.resolve(result);
+            active.resolve(result, active.firstEvalMs, active.fixedDepthMs);
           }
         }
       };
@@ -118,8 +137,8 @@ class StockfishBrowserEngine {
     return this.readyState;
   }
 
-  search(fen: string, ms: number, multiPV = 3): Promise<SearchResult> {
-    const run = async () => {
+  private runQueuedSearch(fen: string, goCommand: string, multiPV: number, timing: TimingTarget = {}): Promise<SearchRun> {
+    const run = async (): Promise<SearchRun> => {
       await this.ensureWorker();
       if (!this.worker || !this.readyState) throw new Error("Stockfish did not become ready.");
       const count = Math.max(1, Math.min(5, Math.round(multiPV)));
@@ -134,22 +153,59 @@ class StockfishBrowserEngine {
         };
         this.worker?.addEventListener("message", check);
       });
-      return new Promise<SearchResult>((resolve, reject) => {
+      return new Promise<SearchRun>((resolve, reject) => {
         this.pendingSearch = {
-          resolve,
+          resolve: (result, firstEvalMs, fixedDepthMs) => resolve({ result, firstEvalMs, fixedDepthMs }),
           reject,
           infos: new Map(),
           depth: 0,
           nodes: "0",
           startedAt: performance.now(),
+          firstEvalDepth: timing.firstEvalDepth,
+          targetDepth: timing.targetDepth,
+          firstEvalMs: null,
+          fixedDepthMs: null,
         };
         this.worker!.postMessage("position fen " + fen);
-        this.worker!.postMessage("go movetime " + Math.max(100, Math.min(10000, Math.round(ms))));
+        this.worker!.postMessage(goCommand);
       });
     };
     const task = this.queue.then(run, run);
     this.queue = task.catch(() => {});
     return task;
+  }
+
+  async search(fen: string, ms: number, multiPV = 3): Promise<SearchResult> {
+    const run = await this.runQueuedSearch(fen, "go movetime " + Math.max(100, Math.min(10000, Math.round(ms))), multiPV);
+    return run.result;
+  }
+
+  async searchDepth(fen: string, depth: number, multiPV = 1, timing: TimingTarget = {}): Promise<SearchRun> {
+    const safeDepth = Math.max(1, Math.min(40, Math.round(depth)));
+    return this.runQueuedSearch(fen, "go depth " + safeDepth, multiPV, timing);
+  }
+
+  async benchmark(onProgress?: (completed: number, total: number) => void) {
+    const depth = 13;
+    const sampleCount = 9;
+    const firstEvalDepth = 5;
+    const firstEvalMs: number[] = [];
+    const fixedDepthMs: number[] = [];
+
+    // Warm up the WASM worker and NNUE evaluation before recording samples.
+    await this.searchDepth(BENCHMARK_POSITIONS[0], depth, 1);
+    for (let index = 0; index < sampleCount; index++) {
+      const position = BENCHMARK_POSITIONS[index % BENCHMARK_POSITIONS.length];
+      const sample = await this.searchDepth(position, depth, 1, { firstEvalDepth, targetDepth: depth });
+      if (sample.firstEvalMs === null || sample.fixedDepthMs === null) {
+        throw new Error("Stockfish did not report the requested benchmark depths.");
+      }
+      firstEvalMs.push(sample.firstEvalMs);
+      fixedDepthMs.push(sample.fixedDepthMs);
+      onProgress?.(index + 1, sampleCount);
+    }
+
+    return { depth, sampleCount, firstEvalMs, fixedDepthMs };
   }
 
   terminate() {
