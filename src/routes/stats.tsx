@@ -113,11 +113,12 @@ function StatsPage() {
   } | null>(null);
   const [stockfishBenchRunning, setStockfishBenchRunning] = useState(false);
   const [stockfishBenchResult, setStockfishBenchResult] = useState<{
-    nodes: string;
-    nps: number;
     depth: number;
-    ms: number;
-    bestmove: string;
+    samples: number;
+    firstEvalAverage: number;
+    fixedDepthAverage: number;
+    fastest: number;
+    slowest: number;
   } | null>(null);
 
   // Compute aggregate records from saved games
@@ -186,18 +187,16 @@ function StatsPage() {
 
   const runStockfishBenchmark = async () => {
     setStockfishBenchRunning(true);
-    const fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
-    const start = performance.now();
     try {
-      const result = await stockfishEngine.search(fen, 1500, 1);
-      const ms = Math.max(1, Math.round(performance.now() - start));
-      const nodesNum = parseInt(result.nodes.replace(/,/g, ""), 10) || 0;
+      const result = await stockfishEngine.benchmark();
+      const average = (samples: number[]) => samples.reduce((sum, value) => sum + value, 0) / samples.length;
       setStockfishBenchResult({
-        nodes: result.nodes,
-        nps: Math.round((nodesNum / ms) * 1000),
         depth: result.depth,
-        ms,
-        bestmove: result.bestmove,
+        samples: result.sampleCount,
+        firstEvalAverage: average(result.firstEvalMs),
+        fixedDepthAverage: average(result.fixedDepthMs),
+        fastest: Math.min(...result.fixedDepthMs),
+        slowest: Math.max(...result.fixedDepthMs),
       });
     } catch (error) {
       setImportMessage(error instanceof Error ? error.message : "Stockfish benchmark failed.");
@@ -385,11 +384,12 @@ function StatsPage() {
           <button type="button" onClick={runStockfishBenchmark} disabled={stockfishBenchRunning} className="btn btn-primary flex items-center gap-1.5 text-xs"><Zap className={"h-3.5 w-3.5 " + (stockfishBenchRunning ? "animate-spin" : "")} />{stockfishBenchRunning ? "Benchmarking…" : "Run Stockfish benchmark"}</button>
         </div>
         {stockfishBenchResult ? <div className="grid grid-cols-2 gap-3 rounded-lg border border-border/50 bg-background/50 p-4 sm:grid-cols-4">
-          <div><div className="text-[11px] text-muted-foreground">Speed</div><div className="font-mono text-xl font-bold text-accent">{stockfishBenchResult.nps.toLocaleString()} NPS</div></div>
-          <div><div className="text-[11px] text-muted-foreground">Nodes</div><div className="font-mono text-xl font-bold">{stockfishBenchResult.nodes}</div></div>
-          <div><div className="text-[11px] text-muted-foreground">Depth</div><div className="font-mono text-xl font-bold">{stockfishBenchResult.depth}</div></div>
-          <div><div className="text-[11px] text-muted-foreground">Best move · {stockfishBenchResult.ms} ms</div><div className="font-mono text-xl font-bold text-primary">{stockfishBenchResult.bestmove}</div></div>
-        </div> : <div className="rounded border border-dashed border-border/60 bg-background/30 py-6 text-center text-xs text-muted-foreground">Run the benchmark to measure Stockfish search throughput on this device.</div>}
+          <div><div className="text-[11px] text-muted-foreground">First evaluation · depth 5</div><div className="font-mono text-xl font-bold text-accent">{Math.round(stockfishBenchResult.firstEvalAverage).toLocaleString()} ms</div></div>
+          <div><div className="text-[11px] text-muted-foreground">Full search · depth {stockfishBenchResult.depth}</div><div className="font-mono text-xl font-bold">{Math.round(stockfishBenchResult.fixedDepthAverage).toLocaleString()} ms</div></div>
+          <div><div className="text-[11px] text-muted-foreground">Fastest sample</div><div className="font-mono text-xl font-bold">{Math.round(stockfishBenchResult.fastest).toLocaleString()} ms</div></div>
+          <div><div className="text-[11px] text-muted-foreground">Slowest sample</div><div className="font-mono text-xl font-bold">{Math.round(stockfishBenchResult.slowest).toLocaleString()} ms</div></div>
+        </div> : <div className="rounded border border-dashed border-border/60 bg-background/30 py-6 text-center text-xs text-muted-foreground">Run nine depth-13 searches across three positions, after one warm-up, to measure Stockfish performance on this device.</div>}
+        <p className="mt-2 text-[10px] text-muted-foreground">Average of {stockfishBenchResult?.samples ?? 9} measured samples; first evaluation is recorded when depth 5 appears, and total time when depth {stockfishBenchResult?.depth ?? 13} appears.</p>
         <p className="mt-3 text-[10px] leading-5 text-muted-foreground">This is a local-device measurement, not an Elo rating. Results vary with browser, CPU, temperature and other running applications.</p>
       </div>
       {/* Tactical Move Distribution */}
