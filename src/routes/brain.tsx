@@ -39,7 +39,7 @@ const FILES = "abcdefgh";
 const PIECE_TYPES = ["k", "q", "r", "b", "n", "p"];
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const CHECK_FEN = "4k3/8/8/8/8/2K5/8/3Q4 w - - 0 1";
-const MATE_FEN = "7k/8/5K2/6Q1/8/8/8/8 w - - 0 1";
+const MATE_FEN = "7k/6pp/5K2/6Q1/8/8/8/8 w - - 0 1";
 const SPOT_FEN_A = "4k2r/8/8/8/8/8/8/R3K3 w - - 0 1";
 const SPOT_FEN_B = "4k2r/8/8/8/8/8/R7/4K3 w - - 0 1";
 
@@ -490,11 +490,11 @@ function BrainGamesPage() {
 
   function chooseSpot(square: string) {
     if (spotSolved) return;
-    if (square === "a1" || square === "a2") {
+    if (square === "a2") {
       setSpotAnswer(square);
-      if (square === "a1" || square === "a2") {
-        setSpotSolved(true);
-      }
+      setSpotSolved(true);
+    } else {
+      setSpotAnswer(square);
     }
   }
 
@@ -711,7 +711,7 @@ function BrainGamesPage() {
             <div className="mx-auto max-w-[700px] space-y-4">
               <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-primary">VISUAL COMPARISON</p><h2 className="mt-1 text-2xl font-extrabold">Spot the Change</h2><p className="mt-1 text-xs text-muted-foreground">Compare the two positions and select the square that changed. One rook moved.</p></div>
               <div className="grid gap-3 sm:grid-cols-2"><div className="space-y-2"><p className="text-xs font-semibold">Position A</p><MiniBoard pieces={spotPiecesA} compact /></div><div className="space-y-2"><p className="text-xs font-semibold">Position B</p><MiniBoard pieces={spotPiecesB} compact /></div></div>
-              <div className="flex flex-wrap items-center gap-2"><p className="mr-auto text-xs text-muted-foreground">{spotSolved ? `Correct — the rook moved from a1 to a2.` : "Choose one of the changed squares."}</p>{["a1", "a2"].map((square) => <button key={square} type="button" disabled={spotSolved} onClick={() => chooseSpot(square)} className="btn btn-secondary font-mono">{square}</button>)}<button type="button" onClick={() => { setSpotAnswer(""); setSpotSolved(false); }} className="btn btn-secondary"><RotateCcw className="h-4 w-4" /> Reset</button></div>
+              <div className="flex flex-wrap items-center gap-2"><p className="mr-auto text-xs text-muted-foreground">{spotSolved ? `Correct — the rook moved from a1 to a2.` : "Choose the square containing the rook in Position B."}</p>{["a1", "a2"].map((square) => <button key={square} type="button" disabled={spotSolved} onClick={() => chooseSpot(square)} className="btn btn-secondary font-mono">{square}</button>)}<button type="button" onClick={() => { setSpotAnswer(""); setSpotSolved(false); }} className="btn btn-secondary"><RotateCcw className="h-4 w-4" /> Reset</button></div>
             </div>
           )}
 
