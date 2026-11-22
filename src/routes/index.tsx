@@ -4,6 +4,7 @@ import {
   ArrowRight,
   BarChart3,
   Brain,
+  BookOpen,
   CalendarDays,
   ChartNoAxesCombined,
   ChevronRight,
@@ -14,6 +15,7 @@ import {
   Radio,
   Swords,
   Trophy,
+  Target,
   Upload,
   Zap,
 } from "lucide-react";
@@ -118,8 +120,8 @@ function Home() {
             One place to play, train, review your games and understand your chess. Powered by Berserk, built around your progress.
           </p>
           <div className="mt-6 flex flex-wrap gap-2.5">
-            <Link to="/play" className="btn btn-primary"><Swords className="h-4 w-4" /> Play a game <ArrowRight className="h-4 w-4" /></Link>
-            <Link to="/review" className="btn btn-secondary"><Upload className="h-4 w-4" /> Review a game</Link>
+            <Link to="/train" className="btn btn-primary"><GraduationCap className="h-4 w-4" /> Start training <ArrowRight className="h-4 w-4" /></Link>
+            <Link to="/games" className="btn btn-secondary"><Gamepad2 className="h-4 w-4" /> Open games</Link>
           </div>
           <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border/80 pt-4 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-2"><Zap className="h-3.5 w-3.5 text-primary" /> Local Berserk engine</span>
