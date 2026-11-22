@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as BrainRouteImport } from './routes/brain'
+import { Route as BoardPiecesRouteImport } from './routes/board-pieces'
 import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as PlayRouteImport } from './routes/play'
@@ -22,6 +23,11 @@ import { Route as StatsRouteImport } from './routes/stats'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BoardPiecesRoute = BoardPiecesRouteImport.update({
+  id: '/board-pieces',
+  path: '/board-pieces',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BrainRoute = BrainRouteImport.update({
@@ -66,6 +72,7 @@ const StatsRoute = StatsRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/board-pieces': typeof BoardPiecesRoute
   '/brain': typeof BrainRoute
   '/account': typeof AccountRoute
   '/': typeof IndexRoute
@@ -77,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/stats': typeof StatsRoute
 }
 export interface FileRoutesByTo {
+  '/board-pieces': typeof BoardPiecesRoute
   '/brain': typeof BrainRoute
   '/account': typeof AccountRoute
   '/': typeof IndexRoute
@@ -88,6 +96,7 @@ export interface FileRoutesByTo {
   '/stats': typeof StatsRoute
 }
 export interface FileRoutesById {
+  '/board-pieces': typeof BoardPiecesRoute
   '/brain': typeof BrainRoute
   '/account': typeof AccountRoute
   __root__: typeof rootRouteImport
@@ -102,11 +111,12 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/brain' | '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
+    '/board-pieces' | '/brain' | '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
   fileRoutesByTo: FileRoutesByTo
-  to: '/brain' | '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
+  to: '/board-pieces' | '/brain' | '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
   id:
     | '__root__'
+    | '/board-pieces'
     | '/brain'
     | '/account'
     | '/'
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  BoardPiecesRoute: typeof BoardPiecesRoute
   BrainRoute: typeof BrainRoute
   AccountRoute: typeof AccountRoute
   IndexRoute: typeof IndexRoute
@@ -132,6 +143,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/board-pieces': {
+      id: '/board-pieces'
+      path: '/board-pieces'
+      fullPath: '/board-pieces'
+      preLoaderRoute: typeof BoardPiecesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/brain': {
       id: '/brain'
       path: '/brain'
@@ -199,6 +217,7 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  BoardPiecesRoute: BoardPiecesRoute,
   BrainRoute: BrainRoute,
   AccountRoute: AccountRoute,
   IndexRoute: IndexRoute,
