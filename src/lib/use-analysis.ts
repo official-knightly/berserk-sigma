@@ -1,6 +1,7 @@
 import { Chess, type Move } from "chess.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { engine, type SearchResult } from "./engine";
+import { stockfishEngine } from "./stockfish";
 import { classify, pvToSan, scoreOf, toWhite, type Grade } from "./chess-logic";
 import { isBookPly } from "./openings";
 
@@ -20,11 +21,19 @@ export function parseGame(pgn: string) {
   return { headers, moves, startFen };
 }
 
+export type ReviewEngineId = "berserk" | "stockfish";
+
+function searchWithEngine(engineId: ReviewEngineId, fen: string, ms: number, multiPV: number) {
+  return engineId === "stockfish"
+    ? stockfishEngine.search(fen, ms, multiPV)
+    : engine.search(fen, ms, multiPV);
+}
+
 /**
- * Incrementally analyze every position of a move sequence with real Berserk searches.
+ * Incrementally analyze every position of a move sequence with real engine searches.
  * positions[i] = search of the position after i plies. New plies (live games) are analyzed as they arrive.
  */
-export function useGameAnalysis(moves: Move[], startFen: string, ms: number, enabled = true) {
+export function useGameAnalysis(moves: Move[], startFen: string, ms: number, enabled = true, engineId: ReviewEngineId = "berserk") {
   const [positions, setPositions] = useState<(SearchResult | undefined)[]>([]);
   const [running, setRunning] = useState(false);
   const keyRef = useRef("");
@@ -57,7 +66,7 @@ export function useGameAnalysis(moves: Move[], startFen: string, ms: number, ena
           continue;
         }
         try {
-          const r = await engine.search(fens[i], ms, 3);
+          const r = await searchWithEngine(engineId, fens[i], ms, 3);
           if (cancelled || token !== tokenRef.current) return;
           setPositions((p) => { const n = p.slice(); n[i] = Object.assign(r, { fen: fens[i] }); return n; });
         } catch {
@@ -68,7 +77,7 @@ export function useGameAnalysis(moves: Move[], startFen: string, ms: number, ena
       if (!cancelled && token === tokenRef.current) setRunning(false);
     })();
     return () => { cancelled = true; setRunning(false); };
-  }, [fens, ms, enabled]);
+  }, [fens, ms, enabled, engineId]);
 
   const reviews = useMemo(() => {
     const sans = moves.map((m) => m.san);
@@ -102,6 +111,7 @@ export function useGameAnalysis(moves: Move[], startFen: string, ms: number, ena
 export function useGameReview(
   sans: string[],
   startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  engineId: ReviewEngineId = "berserk",
 ) {
   const moves = useMemo(() => {
     const chess = new Chess(startFen);
@@ -113,7 +123,7 @@ export function useGameReview(
     return parsed;
   }, [sans, startFen]);
 
-  const analysis = useGameAnalysis(moves, startFen, 150, sans.length > 0);
+  const analysis = useGameAnalysis(moves, startFen, 300, sans.length > 0, engineId);
   return {
     reviews: analysis.reviews,
     running: analysis.running,
