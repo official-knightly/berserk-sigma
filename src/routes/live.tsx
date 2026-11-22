@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Chess } from "chess.js";
-import { Board } from "@/components/chess/Board";
+import { Board, type Arrow } from "@/components/chess/Board";
 import { EvalBar, MoveList, EngineBadge } from "@/components/chess/parts";
 import { engine, type Candidate } from "@/lib/engine";
 import { identifyOpening } from "@/lib/openings";
@@ -420,7 +420,7 @@ function LiveGamesPage() {
   }, [currentFen]);
 
   const bestArrow = useMemo(() => {
-    const arrows = bestMove?.uci ? [{
+    const arrows: Arrow[] = bestMove?.uci ? [{
       from: bestMove.uci.slice(0, 2),
       to: bestMove.uci.slice(2, 4),
       tone: "best" as const,
