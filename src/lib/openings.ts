@@ -90,3 +90,11 @@ export function isBookPly(sans: string[], ply: number) {
   const prefix = sans.slice(0, ply);
   return PARSED.some((o) => o.moves.length >= ply && prefix.every((m, i) => o.moves[i] === m));
 }
+
+
+/** Public catalogue used by the repertoire trainer. Lines are standard SAN move sequences. */
+export const OPENING_REPERTOIRE = PARSED.map((opening) => ({
+  eco: opening.eco,
+  name: opening.name,
+  moves: [...opening.moves],
+}));
