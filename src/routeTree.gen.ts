@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as BrainRouteImport } from './routes/brain'
 import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as PlayRouteImport } from './routes/play'
@@ -21,6 +22,11 @@ import { Route as StatsRouteImport } from './routes/stats'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrainRoute = BrainRouteImport.update({
+  id: '/brain',
+  path: '/brain',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountRoute = AccountRouteImport.update({
@@ -60,6 +66,7 @@ const StatsRoute = StatsRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/brain': typeof BrainRoute
   '/account': typeof AccountRoute
   '/': typeof IndexRoute
   '/analysis': typeof AnalysisRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/stats': typeof StatsRoute
 }
 export interface FileRoutesByTo {
+  '/brain': typeof BrainRoute
   '/account': typeof AccountRoute
   '/': typeof IndexRoute
   '/analysis': typeof AnalysisRoute
@@ -80,6 +88,7 @@ export interface FileRoutesByTo {
   '/stats': typeof StatsRoute
 }
 export interface FileRoutesById {
+  '/brain': typeof BrainRoute
   '/account': typeof AccountRoute
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
@@ -93,11 +102,12 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
+    '/brain' | '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
   fileRoutesByTo: FileRoutesByTo
-  to: '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
+  to: '/brain' | '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
   id:
     | '__root__'
+    | '/brain'
     | '/account'
     | '/'
     | '/analysis'
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  BrainRoute: typeof BrainRoute
   AccountRoute: typeof AccountRoute
   IndexRoute: typeof IndexRoute
   AnalysisRoute: typeof AnalysisRoute
@@ -121,6 +132,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/brain': {
+      id: '/brain'
+      path: '/brain'
+      fullPath: '/brain'
+      preLoaderRoute: typeof BrainRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account': {
       id: '/account'
       path: '/account'
@@ -181,6 +199,7 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  BrainRoute: BrainRoute,
   AccountRoute: AccountRoute,
   IndexRoute: IndexRoute,
   AnalysisRoute: AnalysisRoute,
