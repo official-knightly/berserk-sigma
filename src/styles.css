@@ -308,3 +308,78 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+
+/* Dashboard polish — Chessigma-inspired, independently branded */
+:root {
+  --background: #171717;
+  --foreground: #ffffff;
+  --surface: #1d1d1d;
+  --surface-2: #242424;
+  --card: #242424;
+  --card-foreground: #ffffff;
+  --popover: #292929;
+  --popover-foreground: #ffffff;
+  --primary: #ffb800;
+  --primary-foreground: #171717;
+  --sage: #ffb800;
+  --sage-soft: rgb(255 184 0 / 12%);
+  --secondary: #242424;
+  --secondary-foreground: #ffffff;
+  --muted: #242424;
+  --muted-foreground: #a5a5a5;
+  --accent: #2b2b2b;
+  --accent-foreground: #ffffff;
+  --border: #353535;
+  --input: #353535;
+  --ring: rgb(255 184 0 / 78%);
+  --sidebar: #151515;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ffb800;
+  --sidebar-primary-foreground: #171717;
+  --sidebar-accent: #242424;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #303030;
+  --sidebar-ring: rgb(255 184 0 / 78%);
+  --shadow-panel-v: 0 1px 0 rgb(255 255 255 / 3%) inset, 0 5px 0 #0b0b0b, 0 12px 24px rgb(0 0 0 / 18%);
+}
+
+.nav-item {
+  min-height: 43px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  box-shadow: 0 4px 0 rgb(0 0 0 / 45%);
+}
+.nav-item:hover { border-color: #414141; }
+.nav-item[data-status="active"], .nav-item[aria-current="page"] {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: #171717;
+  box-shadow: 0 4px 0 #080808;
+}
+.mnav-item {
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  margin: 5px 2px;
+  color: #a5a5a5;
+}
+.mnav-item[data-status="active"], .mnav-item[aria-current="page"] {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: #202020;
+}
+.panel {
+  border-radius: 14px;
+  box-shadow: var(--shadow-panel-v);
+}
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 4px 0 #946400;
+}
+.btn-primary:hover:not(:disabled) { background: #ffc52e; box-shadow: 0 4px 0 #946400; }
+.btn-primary:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0 #946400; }
+@media (max-width: 380px) {
+  .mnav-item { font-size: .58rem; }
+}
