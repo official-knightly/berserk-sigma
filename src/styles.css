@@ -228,3 +228,83 @@
 @keyframes pop-in { from { transform: scale(.4); opacity: 0; } }
 @keyframes fade-in { from { opacity: 0; transform: translateY(4px); } }
 @keyframes pulse-dot { 50% { opacity: .3; } }
+
+
+/* Berserk Sigma — Chessigma-inspired monochrome design system */
+:root {
+  --background: oklch(0.08 0 0);
+  --foreground: oklch(0.97 0 0);
+  --surface: oklch(0.115 0 0);
+  --surface-2: oklch(0.15 0 0);
+  --card: oklch(0.105 0 0);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.13 0 0);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.82 0.16 85);
+  --primary-foreground: oklch(0.16 0.025 85);
+  --sage: oklch(0.82 0.16 85);
+  --sage-soft: oklch(0.82 0.16 85 / 12%);
+  --secondary: oklch(0.16 0 0);
+  --secondary-foreground: var(--foreground);
+  --muted: oklch(0.16 0 0);
+  --muted-foreground: oklch(0.70 0 0);
+  --accent: oklch(0.2 0 0);
+  --accent-foreground: var(--foreground);
+  --border: oklch(0.25 0 0);
+  --input: oklch(0.25 0 0);
+  --ring: oklch(0.82 0.16 85 / 72%);
+  --sidebar: oklch(0.09 0 0);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: oklch(0.16 0 0);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: oklch(0.2 0 0);
+  --sidebar-ring: var(--ring);
+  --shadow-panel-v: 0 1px 0 oklch(1 0 0 / 3%) inset, 0 12px 30px -20px oklch(0 0 0 / 90%);
+}
+
+@layer base {
+  html, body { background: var(--background); color: var(--foreground); }
+  body { font-family: "Onest", Arial, sans-serif; }
+  :focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+  ::selection { background: oklch(0.82 0.16 85 / 28%); color: var(--foreground); }
+}
+
+@layer components {
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: none;
+  }
+  .panel-head { padding: 12px 14px; }
+  .panel-head h2 { color: var(--muted-foreground); letter-spacing: .045em; }
+  .btn {
+    border-radius: 10px;
+    box-shadow: none;
+    transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, transform 90ms ease;
+  }
+  .btn:hover:not(:disabled) { transform: translateY(-1px); }
+  .btn:active:not(:disabled) { transform: translateY(0); box-shadow: none; }
+  .btn-primary { background: var(--primary); color: var(--primary-foreground); border-color: transparent; }
+  .btn-primary:hover:not(:disabled) { background: oklch(0.87 0.15 85); }
+  .btn-secondary, .btn-ghost { background: var(--surface-2); border: 1px solid var(--border); box-shadow: none; }
+  .btn-ghost:hover:not(:disabled), .btn-secondary:hover:not(:disabled) { background: var(--accent); border-color: oklch(0.38 0 0); }
+  .btn-danger { box-shadow: none; }
+  .field { background: var(--surface); border-color: var(--border); border-radius: 10px; }
+  .field:focus { outline: 2px solid var(--ring); outline-offset: 1px; }
+  .seg { background: var(--surface); border-color: var(--border); border-radius: 10px; }
+  .seg button[data-on="true"] { background: var(--primary); color: var(--primary-foreground); box-shadow: none; }
+  .tabs button[data-on="true"] { background: var(--sage-soft); color: var(--sage); }
+  .nav-item { border-radius: 9px; height: 42px; }
+  .nav-item[data-status="active"], .nav-item[aria-current="page"] { color: var(--primary); background: var(--sage-soft); }
+  .mnav-item[data-status="active"], .mnav-item[aria-current="page"] { color: var(--primary); }
+  .stat { background: var(--surface); border-color: var(--border); }
+  .status-ready { color: var(--primary); }
+  .move-active { background: var(--sage-soft) !important; color: var(--primary); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
