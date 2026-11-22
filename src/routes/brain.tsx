@@ -154,7 +154,58 @@ function MiniBoard({ pieces = [], onSquare, highlights = [], found = [], hidePie
   );
 }
 
-function GameCard({ title, description, icon: Icon, active, onClick, group }: {
+const CARD_ART: Partial<Record<Mode, MiniPiece[]>> = {
+  board: [{ square: "c6", type: "q", color: "w" }, { square: "e4", type: "n", color: "b" }, { square: "b2", type: "p", color: "w" }, { square: "f2", type: "p", color: "w" }],
+  knight: [{ square: "a1", type: "n", color: "w" }, { square: "d4", type: "n", color: "w" }, { square: "h8", type: "n", color: "b" }],
+  blind: [{ square: "d4", type: "n", color: "w" }],
+  square: [{ square: "e4", type: "p", color: "w" }],
+  check: [{ square: "c3", type: "k", color: "w" }, { square: "e8", type: "k", color: "b" }, { square: "d1", type: "q", color: "w" }],
+  mate: [{ square: "f6", type: "k", color: "w" }, { square: "h8", type: "k", color: "b" }, { square: "g5", type: "q", color: "w" }],
+  spot: [{ square: "a1", type: "r", color: "w" }, { square: "h8", type: "r", color: "b" }, { square: "e1", type: "k", color: "w" }],
+  legal: [{ square: "e2", type: "p", color: "w" }, { square: "g1", type: "n", color: "w" }],
+  queens: ["a1", "c2", "e3", "g4", "b5", "d6", "f7", "h8"].map((square) => ({ square, type: "q", color: "w" as const })),
+};
+
+function GameArt({ mode }: { mode: Mode }) {
+  const [appearance] = useBoardAppearance();
+  const theme = BOARD_THEMES.find((item) => item.id === appearance.board) ?? BOARD_THEMES[5];
+  if (mode === "reaction") {
+    return <div className="relative grid h-full w-full place-items-center bg-[#101411]"><span className="grid h-20 w-20 place-items-center rounded-full border-[6px] border-primary/70 bg-[#1b2821] shadow-[0_0_0_7px_#202a23]"><Timer className="h-10 w-10 text-primary" /></span><span className="absolute right-5 top-4 h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_12px_#34d399]" /></div>;
+  }
+  if (mode === "memory") {
+    return <div className="grid h-full w-full grid-cols-3 place-items-center gap-2 bg-[#101411] p-3">
+      {["k", "q", "r", "b", "n", "p"].map((type, index) => <span key={type} className="grid h-12 w-full place-items-center rounded-md border border-primary/25 bg-[#202820]"><img src={pieceImageSource(index % 2 ? "b" : "w", type, appearance.pieces)} alt="" className="h-11 w-11 object-contain" /></span>)}
+    </div>;
+  }
+  if (mode === "minefield") {
+    return <div className="grid h-full w-full grid-cols-4 gap-1 bg-[#101411] p-3">
+      {Array.from({ length: 16 }, (_, index) => <span key={index} className={"grid aspect-square place-items-center rounded border " + ([2, 7, 10].includes(index) ? "border-rose-400/40 bg-rose-500/15" : [0, 5, 8, 13].includes(index) ? "border-primary/40 bg-primary/10" : "border-border bg-[#222622]")}>
+        {[2, 7, 10].includes(index) ? <span className="h-3 w-3 rounded-full border-2 border-rose-400" /> : [0, 5, 8, 13].includes(index) ? <span className="font-mono text-sm font-black text-primary">{index === 5 ? "2" : "1"}</span> : null}
+      </span>)}
+    </div>;
+  }
+  const pieces = CARD_ART[mode] ?? [];
+  const pieceMap = new Map(pieces.map((piece) => {
+    const col = Math.min(3, Math.floor(FILES.indexOf(piece.square[0]) / 2));
+    const row = Math.min(3, Math.floor((8 - Number(piece.square[1])) / 2));
+    return [row + ":" + col, piece] as const;
+  }));
+  return <div className="grid h-full w-full grid-cols-4 overflow-hidden bg-[#101411] p-3">
+    {Array.from({ length: 16 }, (_, index) => {
+      const row = Math.floor(index / 4), col = index % 4;
+      const piece = pieceMap.get(row + ":" + col);
+      const marked = mode === "knight" ? [0, 5, 10, 15].includes(index) : mode === "square" ? index === 9 : mode === "spot" ? index === 0 || index === 4 : mode === "legal" ? index === 5 || index === 6 : [5, 10].includes(index);
+      return <span key={index} className="relative grid aspect-square place-items-center" style={{ backgroundColor: (row + col) % 2 ? theme.dark : theme.light }}>
+        {marked && <span className="absolute inset-1 rounded border-2 border-primary/80 bg-primary/20" />}
+        {piece && <img src={pieceImageSource(piece.color, piece.type, appearance.pieces)} alt="" className="relative z-10 h-[86%] w-[86%] object-contain" />}
+      </span>;
+    })}
+  </div>;
+}
+
+function GameCard({ mode, title, description, icon: Icon, active, onClick, group }: {
+  mode: Mode; title: string; description: string; icon: typeof Brain; active: boolean; onClick: () => void; group: string;
+}) {
   title: string; description: string; icon: typeof Brain; active: boolean; onClick: () => void; group: string;
 }) {
   return (
