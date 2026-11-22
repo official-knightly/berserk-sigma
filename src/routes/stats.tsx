@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { engine } from "@/lib/engine";
+import { stockfishEngine } from "@/lib/stockfish";
 import { loadGames, clearGames, saveGame, SavedGame } from "@/lib/store";
 import { fetchLichessGames, fetchChessComGames } from "@/lib/game-import";
 import { GradeIcon, Panel } from "@/components/chess/parts";
@@ -110,6 +111,14 @@ function StatsPage() {
     ms: number;
     bestmove: string;
   } | null>(null);
+  const [stockfishBenchRunning, setStockfishBenchRunning] = useState(false);
+  const [stockfishBenchResult, setStockfishBenchResult] = useState<{
+    nodes: string;
+    nps: number;
+    depth: number;
+    ms: number;
+    bestmove: string;
+  } | null>(null);
 
   // Compute aggregate records from saved games
   const stats = useMemo(() => {
@@ -172,6 +181,28 @@ function StatsPage() {
       // ignore
     } finally {
       setBenchRunning(false);
+    }
+  };
+
+  const runStockfishBenchmark = async () => {
+    setStockfishBenchRunning(true);
+    const fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
+    const start = performance.now();
+    try {
+      const result = await stockfishEngine.search(fen, 1500, 1);
+      const ms = Math.max(1, Math.round(performance.now() - start));
+      const nodesNum = parseInt(result.nodes.replace(/,/g, ""), 10) || 0;
+      setStockfishBenchResult({
+        nodes: result.nodes,
+        nps: Math.round((nodesNum / ms) * 1000),
+        depth: result.depth,
+        ms,
+        bestmove: result.bestmove,
+      });
+    } catch (error) {
+      setImportMessage(error instanceof Error ? error.message : "Stockfish benchmark failed.");
+    } finally {
+      setStockfishBenchRunning(false);
     }
   };
 
@@ -348,6 +379,19 @@ function StatsPage() {
         )}
       </div>
 
+      <div className="panel p-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+          <div><h2 className="flex items-center gap-2 text-sm font-semibold"><Gauge className="h-4 w-4 text-accent" /> Stockfish 19 Lite benchmark</h2><p className="mt-0.5 text-xs text-muted-foreground">Measures the local single-threaded Stockfish WebAssembly build in your browser.</p></div>
+          <button type="button" onClick={runStockfishBenchmark} disabled={stockfishBenchRunning} className="btn btn-primary flex items-center gap-1.5 text-xs"><Zap className={"h-3.5 w-3.5 " + (stockfishBenchRunning ? "animate-spin" : "")} />{stockfishBenchRunning ? "Benchmarking…" : "Run Stockfish benchmark"}</button>
+        </div>
+        {stockfishBenchResult ? <div className="grid grid-cols-2 gap-3 rounded-lg border border-border/50 bg-background/50 p-4 sm:grid-cols-4">
+          <div><div className="text-[11px] text-muted-foreground">Speed</div><div className="font-mono text-xl font-bold text-accent">{stockfishBenchResult.nps.toLocaleString()} NPS</div></div>
+          <div><div className="text-[11px] text-muted-foreground">Nodes</div><div className="font-mono text-xl font-bold">{stockfishBenchResult.nodes}</div></div>
+          <div><div className="text-[11px] text-muted-foreground">Depth</div><div className="font-mono text-xl font-bold">{stockfishBenchResult.depth}</div></div>
+          <div><div className="text-[11px] text-muted-foreground">Best move · {stockfishBenchResult.ms} ms</div><div className="font-mono text-xl font-bold text-primary">{stockfishBenchResult.bestmove}</div></div>
+        </div> : <div className="rounded border border-dashed border-border/60 bg-background/30 py-6 text-center text-xs text-muted-foreground">Run the benchmark to measure Stockfish search throughput on this device.</div>}
+        <p className="mt-3 text-[10px] leading-5 text-muted-foreground">This is a local-device measurement, not an Elo rating. Results vary with browser, CPU, temperature and other running applications.</p>
+      </div>
       {/* Tactical Move Distribution */}
       <div className="panel p-6">
         <h2 className="text-sm font-semibold flex items-center gap-2 mb-4">
