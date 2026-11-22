@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, BookOpen, Brush, ChevronRight, Cloud, Gift, Grid3X3, Loader2, LogIn, LogOut, Mail, Scale, Send, ShieldCheck, UserPlus, Users } from "lucide-react";
+import { ArrowLeft, BookOpen, Brush, Bell, ChevronRight, Cloud, Gift, Grid3X3, Loader2, LogIn, LogOut, Mail, Scale, Send, ShieldCheck, UserPlus, Users } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { getConnectedChessAccounts, loadGames, saveLocalGames } from "@/lib/store";
 import { saveProfile, signIn, signOut, signUp, syncCloudGames } from "@/lib/supabase";
@@ -128,8 +128,8 @@ function AccountPage() {
 
       <section className="panel divide-y divide-border overflow-hidden">
         <div className="px-4 pb-2 pt-4"><p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-muted-foreground">NOTIFICATIONS</p></div>
-        <div className="account-setting-row"><span className="account-setting-icon"><Mail className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Email preferences</span><span className="mt-0.5 block text-[10px] text-muted-foreground">Managed by your sign-in email provider settings</span></span></div>
-        <div className="px-4 py-3 text-[10px] leading-5 text-muted-foreground">This web version does not schedule background streak reminders or send promotional email. No notification permission is requested.</div>
+        <div className="account-setting-row"><span className="account-setting-icon"><Bell className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Reminders and good news</span><span className="mt-0.5 block text-[10px] text-muted-foreground">Background reminders are not supported in this web version</span></span></div>
+        <div className="px-4 py-3 text-[10px] leading-5 text-muted-foreground">No notification permission is requested and no background reminder is scheduled.</div>
       </section>
 
       <section className="panel divide-y divide-border overflow-hidden">
@@ -139,11 +139,12 @@ function AccountPage() {
         <a href="/engine/STOCKFISH-LICENSE.md" target="_blank" rel="noreferrer" className="account-setting-row"><span className="account-setting-icon"><Scale className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Legal and engine licences</span><span className="mt-0.5 block text-[10px] text-muted-foreground">Stockfish GPL notices and attribution</span></span><ChevronRight className="h-4 w-4 text-muted-foreground" /></a>
       </section>
 
-      <section className="panel p-4">
-        <div className="flex items-center gap-2"><Cloud className="h-4 w-4 text-primary" /><h2 className="text-[10px] font-extrabold uppercase tracking-[.16em] text-muted-foreground">ACCOUNT</h2></div>
-        <p className="mt-2 text-xs leading-5 text-muted-foreground">{user ? "Your games are stored locally and synced to your signed-in account." : "Sign in to sync your games. Guest games stay in this browser."}</p>
-        {user && <button type="button" onClick={handleSignOut} disabled={busy} className="btn btn-secondary mt-3 w-full">{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />} Sign out</button>}
+      <section className="panel divide-y divide-border overflow-hidden">
+        <div className="px-4 pb-2 pt-4"><p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-muted-foreground">ACCOUNT</p></div>
+        <div className="account-setting-row"><span className="account-setting-icon"><Mail className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Email preferences</span><span className="mt-0.5 block text-[10px] text-muted-foreground">Not available in this web version</span></span></div>
+        <div className="px-4 pb-4 pt-3">
+          <p className="text-xs leading-5 text-muted-foreground">{user ? "Your games are stored locally and synced to your signed-in account." : "Sign in to sync your games. Guest games stay in this browser."}</p>
+          {user && <button type="button" onClick={handleSignOut} disabled={busy} className="btn btn-secondary mt-3 w-full">{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />} Sign out</button>}
+        </div>
       </section>
-      <p className="text-center text-[11px] leading-relaxed text-muted-foreground">Account deletion and scheduled notifications are not available in this web version.</p>    </div>
-  );
-}
+      <p className="text-center text-[11px] leading-relaxed text-muted-foreground">Account deletion is not available in this web version.</p>
