@@ -208,6 +208,7 @@ function StatsPage() {
       </div>
       {activeTab === "blunders" && <section className="panel p-5"><h2 className="text-sm font-bold">Your blunders</h2><p className="mt-1 text-xs text-muted-foreground">Calculated from saved move grades only.</p><div className="mt-4 grid grid-cols-3 gap-2"><div className="rounded-lg bg-background p-3"><p className="text-[10px] text-muted-foreground">Blunders</p><p className="mt-1 font-mono text-2xl">{stats.gradeTotals.Blunder || 0}</p></div><div className="rounded-lg bg-background p-3"><p className="text-[10px] text-muted-foreground">Mistakes</p><p className="mt-1 font-mono text-2xl">{stats.gradeTotals.Mistake || 0}</p></div><div className="rounded-lg bg-background p-3"><p className="text-[10px] text-muted-foreground">Inaccuracies</p><p className="mt-1 font-mono text-2xl">{stats.gradeTotals.Inaccuracy || 0}</p></div></div><p className="mt-3 text-xs text-muted-foreground">{blunderCount ? blunderCount + " reviewed errors in saved games." : "No analyzed mistakes are saved yet. Run Game Review to populate this report."}</p></section>}
       {activeTab === "tactics" && <section className="panel p-5"><h2 className="text-sm font-bold">Tactics collection</h2><p className="mt-1 text-xs text-muted-foreground">Tactical move grades found in your analyzed games.</p><div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">{(["Brilliant", "Great", "Best", "Excellent", "Good", "Book"] as Grade[]).map((grade) => <div key={grade} className="rounded-xl border border-border bg-background p-4"><GradeIcon grade={grade} size={22} /><p className="mt-2 text-xs font-bold">{grade}</p><p className="font-mono text-2xl font-extrabold">{stats.gradeTotals[grade] || 0}</p></div>)}</div><p className="mt-3 text-xs text-muted-foreground">{tacticalCount ? tacticalCount + " strong / theory moves counted." : "Analyze games to start collecting tactical classifications."}</p></section>}
+      <div hidden={activeTab !== "overview"}>
       {/* Top 3 Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Record vs Berserk */}
@@ -374,6 +375,7 @@ function StatsPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
