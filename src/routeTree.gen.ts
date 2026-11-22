@@ -12,6 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as BrainRouteImport } from './routes/brain'
+import { Route as DailyPuzzleRouteImport } from './routes/daily-puzzle'
+import { Route as GamesRouteImport } from './routes/games'
+import { Route as OpeningsRouteImport } from './routes/openings'
+import { Route as TrainRouteImport } from './routes/train'
 import { Route as BoardPiecesRouteImport } from './routes/board-pieces'
 import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as LiveRouteImport } from './routes/live'
@@ -28,6 +32,26 @@ const IndexRoute = IndexRouteImport.update({
 const BoardPiecesRoute = BoardPiecesRouteImport.update({
   id: '/board-pieces',
   path: '/board-pieces',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DailyPuzzleRoute = DailyPuzzleRouteImport.update({
+  id: '/daily-puzzle',
+  path: '/daily-puzzle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesRoute = GamesRouteImport.update({
+  id: '/games',
+  path: '/games',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpeningsRoute = OpeningsRouteImport.update({
+  id: '/openings',
+  path: '/openings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrainRoute = TrainRouteImport.update({
+  id: '/train',
+  path: '/train',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BrainRoute = BrainRouteImport.update({
@@ -72,6 +96,10 @@ const StatsRoute = StatsRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/daily-puzzle': typeof DailyPuzzleRoute
+  '/games': typeof GamesRoute
+  '/openings': typeof OpeningsRoute
+  '/train': typeof TrainRoute
   '/board-pieces': typeof BoardPiecesRoute
   '/brain': typeof BrainRoute
   '/account': typeof AccountRoute
@@ -84,6 +112,10 @@ export interface FileRoutesByFullPath {
   '/stats': typeof StatsRoute
 }
 export interface FileRoutesByTo {
+  '/daily-puzzle': typeof DailyPuzzleRoute
+  '/games': typeof GamesRoute
+  '/openings': typeof OpeningsRoute
+  '/train': typeof TrainRoute
   '/board-pieces': typeof BoardPiecesRoute
   '/brain': typeof BrainRoute
   '/account': typeof AccountRoute
@@ -96,6 +128,10 @@ export interface FileRoutesByTo {
   '/stats': typeof StatsRoute
 }
 export interface FileRoutesById {
+  '/daily-puzzle': typeof DailyPuzzleRoute
+  '/games': typeof GamesRoute
+  '/openings': typeof OpeningsRoute
+  '/train': typeof TrainRoute
   '/board-pieces': typeof BoardPiecesRoute
   '/brain': typeof BrainRoute
   '/account': typeof AccountRoute
@@ -111,11 +147,15 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/board-pieces' | '/brain' | '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
+    '/daily-puzzle' | '/games' | '/openings' | '/train' | '/board-pieces' | '/brain' | '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
   fileRoutesByTo: FileRoutesByTo
-  to: '/board-pieces' | '/brain' | '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
+  to: '/daily-puzzle' | '/games' | '/openings' | '/train' | '/board-pieces' | '/brain' | '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
   id:
     | '__root__'
+    | '/daily-puzzle'
+    | '/games'
+    | '/openings'
+    | '/train'
     | '/board-pieces'
     | '/brain'
     | '/account'
@@ -129,6 +169,10 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  DailyPuzzleRoute: typeof DailyPuzzleRoute
+  GamesRoute: typeof GamesRoute
+  OpeningsRoute: typeof OpeningsRoute
+  TrainRoute: typeof TrainRoute
   BoardPiecesRoute: typeof BoardPiecesRoute
   BrainRoute: typeof BrainRoute
   AccountRoute: typeof AccountRoute
@@ -143,6 +187,34 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/daily-puzzle': {
+      id: '/daily-puzzle'
+      path: '/daily-puzzle'
+      fullPath: '/daily-puzzle'
+      preLoaderRoute: typeof DailyPuzzleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games': {
+      id: '/games'
+      path: '/games'
+      fullPath: '/games'
+      preLoaderRoute: typeof GamesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/openings': {
+      id: '/openings'
+      path: '/openings'
+      fullPath: '/openings'
+      preLoaderRoute: typeof OpeningsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/train': {
+      id: '/train'
+      path: '/train'
+      fullPath: '/train'
+      preLoaderRoute: typeof TrainRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/board-pieces': {
       id: '/board-pieces'
       path: '/board-pieces'
@@ -217,6 +289,10 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  DailyPuzzleRoute: DailyPuzzleRoute,
+  GamesRoute: GamesRoute,
+  OpeningsRoute: OpeningsRoute,
+  TrainRoute: TrainRoute,
   BoardPiecesRoute: BoardPiecesRoute,
   BrainRoute: BrainRoute,
   AccountRoute: AccountRoute,
