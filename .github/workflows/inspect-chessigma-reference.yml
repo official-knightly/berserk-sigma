@@ -1,0 +1,26 @@
+name: Render Chessigma reference PDF
+on:
+  push:
+    paths:
+      - ".github/workflows/inspect-chessigma-reference.yml"
+permissions:
+  contents: read
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Render reference pages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils
+          pdfinfo "chessigma sample.pdf"
+          mkdir -p /tmp/chessigma-reference
+          pdftoppm -jpeg -jpegopt quality=82 -r 110 "chessigma sample.pdf" /tmp/chessigma-reference/page
+          ls -lah /tmp/chessigma-reference
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chessigma-reference-pages
+          path: /tmp/chessigma-reference/*.jpg
+          if-no-files-found: error
+          retention-days: 1
