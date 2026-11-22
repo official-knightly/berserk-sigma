@@ -159,7 +159,7 @@ function GameCard({ title, description, icon: Icon, active, onClick, group }: {
 }) {
   return (
     <button type="button" onClick={onClick} className={`group min-w-0 rounded-xl border p-3 text-left transition sm:p-4 ${active ? "border-primary bg-[#191919] shadow-[0_4px_0_#8b5e00]" : "border-border bg-card shadow-[0_4px_0_#090909] hover:border-primary/45"}`}>
-      <span className="relative grid aspect-[1.55/1] place-items-center overflow-hidden rounded-lg border border-border bg-[#171717] sm:aspect-[1.8/1]"><GameArt mode={mode} /><span className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-md border border-white/10 bg-black/50 text-primary"><Icon className="h-3.5 w-3.5" /></span></span>
+      <div className="relative grid aspect-[1.55/1] place-items-center overflow-hidden rounded-lg border border-border bg-[#171717] sm:aspect-[1.8/1]"><GameArt mode={mode} /><span className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-md border border-white/10 bg-black/50 text-primary"><Icon className="h-3.5 w-3.5" /></span></div>
       <span className="mt-3 block truncate text-sm font-bold">{title}</span>
       <span className="mt-1 block min-h-8 text-[10px] leading-4 text-muted-foreground">{description}</span>
       <span className="mt-3 flex items-center justify-between gap-2"><span className="text-[9px] font-bold uppercase tracking-[.12em] text-muted-foreground">{group}</span>{active ? <Check className="h-4 w-4 text-primary" /> : <span className="text-[10px] font-semibold text-muted-foreground">Play</span>}</span>
