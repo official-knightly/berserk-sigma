@@ -397,7 +397,7 @@ function BrainGamesPage() {
     if (checkSolved) return false;
     const game = new Chess(checkFen);
     try {
-      const result = game.move({ from: move.from, to: move.to, promotion: move.promotion as PieceSymbol | undefined });
+      const result = game.move({ from: move.from as Square, to: move.to as Square, promotion: move.promotion as PieceSymbol | undefined });
       if (!result) return false;
       if (game.isCheck()) {
         setCheckFen(game.fen());
@@ -420,7 +420,7 @@ function BrainGamesPage() {
     if (mateSolved) return false;
     const game = new Chess(mateFen);
     try {
-      const result = game.move({ from: move.from, to: move.to, promotion: move.promotion as "q" | "r" | "b" | "n" | undefined });
+      const result = game.move({ from: move.from as Square, to: move.to as Square, promotion: move.promotion as PieceSymbol | undefined });
       if (!result) return false;
       if (game.isCheckmate()) {
         setMateFen(game.fen());
