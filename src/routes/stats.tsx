@@ -34,6 +34,7 @@ export const Route = createFileRoute("/stats")({
 
 function StatsPage() {
   const [games, setGames] = useState<SavedGame[]>(() => loadGames());
+  const [activeTab, setActiveTab] = useState<"overview" | "blunders" | "tactics">("overview");
   const [importSource, setImportSource] = useState<"lichess" | "chesscom">("lichess");
   const [importUsername, setImportUsername] = useState("");
   const [importBusy, setImportBusy] = useState(false);
@@ -184,6 +185,8 @@ function StatsPage() {
   };
 
   const gradeList: Grade[] = ["Brilliant", "Great", "Best", "Book", "Excellent", "Good", "Inaccuracy", "Mistake", "Blunder"];
+  const blunderCount = (stats.gradeTotals.Blunder || 0) + (stats.gradeTotals.Mistake || 0) + (stats.gradeTotals.Inaccuracy || 0);
+  const tacticalCount = (stats.gradeTotals.Brilliant || 0) + (stats.gradeTotals.Great || 0) + (stats.gradeTotals.Best || 0);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
@@ -200,6 +203,11 @@ function StatsPage() {
         </Link>
       </div>
 
+      <div className="grid grid-cols-3 gap-2">
+        {([{ id: "overview", label: "Overview" }, { id: "blunders", label: "Blunders" }, { id: "tactics", label: "Tactics" }] as const).map((tab) => <button key={tab.id} type="button" onClick={() => setActiveTab(tab.id)} aria-pressed={activeTab === tab.id} className={"rounded-xl border px-3 py-3 text-xs font-bold transition " + (activeTab === tab.id ? "border-primary bg-[#171717] text-foreground shadow-[0_3px_0_#956300]" : "border-border bg-card text-muted-foreground")}>{tab.label}</button>)}
+      </div>
+      {activeTab === "blunders" && <section className="panel p-5"><h2 className="text-sm font-bold">Your blunders</h2><p className="mt-1 text-xs text-muted-foreground">Calculated from saved move grades only.</p><div className="mt-4 grid grid-cols-3 gap-2"><div className="rounded-lg bg-background p-3"><p className="text-[10px] text-muted-foreground">Blunders</p><p className="mt-1 font-mono text-2xl">{stats.gradeTotals.Blunder || 0}</p></div><div className="rounded-lg bg-background p-3"><p className="text-[10px] text-muted-foreground">Mistakes</p><p className="mt-1 font-mono text-2xl">{stats.gradeTotals.Mistake || 0}</p></div><div className="rounded-lg bg-background p-3"><p className="text-[10px] text-muted-foreground">Inaccuracies</p><p className="mt-1 font-mono text-2xl">{stats.gradeTotals.Inaccuracy || 0}</p></div></div><p className="mt-3 text-xs text-muted-foreground">{blunderCount ? blunderCount + " reviewed errors in saved games." : "No analyzed mistakes are saved yet. Run Game Review to populate this report."}</p></section>}
+      {activeTab === "tactics" && <section className="panel p-5"><h2 className="text-sm font-bold">Tactics collection</h2><p className="mt-1 text-xs text-muted-foreground">Tactical move grades found in your analyzed games.</p><div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">{(["Brilliant", "Great", "Best", "Excellent", "Good", "Book"] as Grade[]).map((grade) => <div key={grade} className="rounded-xl border border-border bg-background p-4"><GradeIcon grade={grade} size={22} /><p className="mt-2 text-xs font-bold">{grade}</p><p className="font-mono text-2xl font-extrabold">{stats.gradeTotals[grade] || 0}</p></div>)}</div><p className="mt-3 text-xs text-muted-foreground">{tacticalCount ? tacticalCount + " strong / theory moves counted." : "Analyze games to start collecting tactical classifications."}</p></section>}
       {/* Top 3 Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Record vs Berserk */}
