@@ -35,7 +35,8 @@ export const Route = createFileRoute("/")({
 });
 
 const workspaces = [
-  { to: "/train", title: "Training hub", description: "Daily puzzles, opening practice, sparring and mistake training.", icon: GraduationCap, eyebrow: "TRAIN", accent: "from-amber-500/20 to-transparent" },\n  { to: "/games", title: "Games library", description: "Browse, filter, import and review your saved chess games.", icon: Gamepad2, eyebrow: "GAMES", accent: "from-orange-500/15 to-transparent" },
+  { to: "/train", title: "Training hub", description: "Daily puzzles, opening practice, sparring and mistake training.", icon: GraduationCap, eyebrow: "TRAIN", accent: "from-amber-500/20 to-transparent" },
+  { to: "/games", title: "Games library", description: "Browse, filter, import and review your saved chess games.", icon: Gamepad2, eyebrow: "GAMES", accent: "from-orange-500/15 to-transparent" },
   { to: "/review", title: "Game review", description: "Inspect your moves, engine grades and important moments.", icon: BookOpen, eyebrow: "IMPROVE", accent: "from-orange-500/15 to-transparent" },
   { to: "/analysis", title: "Analysis board", description: "Explore a position, follow variations and inspect engine lines.", icon: Crosshair, eyebrow: "EXPLORE", accent: "from-yellow-500/15 to-transparent" },
   { to: "/live", title: "Live games", description: "Follow live games and inspect the current position with Berserk.", icon: Radio, eyebrow: "WATCH", accent: "from-emerald-500/10 to-transparent" },
