@@ -103,7 +103,7 @@ function BrainGamesPage() {
   const [opened, setOpened] = useState<number[]>([]);
   const [matched, setMatched] = useState<number[]>([]);
   const [memoryMoves, setMemoryMoves] = useState(0);
-  const mismatchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mismatchTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
 
   const [reactionPhase, setReactionPhase] = useState<"idle" | "waiting" | "go" | "result" | "early">("idle");
   const [reactionMs, setReactionMs] = useState<number | null>(null);
@@ -237,9 +237,9 @@ function BrainGamesPage() {
             <div className="flex items-center gap-2 text-sm font-bold"><Trophy className="h-4 w-4 text-primary" /> Personal bests</div>
             <div className="mt-3 grid grid-cols-2 gap-3">
               <div><p className="text-[10px] text-muted-foreground">Square Rush</p><p className="mt-1 font-mono text-xl font-bold">{squareBest}</p></div>
-              <div><p className="text-[10px] text-muted-foreground">Knight Trail</p><p className="mt-1 font-mono text-xl font-bold">{knightBest} moves</p></div>
+              <div><p className="text-[10px] text-muted-foreground">Knight Trail optimum</p><p className="mt-1 font-mono text-xl font-bold">{knightBest} moves</p></div>
             </div>
-            <p className="mt-3 text-[10px] leading-4 text-muted-foreground">Scores are stored in this session. Account-wide history is not connected yet.</p>
+            <p className="mt-3 text-[10px] leading-4 text-muted-foreground">Square Rush best is kept for this session. Knight Trail shows the shortest possible route, not a rating.</p>
           </div>
         </section>
 
