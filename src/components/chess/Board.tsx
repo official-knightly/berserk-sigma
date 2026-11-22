@@ -164,7 +164,7 @@ export function Board({
         {x === 0 && <span className={cn("coord coord-rank", light ? "coord-on-light" : "coord-on-dark")}>{sq[1]}</span>}
         {y === 7 && <span className={cn("coord coord-file", light ? "coord-on-light" : "coord-on-dark")}>{sq[0]}</span>}
         {p && (
-          <img src={PIECE_URL(p.color, p.type)} alt="" draggable={false}
+          <img src={pieceSource(p.color, p.type)} alt="" draggable={false} style={pieceStyle(p.color)}
             className={cn("board-piece", dragging && "opacity-30")} />
         )}
         {hasTarget && (target || (p && p.color !== pieceAt(selected!)?.color) ? <div className="sq-capture" /> : <div className="sq-dot" />)}
@@ -210,8 +210,8 @@ export function Board({
         </svg>
       </div>
       {dragPiece && drag && (
-        <img src={PIECE_URL(dragPiece.color, dragPiece.type)} alt="" className="pointer-events-none fixed z-50"
-          style={{ width: size * 1.1, height: size * 1.1, left: drag.x - size * 0.55, top: drag.y - size * 0.55 }} />
+        <img src={pieceSource(dragPiece.color, dragPiece.type)} alt="" className="pointer-events-none fixed z-50"
+          style={{ ...pieceStyle(dragPiece.color), width: size * 1.1, height: size * 1.1, left: drag.x - size * 0.55, top: drag.y - size * 0.55 }} />
       )}
       {promo && (
         <div className="absolute inset-0 z-40 flex items-center justify-center rounded-md bg-background/70 backdrop-blur-sm"
