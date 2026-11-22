@@ -109,7 +109,7 @@ function fishPiece(type: string, palette: Palette) {
     q: `<path d="M18 58 Q25 37 51 37 Q77 37 83 58 L73 70 L28 70Z"/><path d="M26 39 L20 20 L37 31 L51 12 L65 31 L81 20 L75 41Z"/><circle cx="20" cy="17" r="4"/><circle cx="51" cy="9" r="4"/><circle cx="81" cy="17" r="4"/>`,
     k: `<path d="M18 59 Q27 39 51 39 Q76 39 83 59 L74 71 L28 71Z"/><path d="M51 5 V32 M39 18 H63" stroke-width="7" fill="none" stroke-linecap="round"/>`,
   };
-  const body = fishBodies[type.toLowerCase()] || fishBodies.p;
+  const body = fishBodies[type.toLowerCase()] || fishBodies["p"];
   return `<g fill="${palette.light}" stroke="${palette.outline}" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round">${body}<path d="M43 66 Q49 78 57 84" fill="none"/><path d="M58 45 Q63 51 70 49" fill="none" stroke="${palette.accent}" stroke-width="3"/></g><circle cx="65" cy="48" r="4.5" fill="${palette.outline}"/><circle cx="66" cy="48" r="1.8" fill="${palette.light}"/><path d="M29 48 Q36 54 29 61" fill="none" stroke="${palette.accent}" stroke-width="3" stroke-linecap="round"/>`;
 }
 
@@ -122,7 +122,7 @@ function pixelPiece(type: string, palette: Palette) {
     q: `<path d="M18 27 H30 V16 H42 V30 H50 V12 H60 V30 H71 V16 H82 V29 L73 70 H27Z"/>`,
     k: `<path d="M44 8 H56 V28 H72 V40 H62 V69 H38 V40 H28 V28 H44Z"/>`,
   };
-  return `<g fill="${palette.light}" stroke="${palette.outline}" stroke-width="5" shape-rendering="crispEdges">${blocks[type.toLowerCase()] || blocks.p}</g><path d="M22 80 H78 M16 91 H84" stroke="${palette.accent}" stroke-width="7" stroke-linecap="square"/>`;
+  return `<g fill="${palette.light}" stroke="${palette.outline}" stroke-width="5" shape-rendering="crispEdges">${blocks[type.toLowerCase()] || blocks["p"]}</g><path d="M22 80 H78 M16 91 H84" stroke="${palette.accent}" stroke-width="7" stroke-linecap="square"/>`;
 }
 
 export function pieceImageSource(color: "w" | "b", type: string, styleId: PieceStyleId) {
@@ -137,7 +137,7 @@ export function pieceImageSource(color: "w" | "b", type: string, styleId: PieceS
   } else if (palette.pixel) {
     body = pixelPiece(type, { ...palette, light, dark: other, outline });
   } else {
-    const shape = CLASSIC_SHAPES[type.toLowerCase()] ?? CLASSIC_SHAPES.p;
+    const shape = CLASSIC_SHAPES[type.toLowerCase()] ?? CLASSIC_SHAPES["p"];
     body = `<g fill="${light}" stroke="${outline}" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round">${shape}</g><path d="M28 72 Q50 66 72 72 L78 83 Q50 90 22 83Z" fill="${light}" stroke="${outline}" stroke-width="4"/><path d="M18 88 Q50 82 82 88 L86 95 H14Z" fill="${light}" stroke="${outline}" stroke-width="4"/><path d="M39 79 Q50 82 61 79" fill="none" stroke="${palette.accent}" stroke-width="2.8"/>`;
   }
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${light}"/><stop offset="1" stop-color="${other}"/></linearGradient></defs><ellipse cx="50" cy="96" rx="31" ry="2.5" fill="#000" opacity=".18"/>${body}</svg>`;
