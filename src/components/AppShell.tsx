@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import {
   BarChart3,
   Brain,
+  Brush,
   ChevronLeft,
   ChevronRight,
   Crosshair,
@@ -27,6 +28,7 @@ const PRIMARY_NAV = [
 
 const TOOL_NAV = [
   { to: "/analysis", label: "Analysis board", icon: Crosshair },
+  { to: "/board-pieces", label: "Board & pieces", icon: Brush },
   { to: "/live", label: "Live games", icon: Radio },
   { to: "/account", label: "Account", icon: UserRound },
   { to: "/settings", label: "Settings", icon: Settings },
