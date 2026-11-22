@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import type { Grade } from "./chess-logic";
 import { saveCloudGame } from "./supabase";
 
-export type Settings = { elo: number; attack: number; think: number; side: "w" | "b" | "random"; reviewMs: number; coords: boolean };
-export const DEFAULT_SETTINGS: Settings = { elo: 1800, attack: 5, think: 1, side: "w", reviewMs: 300, coords: true };
+export type Settings = { elo: number; attack: number; think: number; side: "w" | "b" | "random"; reviewMs: number; coords: boolean; reviewEngine: "berserk" | "stockfish" };
+export const DEFAULT_SETTINGS: Settings = { elo: 1800, attack: 5, think: 1, side: "w", reviewMs: 300, coords: true, reviewEngine: "berserk" };
 
 export type ChessAccount = { provider: "lichess" | "chesscom"; username: string };
 const CHESS_ACCOUNTS_KEY = "berserk.chess.accounts";
