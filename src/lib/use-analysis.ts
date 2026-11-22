@@ -42,7 +42,7 @@ export function useGameAnalysis(moves: Move[], startFen: string, ms: number, ena
 
   useEffect(() => {
     // Reset when the game itself changes (not when moves are appended).
-    const key = startFen + "|" + (moves[0]?.san ?? "");
+    const key = engineId + "|" + startFen + "|" + (moves[0]?.san ?? "");
     if (key !== keyRef.current) { keyRef.current = key; tokenRef.current++; setPositions([]); }
   }, [startFen, moves]);
 
