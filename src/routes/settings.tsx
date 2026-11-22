@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ExternalLink, Link2, Plus, Trash2, Zap } from "lucide-react";
+import { ArrowLeft, Brush, ExternalLink, Link2, Plus, Trash2, Zap } from "lucide-react";
 import { getConnectedChessAccounts, saveConnectedChessAccounts, setPendingChessProfile, useSettings, type ChessAccount } from "@/lib/store";
 
 export const Route = createFileRoute("/settings")({
@@ -93,7 +93,7 @@ function SettingsPage() {
         </div>
         <p className="mt-3 text-[10px] leading-relaxed text-muted-foreground">Note: this connects public game profiles, not private account authorization. Lichess OAuth requires an app client ID; Chess.com does not provide a general public OAuth sign-in flow. Private data and account actions are never accessed.</p>
       </section>
-      <div className="flex flex-wrap gap-2"><Link to="/play" className="btn btn-primary">Play Berserk</Link><Link to="/account" className="btn btn-secondary">Berserk account</Link></div>
+      <div className="flex flex-wrap gap-2"><Link to="/board-pieces" className="btn btn-secondary"><Brush className="h-4 w-4" /> Board and pieces</Link><Link to="/play" className="btn btn-primary">Play Berserk</Link><Link to="/account" className="btn btn-secondary">Berserk account</Link></div>
     </div>
   );
 }
