@@ -206,8 +206,6 @@ function GameArt({ mode }: { mode: Mode }) {
 function GameCard({ mode, title, description, icon: Icon, active, onClick, group }: {
   mode: Mode; title: string; description: string; icon: typeof Brain; active: boolean; onClick: () => void; group: string;
 }) {
-  title: string; description: string; icon: typeof Brain; active: boolean; onClick: () => void; group: string;
-}) {
   return (
     <button type="button" onClick={onClick} className={`group min-w-0 rounded-xl border p-3 text-left transition sm:p-4 ${active ? "border-primary bg-[#191919] shadow-[0_4px_0_#8b5e00]" : "border-border bg-card shadow-[0_4px_0_#090909] hover:border-primary/45"}`}>
       <div className="relative grid aspect-[1.55/1] place-items-center overflow-hidden rounded-lg border border-border bg-[#171717] sm:aspect-[1.8/1]"><GameArt mode={mode} /><span className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-md border border-white/10 bg-black/50 text-primary"><Icon className="h-3.5 w-3.5" /></span></div>
