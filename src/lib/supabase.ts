@@ -1,7 +1,7 @@
 import type { SavedGame } from "./store";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://qfnjmhdvfwwyexhnovts.supabase.co";
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_H5fOeQJ7jVgE50ZQjg1MYg_pWzwOs7z";
+const SUPABASE_URL = import.meta.env["VITE_SUPABASE_URL"] || "https://qfnjmhdvfwwyexhnovts.supabase.co";
+const SUPABASE_KEY = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] || "sb_publishable_H5fOeQJ7jVgE50ZQjg1MYg_pWzwOs7z";
 const SESSION_KEY = "berserk.supabase.session";
 let refreshInFlight: Promise<AuthSession | null> | null = null;
 
