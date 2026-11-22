@@ -148,3 +148,6 @@ function AccountPage() {
         </div>
       </section>
       <p className="text-center text-[11px] leading-relaxed text-muted-foreground">Account deletion is not available in this web version.</p>
+    </div>
+  );
+}
