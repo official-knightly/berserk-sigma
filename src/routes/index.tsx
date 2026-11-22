@@ -33,8 +33,8 @@ export const Route = createFileRoute("/")({
 });
 
 const workspaces = [
-  { to: "/play", title: "Play Berserk", description: "Start a game against the Berserk engine and tune its strength.", icon: Swords, eyebrow: "SPARRING", accent: "from-amber-500/20 to-transparent" },
-  { to: "/review", title: "Game review", description: "Import a PGN or fetch public games from Chess.com and Lichess.", icon: GraduationCap, eyebrow: "IMPROVE", accent: "from-orange-500/15 to-transparent" },
+  { to: "/train", title: "Training hub", description: "Daily puzzles, opening practice, sparring and mistake training.", icon: GraduationCap, eyebrow: "TRAIN", accent: "from-amber-500/20 to-transparent" },\n  { to: "/games", title: "Games library", description: "Browse, filter, import and review your saved chess games.", icon: Gamepad2, eyebrow: "GAMES", accent: "from-orange-500/15 to-transparent" },
+  { to: "/review", title: "Game review", description: "Inspect your moves, engine grades and important moments.", icon: BookOpen, eyebrow: "IMPROVE", accent: "from-orange-500/15 to-transparent" },
   { to: "/analysis", title: "Analysis board", description: "Explore a position, follow variations and inspect engine lines.", icon: Crosshair, eyebrow: "EXPLORE", accent: "from-yellow-500/15 to-transparent" },
   { to: "/live", title: "Live games", description: "Follow live games and inspect the current position with Berserk.", icon: Radio, eyebrow: "WATCH", accent: "from-emerald-500/10 to-transparent" },
 ] as const;
@@ -184,7 +184,7 @@ function Home() {
 
         <div className="space-y-3">
           <div className="flex items-end justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-primary">KEEP IMPROVING</p><h2 className="mt-1 text-xl font-bold tracking-tight">Training corner</h2></div></div>
-          <Link to="/brain" className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition hover:border-primary/55">
+          <Link to="/daily-puzzle" className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition hover:border-primary/55">\n            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><Target className="h-6 w-6" /></div>\n            <div className="min-w-0 flex-1"><h3 className="font-bold">Daily puzzle</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Solve a real puzzle from the Chessigma public API.</p></div>\n            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />\n          </Link>\n          <Link to="/brain" className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition hover:border-primary/55">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><Brain className="h-6 w-6" /></div>
             <div className="min-w-0 flex-1"><h3 className="font-bold">Chess brain games</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Memory, square recognition, knight movement and reaction tests.</p></div>
             <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />
