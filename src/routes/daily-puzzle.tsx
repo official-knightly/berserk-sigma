@@ -88,13 +88,13 @@ function DailyPuzzlePage() {
     return () => window.clearInterval(timer);
   }, [puzzle, finished, nextMove]);
 
-  const complete = useCallback((correct: boolean) => {
+  const complete = useCallback((correct: boolean, additionalAttempts = 0) => {
     if (!puzzle) return;
     setFinished(true);
     const timeSeconds = startedAt.current ? Math.floor((Date.now() - startedAt.current) / 1000) : elapsed;
     setElapsed(timeSeconds);
     const result: PuzzleResult = {
-      date: puzzle.date, puzzleId: puzzle.puzzleId, correct, attempts: attempts + 1, hints, timeSeconds,
+      date: puzzle.date, puzzleId: puzzle.puzzleId, correct, attempts: attempts + additionalAttempts, hints, timeSeconds,
     };
     try {
       const old = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]") as PuzzleResult[];
@@ -146,7 +146,7 @@ function DailyPuzzlePage() {
     setFen(game.fen());
     setNextMove(index);
     if (index >= solution.length) {
-      window.setTimeout(() => complete(true), 0);
+      window.setTimeout(() => complete(true, 1), 0);
     } else {
       setFeedback("Correct. Keep calculating the next move.");
     }
