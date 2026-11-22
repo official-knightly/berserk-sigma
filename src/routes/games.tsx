@@ -286,6 +286,19 @@ export function GamesPage() {
           </div>
         </div>
 
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <label className="text-[10px] font-semibold text-muted-foreground" htmlFor="games-account-select">Account</label>
+          <select id="games-account-select" className="field h-9 min-w-[190px] flex-1 text-xs" value={activeAccount} onChange={(event) => {
+            const value = event.target.value;
+            setActiveAccount(value);
+            const account = accounts.find((item) => `${item.provider}:${item.username}` === value);
+            if (account) { setProvider(account.provider); setUsername(account.username); }
+          }}>
+            <option value="all">All saved games</option>
+            {accounts.map((account) => <option key={account.provider + ":" + account.username} value={account.provider + ":" + account.username}>{account.username} · {account.provider === "chesscom" ? "Chess.com" : "Lichess"}</option>)}
+          </select>
+          {accounts.length === 0 && <span className="text-[10px] text-muted-foreground">Connect profiles in Settings to import by account.</span>}
+        </div>
         <div className="mt-4 grid gap-2 sm:grid-cols-3">
           <label className="flex items-center gap-2 text-[10px] text-muted-foreground"><Filter className="h-3.5 w-3.5" /> Platform<select className="field h-9 min-w-0 flex-1 text-xs" value={platform} onChange={(event) => setPlatform(event.target.value as PlatformFilter)}><option value="all">All platforms</option><option value="lichess">Lichess</option><option value="chesscom">Chess.com</option><option value="local">Local / PGN</option></select></label>
           <label className="flex items-center gap-2 text-[10px] text-muted-foreground">Result<select className="field h-9 min-w-0 flex-1 text-xs" value={result} onChange={(event) => setResult(event.target.value as ResultFilter)}><option value="all">All results</option><option value="win">Wins</option><option value="draw">Draws</option><option value="loss">Losses</option></select></label>
