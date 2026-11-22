@@ -1,10 +1,9 @@
 import { Chess, type Square } from "chess.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { BOARD_THEMES, pieceImageFilter, pieceImageSource, useBoardAppearance } from "@/lib/board-appearance";
 
 const FILES = "abcdefgh";
-const PIECE_URL = (color: string, type: string) =>
-  `https://lichess1.org/assets/piece/cburnett/${color}${type.toUpperCase()}.svg`;
 
 export type Arrow = { from: string; to: string; tone?: "best" | "premove" | "alt" };
 export type Premove = { from: string; to: string; promotion?: string };
@@ -36,6 +35,13 @@ export function Board({
   onPremove, onMove, lastMove, arrows = [], badge, className,
 }: Props) {
   const flip = orientation === "black";
+  const [appearance] = useBoardAppearance();
+  const boardTheme = BOARD_THEMES.find((item) => item.id === appearance.board) ?? BOARD_THEMES[5];
+  const pieceSource = (color: "w" | "b", type: string) => pieceImageSource(color, type, appearance.pieces);
+  const pieceStyle = (color: "w" | "b") => {
+    const filter = pieceImageFilter(color, appearance.pieces);
+    return filter ? { filter } : undefined;
+  };
   const chess = useMemo(() => {
     try { return new Chess(fen); } catch { return new Chess(); }
   }, [fen]);
@@ -177,7 +183,7 @@ export function Board({
       <div
         ref={boardRef}
         className="board-grid"
-        style={{ touchAction: "none" }}
+        style={{ touchAction: "none", "--sq-light": boardTheme.light, "--sq-dark": boardTheme.dark, "--sq-coord-light": boardTheme.lightText, "--sq-coord-dark": boardTheme.darkText } as React.CSSProperties}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -219,7 +225,7 @@ export function Board({
                   if (promo.pre) onPremove?.(m); else onMove?.(m);
                   setPromo(null); setSelected(null);
                 }}>
-                <img src={PIECE_URL(promo.color, t)} alt="" className="h-full w-full p-1" />
+                <img src={pieceSource(promo.color, t)} alt="" style={pieceStyle(promo.color)} className="h-full w-full p-1" />
               </button>
             ))}
           </div>
