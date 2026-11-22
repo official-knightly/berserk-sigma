@@ -50,6 +50,14 @@ function SettingsPage() {
         </div>
         <div className="mt-6 space-y-5">
           <div>
+            <div className="mb-2 flex items-center justify-between"><h2 className="text-sm font-semibold">Game review engine</h2><span className="text-[10px] text-muted-foreground">Runs locally</span></div>
+            <select aria-label="Default game review engine" className="field w-full" value={settings.reviewEngine} onChange={(event) => update({ reviewEngine: event.target.value as "berserk" | "stockfish" })}>
+              <option value="berserk">Berserk WASM</option>
+              <option value="stockfish">Stockfish 19 Lite (WebAssembly)</option>
+            </select>
+            <p className="mt-2 text-[11px] leading-5 text-muted-foreground">Stockfish 19 Lite is downloaded once by your browser and runs in a separate worker. Berserk remains available for your existing engine play mode.</p>
+          </div>
+          <div>
             <div className="mb-2 flex items-center justify-between"><h2 className="text-sm font-semibold">Engine strength</h2><span className="font-mono text-sm font-bold text-sage">{settings.elo} Elo</span></div>
             <input aria-label="Engine strength" type="range" min="400" max="3500" step="100" value={settings.elo} onChange={(e) => update({ elo: Number(e.target.value) })} className="w-full" />
             <div className="flex justify-between text-[10px] text-muted-foreground"><span>400 · Casual</span><span>3500 · Maximum</span></div>
