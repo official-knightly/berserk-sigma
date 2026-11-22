@@ -4,6 +4,7 @@ import {
   BarChart3,
   Brain,
   Brush,
+  BookOpen,
   ChevronLeft,
   ChevronRight,
   Crosshair,
@@ -29,6 +30,8 @@ const PRIMARY_NAV = [
 ] as const;
 
 const TOOL_NAV = [
+  { to: "/play", label: "Play Berserk", icon: Swords },
+  { to: "/review", label: "Game Review", icon: BookOpen },
   { to: "/analysis", label: "Analysis board", icon: Crosshair },
   { to: "/board-pieces", label: "Board & pieces", icon: Brush },
   { to: "/live", label: "Live games", icon: Radio },
