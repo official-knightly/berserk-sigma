@@ -1,0 +1,46 @@
+name: Vendor Stockfish browser engine
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/vendor-stockfish.yml"
+permissions:
+  contents: write
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download pinned Stockfish.js browser build
+        run: |
+          mkdir -p public/engine
+          curl -fL --retry 3 https://github.com/nmrugg/stockfish.js/releases/download/v19.0.1/stockfish-19-lite-single.js -o public/engine/stockfish-19-lite-single.js
+          curl -fL --retry 3 https://github.com/nmrugg/stockfish.js/releases/download/v19.0.1/stockfish-19-lite-single.wasm -o public/engine/stockfish-19-lite-single.wasm
+          curl -fL --retry 3 https://raw.githubusercontent.com/nmrugg/stockfish.js/v19.0.1/Copying.txt -o public/engine/stockfish-COPYING.txt
+          curl -fL --retry 3 https://raw.githubusercontent.com/nmrugg/stockfish.js/v19.0.1/AUTHORS -o public/engine/stockfish-AUTHORS.txt
+          cat > public/engine/STOCKFISH-LICENSE.md <<'EOF'
+          # Stockfish.js browser engine
+
+          - Engine: Stockfish.js 19.0.1, lite single-threaded WebAssembly build
+          - Upstream: https://github.com/nmrugg/stockfish.js/tree/v19.0.1
+          - Original chess engine: https://github.com/official-stockfish/Stockfish
+          - License: GNU General Public License, version 3 (GPL-3.0)
+          - Copyright and author notices: see stockfish-COPYING.txt and stockfish-AUTHORS.txt
+          - Complete corresponding source: https://github.com/nmrugg/stockfish.js/archive/refs/tags/v19.0.1.zip
+
+          The JavaScript loader and WASM file are a matched pair and must remain together in this directory.
+          This application starts the engine in a browser Web Worker using the UCI protocol.
+          EOF
+          test -s public/engine/stockfish-19-lite-single.js
+          test -s public/engine/stockfish-19-lite-single.wasm
+      - name: Commit engine assets and notices
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/engine/stockfish-19-lite-single.js public/engine/stockfish-19-lite-single.wasm public/engine/stockfish-COPYING.txt public/engine/stockfish-AUTHORS.txt public/engine/STOCKFISH-LICENSE.md
+          if git diff --cached --quiet; then
+            echo "Stockfish assets are already current."
+          else
+            git commit -m "Vendor Stockfish 19 lite single-threaded WASM engine"
+            git push
+          fi
