@@ -161,6 +161,26 @@ function Home() {
         </div>
       </section>
 
+      <section className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,.8fr)]">
+        <div className="panel flex flex-wrap items-center justify-between gap-3 p-4">
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[.16em] text-primary">CHESS PROFILE</p>
+            <h2 className="mt-1 truncate text-sm font-bold">{accounts.length ? accounts[0].username : "Link your Chess.com or Lichess account"}</h2>
+            <p className="mt-1 text-xs text-muted-foreground">{accounts.length ? accounts.map((account) => account.provider === "chesscom" ? "Chess.com" : "Lichess").join(" · ") : "Save public profiles to import recent games."}</p>
+          </div>
+          <Link to="/settings" className="btn btn-secondary btn-sm">{accounts.length ? "Manage profiles" : "Connect profile"} <ArrowRight className="h-3.5 w-3.5" /></Link>
+        </div>
+        <div className="panel p-4">
+          <div className="flex items-center justify-between gap-3"><div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-primary">THIS WEEK</p><p className="mt-1 text-xs text-muted-foreground">Saved games by day</p></div><span className="font-mono text-sm font-bold">{weekActivity.filter((day) => day.count > 0).length}/7</span></div>
+          <div className="mt-3 grid grid-cols-7 gap-1.5">
+            {weekActivity.map((day) => <div key={day.date.toISOString()} className={"rounded-lg border p-1.5 text-center " + (day.date.toDateString() === new Date().toDateString() ? "border-primary" : "border-border") + " " + (day.count ? "bg-primary/10" : "bg-background")} title={day.date.toLocaleDateString() + ": " + day.count + " games"}>
+              <p className="text-[9px] font-bold text-muted-foreground">{day.date.toLocaleDateString(undefined, { weekday: "short" })}</p>
+              <p className={"mt-1 text-xs font-mono font-bold " + (day.count ? "text-primary" : "text-muted-foreground")}>{day.count || "—"}</p>
+            </div>)}
+          </div>
+        </div>
+      </section>
+
       <section className="space-y-3">
         <div className="flex items-end justify-between gap-3">
           <div>
