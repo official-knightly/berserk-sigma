@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Board } from "@/components/chess/Board";
 import { MoveList, EvalBar, GradeIcon } from "@/components/chess/parts";
 import { parseGame, useGameReview, summarize } from "@/lib/use-analysis";
-import { takePendingPgn, takePendingChessProfile } from "@/lib/store";
+import { takePendingPgn, takePendingChessProfile, useSettings } from "@/lib/store";
 import { identifyOpening } from "@/lib/openings";
 import { submitChessigmaGame } from "@/lib/chessigma-api";
 import {
@@ -37,6 +37,7 @@ type SourceTab = "lichess" | "chesscom" | "worldchess" | "pgn";
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 export function GameReviewPage() {
+  const [settings, updateSettings] = useSettings();
   const [source, setSource] = useState<SourceTab>("lichess");
   const [username, setUsername] = useState("");
   const [rawPgn, setRawPgn] = useState("");
@@ -52,7 +53,7 @@ export function GameReviewPage() {
   const [currentPly, setCurrentPly] = useState(0);
 
   const sans = useMemo(() => moves.map((m) => m.san), [moves]);
-  const { reviews, running, progress } = useGameReview(sans, startFen);
+  const { reviews, running, progress } = useGameReview(sans, startFen, settings.reviewEngine);
   const summary = useMemo(() => summarize(reviews), [reviews]);
   const opening = useMemo(() => identifyOpening(sans), [sans]);
 
@@ -233,6 +234,16 @@ export function GameReviewPage() {
         {/* Right: Sources & Summary */}
         <div className="flex flex-col gap-4">
           <div className="panel p-4">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-primary">ANALYSIS ENGINE</p>
+                <p className="mt-1 text-xs text-muted-foreground">Choose which browser engine evaluates this game.</p>
+              </div>
+              <select aria-label="Game review engine" className="field h-9 min-w-[145px] text-xs" value={settings.reviewEngine} onChange={(event) => updateSettings({ reviewEngine: event.target.value as "berserk" | "stockfish" })}>
+                <option value="berserk">Berserk WASM</option>
+                <option value="stockfish">Stockfish 19 Lite</option>
+              </select>
+            </div>
             <div className="flex border-b border-border/50 pb-3 gap-2">
               {(["lichess", "chesscom", "worldchess", "pgn"] as SourceTab[]).map((tab) => (
                 <button
