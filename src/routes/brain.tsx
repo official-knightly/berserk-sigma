@@ -12,6 +12,7 @@ import {
   Trophy,
   Zap,
 } from "lucide-react";
+import { pieceImageSource, useBoardAppearance } from "@/lib/board-appearance";
 
 export const Route = createFileRoute("/brain")({
   head: () => ({
@@ -83,6 +84,7 @@ function GameCard({ title, description, icon: Icon, active, onClick }: {
 
 function BrainGamesPage() {
   const [mode, setMode] = useState<Mode>("square");
+  const [appearance] = useBoardAppearance();
 
   const [squareTarget, setSquareTarget] = useState(() => randomSquare());
   const [squareScore, setSquareScore] = useState(0);
@@ -107,7 +109,7 @@ function BrainGamesPage() {
 
   const [reactionPhase, setReactionPhase] = useState<"idle" | "waiting" | "go" | "result" | "early">("idle");
   const [reactionMs, setReactionMs] = useState<number | null>(null);
-  const reactionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reactionTimer = useRef<number | null>(null);
   const reactionStart = useRef(0);
 
   useEffect(() => {
