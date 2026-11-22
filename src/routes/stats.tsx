@@ -112,6 +112,7 @@ function StatsPage() {
     bestmove: string;
   } | null>(null);
   const [stockfishBenchRunning, setStockfishBenchRunning] = useState(false);
+  const [stockfishBenchProgress, setStockfishBenchProgress] = useState({ completed: 0, total: 9 });
   const [stockfishBenchResult, setStockfishBenchResult] = useState<{
     depth: number;
     samples: number;
@@ -187,8 +188,9 @@ function StatsPage() {
 
   const runStockfishBenchmark = async () => {
     setStockfishBenchRunning(true);
+    setStockfishBenchProgress({ completed: 0, total: 9 });
     try {
-      const result = await stockfishEngine.benchmark();
+      const result = await stockfishEngine.benchmark((completed, total) => setStockfishBenchProgress({ completed, total }));
       const average = (samples: number[]) => samples.reduce((sum, value) => sum + value, 0) / samples.length;
       setStockfishBenchResult({
         depth: result.depth,
@@ -383,6 +385,11 @@ function StatsPage() {
           <div><h2 className="flex items-center gap-2 text-sm font-semibold"><Gauge className="h-4 w-4 text-accent" /> Stockfish 19 Lite benchmark</h2><p className="mt-0.5 text-xs text-muted-foreground">Measures the local single-threaded Stockfish WebAssembly build in your browser.</p></div>
           <button type="button" onClick={runStockfishBenchmark} disabled={stockfishBenchRunning} className="btn btn-primary flex items-center gap-1.5 text-xs"><Zap className={"h-3.5 w-3.5 " + (stockfishBenchRunning ? "animate-spin" : "")} />{stockfishBenchRunning ? "Benchmarking…" : "Run Stockfish benchmark"}</button>
         </div>
+        {stockfishBenchRunning && <div className="mb-4 rounded-lg border border-border bg-background p-3" role="status" aria-live="polite">
+          <div className="mb-2 flex items-center justify-between gap-3 text-[11px]"><span className="font-semibold text-foreground">Depth benchmark in progress</span><span className="font-mono text-muted-foreground">{stockfishBenchProgress.completed}/{stockfishBenchProgress.total} samples</span></div>
+          <div className="h-2 overflow-hidden rounded-full bg-surface"><div className="h-full rounded-full bg-primary transition-all" style={{ width: (stockfishBenchProgress.completed / stockfishBenchProgress.total * 100) + "%" }} /></div>
+          <p className="mt-2 text-[10px] text-muted-foreground">One warm-up search is followed by nine measured searches.</p>
+        </div>}
         {stockfishBenchResult ? <div className="grid grid-cols-2 gap-3 rounded-lg border border-border/50 bg-background/50 p-4 sm:grid-cols-4">
           <div><div className="text-[11px] text-muted-foreground">First evaluation · depth 5</div><div className="font-mono text-xl font-bold text-accent">{Math.round(stockfishBenchResult.firstEvalAverage).toLocaleString()} ms</div></div>
           <div><div className="text-[11px] text-muted-foreground">Full search · depth {stockfishBenchResult.depth}</div><div className="font-mono text-xl font-bold">{Math.round(stockfishBenchResult.fixedDepthAverage).toLocaleString()} ms</div></div>
