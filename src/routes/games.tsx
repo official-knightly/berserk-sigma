@@ -51,13 +51,13 @@ function readPgn(pgn: string) {
     const headers = chess.getHeaders();
     const history = chess.history();
     return {
-      white: headers.White || "White",
-      black: headers.Black || "Black",
-      whiteElo: headers.WhiteElo || "",
-      blackElo: headers.BlackElo || "",
-      opening: headers.Opening || (headers.ECO ? `ECO ${headers.ECO}` : "Opening unavailable"),
-      time: headers.TimeControl || headers.Time || "",
-      date: headers.Date || "",
+      white: headers["White"] || "White",
+      black: headers["Black"] || "Black",
+      whiteElo: headers["White"]Elo || "",
+      blackElo: headers["Black"]Elo || "",
+      opening: headers["Opening"] || (headers["ECO"] ? `ECO ${headers["ECO"]}` : "Opening unavailable"),
+      time: headers["TimeControl"] || headers["Time"] || "",
+      date: headers["Date"] || "",
       moves: history.length,
     };
   } catch {
