@@ -200,8 +200,8 @@
   .coord { position: absolute; font-size: clamp(8px, 1.4vw, 11px); font-weight: 700; z-index: 3; pointer-events: none; }
   .coord-rank { left: 3px; top: 2px; }
   .coord-file { right: 3px; bottom: 1px; }
-  .coord-on-light { color: var(--sq-dark); }
-  .coord-on-dark { color: var(--sq-light); }
+  .coord-on-light { color: var(--sq-coord-light, var(--sq-dark)); }
+  .coord-on-dark { color: var(--sq-coord-dark, var(--sq-light)); }
   .arrow-best { stroke: var(--arrow-best); } .arrow-best-fill { fill: var(--arrow-best); }
   .arrow-alt { stroke: var(--arrow-alt); } .arrow-alt-fill { fill: var(--arrow-alt); }
   .arrow-premove { stroke: var(--arrow-premove); } .arrow-premove-fill { fill: var(--arrow-premove); }
