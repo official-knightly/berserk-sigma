@@ -124,8 +124,8 @@ function BrainGamesPage() {
   }, [squareRunning, squareSeconds, squareScore]);
 
   useEffect(() => () => {
-    if (mismatchTimer.current) clearTimeout(mismatchTimer.current);
-    if (reactionTimer.current) clearTimeout(reactionTimer.current);
+    if (mismatchTimer.current) window.clearTimeout(mismatchTimer.current);
+    if (reactionTimer.current) window.clearTimeout(reactionTimer.current);
   }, []);
 
   function startSquareRush() {
@@ -167,7 +167,7 @@ function BrainGamesPage() {
   }
 
   function resetMemory() {
-    if (mismatchTimer.current) clearTimeout(mismatchTimer.current);
+    if (mismatchTimer.current) window.clearTimeout(mismatchTimer.current);
     setDeck(makeDeck());
     setOpened([]);
     setMatched([]);
@@ -187,15 +187,15 @@ function BrainGamesPage() {
       setMatched((current) => [...current, first, index]);
       setOpened([]);
     } else {
-      mismatchTimer.current = setTimeout(() => setOpened([]), 700);
+      mismatchTimer.current = window.setTimeout(() => setOpened([]), 700);
     }
   }
 
   function startReaction() {
-    if (reactionTimer.current) clearTimeout(reactionTimer.current);
+    if (reactionTimer.current) window.clearTimeout(reactionTimer.current);
     setReactionMs(null);
     setReactionPhase("waiting");
-    reactionTimer.current = setTimeout(() => {
+    reactionTimer.current = window.setTimeout(() => {
       reactionStart.current = performance.now();
       setReactionPhase("go");
     }, 1100 + Math.random() * 2400);
@@ -203,7 +203,7 @@ function BrainGamesPage() {
 
   function tapReaction() {
     if (reactionPhase === "waiting") {
-      if (reactionTimer.current) clearTimeout(reactionTimer.current);
+      if (reactionTimer.current) window.clearTimeout(reactionTimer.current);
       setReactionPhase("early");
     } else if (reactionPhase === "go") {
       setReactionMs(Math.round(performance.now() - reactionStart.current));
