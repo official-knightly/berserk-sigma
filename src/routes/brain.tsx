@@ -25,7 +25,7 @@ export const Route = createFileRoute("/brain")({
 
 type Mode = "square" | "knight" | "memory" | "reaction";
 const FILES = "abcdefgh";
-const SYMBOLS = ["♔", "♕", "♖", "♗", "♘", "♙"];
+const PIECE_TYPES = ["k", "q", "r", "b", "n", "p"];
 
 function randomSquare(except?: string) {
   const all = Array.from({ length: 64 }, (_, i) => FILES[i % 8] + (8 - Math.floor(i / 8)));
@@ -65,7 +65,7 @@ function knightDistance(start: number, target: number) {
 }
 
 function makeDeck() {
-  const values = [...SYMBOLS, ...SYMBOLS].sort(() => Math.random() - 0.5);
+  const values = [...PIECE_TYPES, ...PIECE_TYPES].sort(() => Math.random() - 0.5);
   return values.map((value, id) => ({ id, value }));
 }
 
@@ -269,7 +269,7 @@ function BrainGamesPage() {
                   const isLegal = knightLegal.includes(index);
                   const isVisited = index === knightStart;
                   return <button key={index} type="button" onClick={() => moveKnight(index)} aria-label={squareName(index)} className={`relative grid aspect-square min-w-0 place-items-center text-xl sm:text-3xl ${(Math.floor(index / 8) + index % 8) % 2 ? "bg-[#b58863]" : "bg-[#f0d9b5]"} ${isLegal ? "ring-4 ring-inset ring-[#ffb800]" : ""} ${isTarget ? "bg-[#d4a62a]" : ""}`}>
-                    {isKnight && <span className="drop-shadow-md">♘</span>}
+                    {isKnight && <img src={pieceImageSource("w", "n", appearance.pieces)} alt="Knight" className="h-[82%] w-[82%] object-contain drop-shadow-md" />}
                     {!isKnight && isTarget && <span className="text-sm font-black text-[#33240c] sm:text-lg">GO</span>}
                     {!isKnight && !isTarget && isVisited && <span className="h-2 w-2 rounded-full bg-[#ffb800]" />}
                     {index % 8 === 0 && <span className="absolute left-1 top-0.5 text-[8px] font-bold text-black/60">{8 - Math.floor(index / 8)}</span>}
@@ -287,7 +287,7 @@ function BrainGamesPage() {
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3">
                 {deck.map((card, index) => {
                   const visible = opened.includes(index) || matched.includes(index);
-                  return <button key={card.id} type="button" onClick={() => flipCard(index)} disabled={visible || opened.length === 2} aria-label={visible ? `Card ${card.value}` : "Hidden card"} className={`grid aspect-square place-items-center rounded-xl border text-3xl transition sm:text-4xl ${visible ? "border-primary/60 bg-primary/10 text-primary" : "border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-primary"}`}>{visible ? card.value : "?"}</button>;
+                  return <button key={card.id} type="button" onClick={() => flipCard(index)} disabled={visible || opened.length === 2} aria-label={visible ? `Card ${card.value.toUpperCase()}` : "Hidden card"} className={`grid aspect-square place-items-center rounded-xl border text-3xl transition sm:text-4xl ${visible ? "border-primary/60 bg-primary/10 text-primary" : "border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-primary"}`}>{visible ? <img src={pieceImageSource("w", card.value, appearance.pieces)} alt={`${card.value.toUpperCase()} chess piece`} className="h-[78%] w-[78%] object-contain" /> : <span className="text-3xl font-black text-primary">?</span>}</button>;
                 })}
               </div>
               <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-muted-foreground">{matched.length === deck.length ? `Completed in ${memoryMoves} moves. Nice memory!` : `${matched.length / 2} of 6 pairs found.`}</p><button type="button" onClick={resetMemory} className="btn btn-secondary"><RotateCcw className="h-4 w-4" /> New board</button></div>
