@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Chess } from "chess.js";
+import { Chess, type Square, type PieceSymbol } from "chess.js";
 import { ArrowLeft, CheckCircle2, Eye, Lightbulb, Loader2, RotateCcw, Sparkles, Trophy } from "lucide-react";
 import { Board, type Arrow } from "@/components/chess/Board";
 import { getChessigmaDailyPuzzle, type ChessigmaDailyPuzzle } from "@/lib/chessigma-api";
@@ -13,7 +13,7 @@ function parseSolution(fen: string, raw: string[]): UciMove[] {
   const game = new Chess(fen);
   return raw.map((uci) => {
     if (!/^[a-h][1-8][a-h][1-8][qrbnQRBN]?$/.test(uci)) throw new Error("The puzzle response contains an invalid move.");
-    const move = game.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4]?.toLowerCase() });
+    const move = game.move({ from: uci.slice(0, 2) as Square, to: uci.slice(2, 4) as Square, promotion: uci[4]?.toLowerCase() as PieceSymbol | undefined });
     if (!move) throw new Error("The puzzle line could not be validated on the chessboard.");
     return { from: move.from, to: move.to, promotion: move.promotion, uci: `${move.from}${move.to}${move.promotion || ""}` };
   });
@@ -107,7 +107,7 @@ function DailyPuzzlePage() {
   }, [puzzle, attempts, hints, elapsed]);
 
   const applyUci = (game: Chess, move: UciMove) => {
-    return game.move({ from: move.from, to: move.to, promotion: move.promotion || "q" });
+    return game.move({ from: move.from as Square, to: move.to as Square, promotion: move.promotion as PieceSymbol | undefined });
   };
 
   const handleMove = useCallback((move: { from: string; to: string; promotion?: string }) => {
@@ -133,14 +133,12 @@ function DailyPuzzlePage() {
     // Apply the puzzle's forced opponent reply, if the line includes one.
     if (index < solution.length) {
       const reply = solution[index];
-      if (game.turn() === game.turn()) {
-        const forced = applyUci(game, reply);
-        if (!forced) {
-          setError("The opponent reply could not be applied. Reload the puzzle.");
-          return false;
-        }
-        index += 1;
+      const forced = applyUci(game, reply);
+      if (!forced) {
+        setError("The opponent reply could not be applied. Reload the puzzle.");
+        return false;
       }
+      index += 1;
     }
 
     setFen(game.fen());
