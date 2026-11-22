@@ -272,7 +272,7 @@ function StatsPage() {
           <div><h2 className="text-sm font-bold">Activity</h2><p className="mt-1 text-xs text-muted-foreground">Your last 12 weeks · {games.length} saved games</p></div>
           <span className="text-[10px] text-muted-foreground">More filled squares mean more games</span>
         </div>
-        <div className="mt-4 grid grid-cols-12 gap-1.5 sm:grid-cols-21">
+        <div className="mt-4 grid grid-cols-12 gap-1.5">
           {activityDays.map((day) => <span key={day.date.toISOString()} title={day.date.toLocaleDateString() + ": " + day.count + " games"} className={"aspect-square rounded-[4px] border border-border/40 " + (day.count === 0 ? "bg-background" : day.count === 1 ? "bg-primary/35" : day.count <= 3 ? "bg-primary/65" : "bg-primary")} />)}
         </div>
         <div className="mt-3 flex items-center justify-between text-[10px] text-muted-foreground"><span>{activityDays[0]?.date.toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span><span>{activityDays[83]?.date.toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span></div>
