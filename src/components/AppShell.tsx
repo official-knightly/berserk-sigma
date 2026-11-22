@@ -9,7 +9,6 @@ import {
   ChevronRight,
   Crosshair,
   Gamepad2,
-  BookOpen,
   Home,
   Radio,
   Settings,
