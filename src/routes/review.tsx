@@ -5,6 +5,7 @@ import { MoveList, EvalBar, GradeIcon } from "@/components/chess/parts";
 import { parseGame, useGameReview, summarize } from "@/lib/use-analysis";
 import { takePendingPgn, takePendingChessProfile } from "@/lib/store";
 import { identifyOpening } from "@/lib/openings";
+import { submitChessigmaGame } from "@/lib/chessigma-api";
 import {
   fetchLichessGames,
   fetchChessComGames,
@@ -43,6 +44,8 @@ export function GameReviewPage() {
   const [error, setError] = useState<string | null>(null);
   const [games, setGames] = useState<ImportedGame[]>([]);
   const [selectedGame, setSelectedGame] = useState<ImportedGame | null>(null);
+  const [chessigmaSubmitting, setChessigmaSubmitting] = useState(false);
+  const [chessigmaLink, setChessigmaLink] = useState<string | null>(null);
 
   const [moves, setMoves] = useState<{ san: string; uci: string; fenAfter: string }[]>([]);
   const [startFen, setStartFen] = useState(START_FEN);
@@ -70,6 +73,25 @@ export function GameReviewPage() {
       setError(err?.message || "Failed to fetch games");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendToChessigma = async () => {
+    const pgn = selectedGame?.pgn?.trim();
+    if (!pgn) {
+      setError("Load a complete PGN game before sending it to Chessigma.");
+      return;
+    }
+    setChessigmaSubmitting(true);
+    setChessigmaLink(null);
+    setError(null);
+    try {
+      const submitted = await submitChessigmaGame(pgn);
+      setChessigmaLink(submitted.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not submit this game to Chessigma.");
+    } finally {
+      setChessigmaSubmitting(false);
     }
   };
 
@@ -256,6 +278,31 @@ export function GameReviewPage() {
             )}
 
             {error && <div className="mt-2 text-xs text-destructive">{error}</div>}
+
+            {selectedGame?.pgn && (
+              <div className="mt-3 rounded-lg border border-border bg-background/50 p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-semibold">Chessigma analysis</p>
+                    <p className="mt-0.5 text-[10px] text-muted-foreground">Open this PGN in Chessigma's browser-based Stockfish analyzer.</p>
+                  </div>
+                  <button
+                    onClick={handleSendToChessigma}
+                    disabled={chessigmaSubmitting}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    {chessigmaSubmitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                    {chessigmaSubmitting ? "Sending…" : "Send to Chessigma"}
+                  </button>
+                </div>
+                {chessigmaLink && (
+                  <a href={chessigmaLink} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex text-xs font-semibold text-primary underline underline-offset-4">
+                    Open Stockfish game review ↗
+                  </a>
+                )}
+                <p className="mt-2 text-[10px] text-muted-foreground">Powered by the Chessigma public API. Analysis starts when you open the returned link.</p>
+              </div>
+            )}
 
             {games.length > 0 && (
               <div className="mt-4 max-h-48 overflow-y-auto space-y-1.5">
