@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Brush, Cloud, Loader2, LogIn, LogOut, ShieldCheck, UserPlus } from "lucide-react";
+import { ArrowLeft, BookOpen, Brush, ChevronRight, Cloud, Gift, Grid3X3, Loader2, LogIn, LogOut, Mail, Scale, Send, ShieldCheck, UserPlus, Users } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
-import { loadGames, saveLocalGames } from "@/lib/store";
+import { getConnectedChessAccounts, loadGames, saveLocalGames } from "@/lib/store";
 import { saveProfile, signIn, signOut, signUp, syncCloudGames } from "@/lib/supabase";
 
 export const Route = createFileRoute("/account")({
@@ -13,6 +13,7 @@ export const Route = createFileRoute("/account")({
 function AccountPage() {
   const { user, loading } = useAuth();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [accounts] = useState(() => getConnectedChessAccounts());
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
