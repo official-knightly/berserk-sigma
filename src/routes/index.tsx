@@ -187,7 +187,12 @@ function Home() {
 
         <div className="space-y-3">
           <div className="flex items-end justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-primary">KEEP IMPROVING</p><h2 className="mt-1 text-xl font-bold tracking-tight">Training corner</h2></div></div>
-          <Link to="/daily-puzzle" className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition hover:border-primary/55">\n            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><Target className="h-6 w-6" /></div>\n            <div className="min-w-0 flex-1"><h3 className="font-bold">Daily puzzle</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Solve a real puzzle from the Chessigma public API.</p></div>\n            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />\n          </Link>\n          <Link to="/brain" className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition hover:border-primary/55">
+          <Link to="/daily-puzzle" className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition hover:border-primary/55">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><Target className="h-6 w-6" /></div>
+            <div className="min-w-0 flex-1"><h3 className="font-bold">Daily puzzle</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Solve a real puzzle from the Chessigma public API.</p></div>
+            <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />
+          </Link>
+          <Link to="/brain" className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition hover:border-primary/55">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><Brain className="h-6 w-6" /></div>
             <div className="min-w-0 flex-1"><h3 className="font-bold">Chess brain games</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Memory, square recognition, knight movement and reaction tests.</p></div>
             <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />
