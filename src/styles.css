@@ -383,3 +383,27 @@
 @media (max-width: 380px) {
   .mnav-item { font-size: .58rem; }
 }
+
+
+/* Board & Pieces — card treatment from the reference, with original assets */
+.appearance-choice {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: #242424;
+  box-shadow: 0 5px 0 #090909;
+}
+.appearance-choice:hover {
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+  transform: translateY(-1px);
+}
+.appearance-choice:active { transform: translateY(2px); box-shadow: 0 2px 0 #090909; }
+.appearance-choice-active {
+  border-color: var(--primary);
+  background: #191919;
+  box-shadow: 0 5px 0 #9c6500, 0 0 0 1px rgb(255 184 0 / 14%);
+}
+.appearance-choice-active:hover { border-color: #ffd15c; }
+.appearance-choice:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
