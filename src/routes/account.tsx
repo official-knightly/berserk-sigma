@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Cloud, Loader2, LogIn, LogOut, ShieldCheck, UserPlus } from "lucide-react";
+import { ArrowLeft, Brush, Cloud, Loader2, LogIn, LogOut, ShieldCheck, UserPlus } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { loadGames, saveLocalGames } from "@/lib/store";
 import { saveProfile, signIn, signOut, signUp, syncCloudGames } from "@/lib/supabase";
@@ -95,7 +95,7 @@ function AccountPage() {
         {error && <p className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive" role="alert">{error}</p>}
         {message && <p className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs text-primary" role="status">{message}</p>}
       </section>
-      <p className="text-center text-[11px] leading-relaxed text-muted-foreground">Your account is protected by Supabase authentication. Game records are private to your account and protected by database row-level security.</p>
+      <Link to="/board-pieces" className="panel flex items-center gap-3 p-4 transition hover:border-primary/50"><span className="grid h-10 w-10 place-items-center rounded-lg bg-primary/10 text-primary"><Brush className="h-5 w-5" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-bold">Board and pieces</span><span className="mt-1 block text-xs text-muted-foreground">Choose one of six boards and fifteen piece styles.</span></span><ArrowLeft className="h-4 w-4 rotate-180 text-muted-foreground" /></Link>\n      <p className="text-center text-[11px] leading-relaxed text-muted-foreground">Your account is protected by Supabase authentication. Game records are private to your account and protected by database row-level security.</p>
     </div>
   );
 }
