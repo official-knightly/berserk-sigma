@@ -23,8 +23,8 @@ import {
 export const Route = createFileRoute("/stats")({
   head: () => ({
     meta: [
-      { title: "Statistics & Benchmarks — Berserk Web" },
-      { name: "description", content: "Berserk engine benchmarks, match history, accuracy statistics and performance analytics." },
+      { title: "Coach — Berserk Sigma" },
+      { name: "description", content: "Your saved games, move-quality report, training activity and engine performance." },
       { property: "og:title", content: "Statistics & Benchmarks — Berserk Web" },
       { property: "og:description", content: "Berserk engine benchmarks, match history, accuracy statistics and performance analytics." },
     ],
@@ -187,15 +187,21 @@ function StatsPage() {
   const gradeList: Grade[] = ["Brilliant", "Great", "Best", "Book", "Excellent", "Good", "Inaccuracy", "Mistake", "Blunder"];
   const blunderCount = (stats.gradeTotals.Blunder || 0) + (stats.gradeTotals.Mistake || 0) + (stats.gradeTotals.Inaccuracy || 0);
   const tacticalCount = (stats.gradeTotals.Brilliant || 0) + (stats.gradeTotals.Great || 0) + (stats.gradeTotals.Best || 0);
+  const activityDays = Array.from({ length: 84 }, (_, index) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (83 - index));
+    const count = games.filter((game) => new Date(game.date).toDateString() === date.toDateString()).length;
+    return { date, count };
+  });
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-bold">Engine & Match Analytics</h1>
+          <h1 className="font-display text-2xl font-bold">Coach</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Berserk engine performance benchmarks and your lifetime match history against Berserk.
+            Your saved games, move-quality report, training activity and engine performance.
           </p>
         </div>
         <Link to="/play" className="btn btn-primary text-xs flex items-center gap-1.5">
@@ -260,6 +266,17 @@ function StatsPage() {
           </p>
         </div>
       </div>
+
+      <section className="panel p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div><h2 className="text-sm font-bold">Activity</h2><p className="mt-1 text-xs text-muted-foreground">Your last 12 weeks · {games.length} saved games</p></div>
+          <span className="text-[10px] text-muted-foreground">More filled squares mean more games</span>
+        </div>
+        <div className="mt-4 grid grid-cols-12 gap-1.5 sm:grid-cols-21">
+          {activityDays.map((day) => <span key={day.date.toISOString()} title={day.date.toLocaleDateString() + ": " + day.count + " games"} className={"aspect-square rounded-[4px] border border-border/40 " + (day.count === 0 ? "bg-background" : day.count === 1 ? "bg-primary/35" : day.count <= 3 ? "bg-primary/65" : "bg-primary")} />)}
+        </div>
+        <div className="mt-3 flex items-center justify-between text-[10px] text-muted-foreground"><span>{activityDays[0]?.date.toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span><span>{activityDays[83]?.date.toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span></div>
+      </section>
 
       {/* Import games for profile statistics */}
       <div className="panel p-5">
