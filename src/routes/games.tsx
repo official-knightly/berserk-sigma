@@ -140,6 +140,7 @@ export function GamesPage() {
 
   const visible = useMemo(() => {
     return [...games]
+      .filter((game) => activeAccount === "all" || game.id.toLowerCase().startsWith(activeAccount.toLowerCase() + ":"))
       .filter((game) => platform === "all" || inferPlatform(game) === platform)
       .filter((game) => result === "all" || resultForPlayer(game.result, game.humanSide) === result)
       .filter((game) => {
@@ -158,7 +159,7 @@ export function GamesPage() {
         return `${meta.white} ${meta.black} ${meta.opening}`.toLowerCase().includes(q);
       })
       .sort((a, b) => b.date - a.date);
-  }, [games, platform, result, time, query]);
+  }, [games, activeAccount, platform, result, time, query]);
 
   const importProfile = async () => {
     const clean = username.trim().replace(/^@/, "");
@@ -177,7 +178,7 @@ export function GamesPage() {
       for (const item of fetched) {
         const userIsWhite = item.white.name.toLowerCase() === clean.toLowerCase();
         const userIsBlack = item.black.name.toLowerCase() === clean.toLowerCase();
-        const id = `${provider}:${item.id}`;
+        const id = `${provider}:${clean.toLowerCase()}:${item.id}`;
         if (existing.has(id) || !item.pgn?.trim()) continue;
         const date = Date.parse(item.date) || Date.now();
         saveGame({
