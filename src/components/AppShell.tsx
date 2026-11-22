@@ -8,10 +8,12 @@ import {
   ChevronRight,
   Crosshair,
   Gamepad2,
+  BookOpen,
   Home,
   Radio,
   Settings,
   Swords,
+  Play,
   UserRound,
   Dumbbell,
 } from "lucide-react";
@@ -20,9 +22,9 @@ import { EngineBadge } from "./chess/parts";
 
 const PRIMARY_NAV = [
   { to: "/", label: "Home", icon: Home },
-  { to: "/play", label: "Train", icon: Dumbbell },
+  { to: "/train", label: "Train", icon: Dumbbell },
   { to: "/stats", label: "Coach", icon: BarChart3 },
-  { to: "/review", label: "Games", icon: Gamepad2 },
+  { to: "/games", label: "Games", icon: Gamepad2 },
   { to: "/brain", label: "Brain", icon: Brain, badge: "NEW" },
 ] as const;
 
