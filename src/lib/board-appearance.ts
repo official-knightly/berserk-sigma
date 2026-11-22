@@ -98,6 +98,71 @@ const CLASSIC_SHAPES: Record<string, string> = {
   k: `<path d="M25 39 L37 48 L43 29 L50 44 L57 29 L63 48 L75 39 L69 69 H31Z"/><path d="M50 7 V27 M39 17 H61" fill="none" stroke-width="6" stroke-linecap="round"/>`,
 };
 
+
+const STYLE_SHAPE_SETS: Partial<Record<PieceStyleId, Record<string, string>>> = {
+  governor: {
+    p: `<path d="M39 28 Q32 12 50 10 Q68 12 61 28 Q72 45 68 69 H32 Q28 45 39 28Z"/>`,
+    r: `<path d="M22 14 H36 V27 H45 V14 H55 V27 H64 V14 H78 V38 H71 V70 H29 V38 H22Z"/>`,
+    n: `<path d="M27 72 Q24 51 37 40 L40 23 L58 17 L76 11 L71 32 Q68 42 60 49 Q77 53 73 72Z"/><circle cx="59" cy="34" r="3" fill="#d6b15b"/>`,
+    b: `<path d="M50 10 Q73 27 63 47 Q60 53 58 58 L70 71 H30 L42 58 Q40 52 37 47 Q27 27 50 10Z"/><path d="M50 18 L57 37 L45 48" fill="none" stroke-width="4"/>`,
+    q: `<path d="M19 31 L30 42 L38 17 L50 39 L62 17 L70 42 L81 31 L72 69 H28Z"/><circle cx="19" cy="24" r="5"/><circle cx="38" cy="11" r="5"/><circle cx="62" cy="11" r="5"/><circle cx="81" cy="24" r="5"/>`,
+    k: `<path d="M24 42 L37 49 L44 29 L50 42 L56 29 L63 49 L76 42 L69 70 H31Z"/><path d="M50 4 V29 M38 16 H62" fill="none" stroke-width="7"/>`,
+  },
+  companion: {
+    p: `<circle cx="50" cy="25" r="14"/><path d="M32 43 Q50 35 68 43 Q74 53 72 70 H28 Q26 53 32 43Z"/>`,
+    r: `<rect x="25" y="17" width="50" height="55" rx="9"/><path d="M29 17 V9 H42 V17 M58 17 V9 H71 V17" fill="none" stroke-width="5"/>`,
+    n: `<path d="M26 72 Q27 53 39 42 Q35 32 45 23 Q54 13 72 20 Q62 28 68 42 Q80 53 74 72Z"/><circle cx="59" cy="32" r="3" fill="#fff"/>`,
+    b: `<path d="M50 12 Q68 25 65 42 Q63 51 57 57 L70 71 H30 L43 57 Q37 49 35 42 Q32 25 50 12Z"/><circle cx="50" cy="30" r="5" fill="none" stroke-width="3"/>`,
+    q: `<path d="M24 35 Q29 27 35 37 Q42 12 50 35 Q58 12 65 37 Q72 27 76 35 L70 70 H30Z"/><circle cx="24" cy="28" r="5"/><circle cx="50" cy="17" r="5"/><circle cx="76" cy="28" r="5"/>`,
+    k: `<path d="M24 43 Q34 35 43 42 Q50 24 57 42 Q68 35 76 43 L69 71 H31Z"/><path d="M50 7 V29 M39 18 H61" fill="none" stroke-width="6" stroke-linecap="round"/>`,
+  },
+  smart: {
+    p: `<circle cx="50" cy="23" r="10"/><path d="M44 36 H56 L62 67 H38Z"/>`,
+    r: `<path d="M28 14 H72 V29 H66 V69 H34 V29 H28Z"/>`,
+    n: `<path d="M30 70 V54 L38 42 L39 26 L53 15 L69 22 L63 37 L72 48 V70Z"/>`,
+    b: `<path d="M50 11 L64 29 L58 50 L68 69 H32 L42 50 L36 29Z"/><path d="M50 16 L50 43" fill="none" stroke-width="3"/>`,
+    q: `<path d="M30 25 L40 38 L50 17 L60 38 L70 25 L65 68 H35Z"/>`,
+    k: `<path d="M30 39 H70 L64 69 H36Z"/><path d="M50 7 V34 M40 18 H60" fill="none" stroke-width="5"/>`,
+  },
+  fresca: {
+    p: `<circle cx="50" cy="24" r="13"/><path d="M37 40 Q25 53 34 70 H66 Q75 53 63 40Z"/>`,
+    r: `<path d="M28 17 Q50 7 72 17 V34 Q68 39 69 70 H31 Q32 39 28 34Z"/>`,
+    n: `<path d="M23 70 Q24 51 38 43 Q28 26 50 17 Q69 11 78 29 Q69 31 71 43 Q81 52 75 70Z"/><circle cx="61" cy="30" r="3"/>`,
+    b: `<path d="M50 10 Q69 21 62 42 Q59 51 54 57 L68 70 H32 L46 57 Q41 50 38 42 Q31 21 50 10Z"/><path d="M50 17 Q57 29 47 41" fill="none" stroke-width="3"/>`,
+    q: `<path d="M21 34 Q30 23 38 39 Q41 14 50 30 Q59 14 62 39 Q70 23 79 34 L70 70 H30Z"/>`,
+    k: `<path d="M23 43 Q35 33 43 45 Q50 26 57 45 Q66 33 77 43 L68 71 H32Z"/><path d="M50 5 V30 M39 17 H61" fill="none" stroke-width="6" stroke-linecap="round"/>`,
+  },
+  mediaeval: {
+    p: `<path d="M50 11 L65 26 L61 42 L70 69 H30 L39 42 L35 26Z"/>`,
+    r: `<path d="M22 13 H35 V28 L43 21 L50 28 L57 21 L65 28 V13 H78 V40 L70 48 V71 H30 V48 L22 40Z"/>`,
+    n: `<path d="M24 72 Q26 53 37 43 L34 29 L48 15 L57 23 L74 17 L69 39 L62 50 Q76 55 74 72Z"/>`,
+    b: `<path d="M50 9 L69 34 L60 52 L72 71 H28 L40 52 L31 34Z"/><path d="M50 18 L60 40 L50 49 L40 40Z" fill="none"/>`,
+    q: `<path d="M19 33 L31 40 L36 16 L50 36 L64 16 L69 40 L81 33 L72 70 H28Z"/><path d="M36 16 L50 24 L64 16" fill="none"/>`,
+    k: `<path d="M22 44 L36 49 L42 27 L50 41 L58 27 L64 49 L78 44 L70 71 H30Z"/><path d="M50 4 V26 M40 15 H60" fill="none" stroke-width="6"/>`,
+  },
+  "echiquier-ink": {
+    p: `<circle cx="50" cy="22" r="11"/><path d="M40 35 H60 L70 71 H30Z"/>`,
+    r: `<path d="M24 16 H38 V29 H47 V16 H55 V29 H64 V16 H76 V39 H70 V71 H30 V39 H24Z"/>`,
+    n: `<path d="M24 71 V55 L37 41 L35 28 L49 16 L63 24 L75 17 L70 39 L60 49 L76 58 V71Z"/>`,
+    b: `<path d="M50 12 L67 31 L60 51 L72 71 H28 L40 51 L33 31Z"/>`,
+    q: `<path d="M19 30 L34 43 L42 18 L50 40 L58 18 L66 43 L81 30 L70 71 H30Z"/>`,
+    k: `<path d="M24 41 H76 L68 71 H32Z"/><path d="M50 6 V31 M39 18 H61" fill="none" stroke-width="7"/>`,
+  },
+  "kosal-violet": {
+    p: `<circle cx="50" cy="22" r="9"/><path d="M43 34 Q50 40 57 34 L65 71 H35Z"/>`,
+    r: `<path d="M26 15 L38 23 L50 13 L62 23 L74 15 L68 38 L64 70 H36 L32 38Z"/>`,
+    n: `<path d="M27 71 Q27 53 41 43 Q37 31 49 18 L65 23 L76 12 L71 38 Q64 47 59 50 Q76 58 73 71Z"/>`,
+    b: `<path d="M50 10 L62 27 L59 45 L70 71 H30 L41 45 L38 27Z"/><path d="M44 26 L57 43" fill="none" stroke-width="3"/>`,
+    q: `<path d="M22 34 L35 41 L43 17 L50 36 L57 17 L65 41 L78 34 L69 71 H31Z"/><path d="M43 17 L50 9 L57 17" fill="none"/>`,
+    k: `<path d="M25 44 L38 49 L50 26 L62 49 L75 44 L68 71 H32Z"/><path d="M50 5 V30 M39 17 H61" fill="none" stroke-width="6"/>`,
+  },
+};
+
+function shapesForPiece(styleId: PieceStyleId, type: string) {
+  const key = type.toLowerCase();
+  return STYLE_SHAPE_SETS[styleId]?.[key] ?? CLASSIC_SHAPES[key] ?? CLASSIC_SHAPES["p"];
+}
+
 const BASES = `<path d="M28 72 Q50 66 72 72 L78 83 Q50 90 22 83Z"/><path d="M18 88 Q50 82 82 88 L86 95 H14Z"/>`;
 
 function fishPiece(type: string, palette: Palette) {
@@ -137,7 +202,7 @@ export function pieceImageSource(color: "w" | "b", type: string, styleId: PieceS
   } else if (palette.pixel) {
     body = pixelPiece(type, { ...palette, light, dark: other, outline });
   } else {
-    const shape = CLASSIC_SHAPES[type.toLowerCase()] ?? CLASSIC_SHAPES["p"];
+    const shape = shapesForPiece(styleId, type);
     body = `<g fill="${light}" stroke="${outline}" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round">${shape}</g><path d="M28 72 Q50 66 72 72 L78 83 Q50 90 22 83Z" fill="${light}" stroke="${outline}" stroke-width="4"/><path d="M18 88 Q50 82 82 88 L86 95 H14Z" fill="${light}" stroke="${outline}" stroke-width="4"/><path d="M39 79 Q50 82 61 79" fill="none" stroke="${palette.accent}" stroke-width="2.8"/>`;
   }
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${light}"/><stop offset="1" stop-color="${other}"/></linearGradient></defs><ellipse cx="50" cy="96" rx="31" ry="2.5" fill="#000" opacity=".18"/>${body}</svg>`;
