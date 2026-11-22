@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Chess } from "chess.js";
+import { Chess, type Square, type PieceSymbol } from "chess.js";
 import {
   Brain,
   Check,
@@ -21,6 +21,7 @@ import {
   MoveRight,
 } from "lucide-react";
 import { pieceImageSource, useBoardAppearance, BOARD_THEMES } from "@/lib/board-appearance";
+import { Board } from "@/components/chess/Board";
 
 export const Route = createFileRoute("/brain")({
   head: () => ({
@@ -84,7 +85,7 @@ function parseFenPieces(fen: string): MiniPiece[] {
   const pieces: MiniPiece[] = [];
   for (let r = 8; r >= 1; r--) {
     for (const file of FILES) {
-      const square = `${file}${r}` as const;
+      const square = `${file}${r}` as Square;
       const piece = game.get(square);
       if (piece) pieces.push({ square, type: piece.type, color: piece.color });
     }
@@ -110,7 +111,11 @@ function makeDeck() {
 function isLegalUci(fen: string, uci: string) {
   try {
     const game = new Chess(fen);
-    return !!game.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4]?.toLowerCase() as "q" | "r" | "b" | "n" | undefined });
+    return game.moves({ verbose: true }).some((move) =>
+      move.from === uci.slice(0, 2) &&
+      move.to === uci.slice(2, 4) &&
+      (move.promotion || "") === (uci[4]?.toLowerCase() || "")
+    );
   } catch { return false; }
 }
 
@@ -190,7 +195,7 @@ function BrainGamesPage() {
     { piece: "n", color: "w" as const, from: "b1", to: "c3", options: ["a3", "d2", "c3"] },
     { piece: "p", color: "b" as const, from: "e7", to: "e5", options: ["e5", "e6", "d5"] },
     { piece: "n", color: "b" as const, from: "g8", to: "f6", options: ["h6", "f6", "e7"] },
-    { piece: "b", color: "w" as const, from: "f1", to: "c4", options: ["b5", "c4", "g2"] },
+    { piece: "p", color: "w" as const, from: "d2", to: "d4", options: ["d4", "d3", "c4"] },
   ];
   const [blindIndex, setBlindIndex] = useState(0);
   const [blindScore, setBlindScore] = useState(0);
@@ -392,7 +397,7 @@ function BrainGamesPage() {
     if (checkSolved) return false;
     const game = new Chess(checkFen);
     try {
-      const result = game.move({ from: move.from, to: move.to, promotion: move.promotion as "q" | "r" | "b" | "n" | undefined });
+      const result = game.move({ from: move.from, to: move.to, promotion: move.promotion as PieceSymbol | undefined });
       if (!result) return false;
       if (game.isCheck()) {
         setCheckFen(game.fen());
@@ -638,7 +643,7 @@ function BrainGamesPage() {
           {mode === "check" && (
             <div className="mx-auto max-w-[620px] space-y-4">
               <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-primary">TACTICAL VISION</p><h2 className="mt-1 text-2xl font-extrabold">Find the Check</h2><p className="mt-1 text-xs text-muted-foreground">Make any legal move that puts the opponent's king in check. Try moves directly on the board.</p></div>
-              <MiniBoard pieces={parseFenPieces(checkFen)} disabled={checkSolved} />
+              <div className="mx-auto w-full max-w-[540px]"><Board fen={checkFen} orientation="white" movable="both" onMove={handleCheckMove} /></div>
               <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-xs leading-5 text-muted-foreground">{checkMessage}</p><button type="button" onClick={resetCheck} className="btn btn-secondary"><RotateCcw className="h-4 w-4" /> Reset</button></div>
               <p className="text-[10px] text-muted-foreground">{checkMoves.length} checking move(s) available in this position. This count is generated from legal move testing.</p>
             </div>
@@ -647,7 +652,7 @@ function BrainGamesPage() {
           {mode === "mate" && (
             <div className="mx-auto max-w-[620px] space-y-4">
               <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-primary">MATING VISION</p><h2 className="mt-1 text-2xl font-extrabold">Mate Rush</h2><p className="mt-1 text-xs text-muted-foreground">White to move. Find checkmate in one move.</p></div>
-              <MiniBoard pieces={parseFenPieces(mateFen)} disabled={mateSolved} />
+              <div className="mx-auto w-full max-w-[540px]"><Board fen={mateFen} orientation="white" movable="both" onMove={handleMateMove} /></div>
               <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-xs leading-5 text-muted-foreground">{mateMessage}</p><button type="button" onClick={resetMate} className="btn btn-secondary"><RotateCcw className="h-4 w-4" /> Reset</button></div>
               <p className="text-[10px] text-muted-foreground">{mateMoves.length} forced mate-in-one move(s) detected from the position.</p>
             </div>
