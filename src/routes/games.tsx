@@ -53,8 +53,8 @@ function readPgn(pgn: string) {
     return {
       white: headers["White"] || "White",
       black: headers["Black"] || "Black",
-      whiteElo: headers["White"]Elo || "",
-      blackElo: headers["Black"]Elo || "",
+      whiteElo: headers["WhiteElo"] || "",
+      blackElo: headers["BlackElo"] || "",
       opening: headers["Opening"] || (headers["ECO"] ? `ECO ${headers["ECO"]}` : "Opening unavailable"),
       time: headers["TimeControl"] || headers["Time"] || "",
       date: headers["Date"] || "",
