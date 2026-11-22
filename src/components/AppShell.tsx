@@ -53,15 +53,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const script = document.createElement("script");
     script.type = "text/javascript";
     script.src = "https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js";
-    script.dataset.name = "bmc-button";
-    script.dataset.slug = "Officialknightly";
-    script.dataset.color = "#FFDD00";
-    script.dataset.emoji = "";
-    script.dataset.font = "Cookie";
-    script.dataset.text = "Buy me a coffee";
-    script.dataset.outlineColor = "#000000";
-    script.dataset.fontColor = "#000000";
-    script.dataset.coffeeColor = "#ffffff";
+    script.dataset["name"] = "bmc-button";
+    script.dataset["slug"] = "Officialknightly";
+    script.dataset["color"] = "#FFDD00";
+    script.dataset["emoji"] = "";
+    script.dataset["font"] = "Cookie";
+    script.dataset["text"] = "Buy me a coffee";
+    script.dataset["outlineColor"] = "#000000";
+    script.dataset["fontColor"] = "#000000";
+    script.dataset["coffeeColor"] = "#ffffff";
     mount.appendChild(script);
 
     return () => mount.replaceChildren();
