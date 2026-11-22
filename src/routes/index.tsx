@@ -20,7 +20,7 @@ import {
   Zap,
 } from "lucide-react";
 import { EngineBadge } from "@/components/chess/parts";
-import { getConnectedChessAccounts, loadGames, setPendingPgn, type SavedGame } from "@/lib/store";
+import { getConnectedChessAccounts, loadGames, setPendingPgn, type ChessAccount, type SavedGame } from "@/lib/store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -58,12 +58,12 @@ function Metric({ label, value, note, icon: Icon }: { label: string; value: stri
 function Home() {
   const navigate = useNavigate();
   const [games, setGames] = useState<SavedGame[]>([]);
-  const [accountCount, setAccountCount] = useState(0);
+  const [accounts, setAccounts] = useState<ChessAccount[]>([]);
 
   useEffect(() => {
     const refresh = () => {
       setGames(loadGames());
-      setAccountCount(getConnectedChessAccounts().length);
+      setAccounts(getConnectedChessAccounts());
     };
     refresh();
     window.addEventListener("berserk-games-updated", refresh);
@@ -95,6 +95,18 @@ function Home() {
   }, [games]);
 
   const latest = games[0];
+  const weekActivity = useMemo(() => {
+    const today = new Date();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+    monday.setHours(0, 0, 0, 0);
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + index);
+      const count = games.filter((game) => new Date(game.date).toDateString() === date.toDateString()).length;
+      return { date, count };
+    });
+  }, [games]);
 
   function resumeLatest() {
     if (!latest?.pgn) return;
@@ -161,7 +173,7 @@ function Home() {
           <Metric label="Games saved" value={String(stats.total)} note="Games on this device / account" icon={Gamepad2} />
           <Metric label="Wins" value={String(stats.wins)} note={`${stats.draws} draws · ${stats.losses} losses`} icon={Trophy} />
           <Metric label="Average accuracy" value={stats.accuracy} note={stats.accuracy === "—" ? "No completed review data yet" : "Across games with saved accuracy"} icon={ChartNoAxesCombined} />
-          <Metric label="Connected accounts" value={String(accountCount)} note="Chess.com and Lichess profiles" icon={BarChart3} />
+          <Metric label="Connected accounts" value={String(accounts.length)} note="Chess.com and Lichess profiles" icon={BarChart3} />
         </div>
       </section>
 
