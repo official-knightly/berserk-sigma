@@ -77,7 +77,6 @@ function AccountPage() {
               <div className="stat"><div className="stat-label">Saved locally</div><div className="stat-value">{loadGames().length}</div></div>
               <div className="stat"><div className="stat-label">Sync status</div><div className="stat-value text-base text-primary">Connected</div></div>
             </div>
-            <button onClick={handleSignOut} disabled={busy} className="btn btn-secondary w-full">{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />} Sign out</button>
           </div>
         ) : (
           <>
@@ -96,7 +95,55 @@ function AccountPage() {
         {error && <p className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive" role="alert">{error}</p>}
         {message && <p className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs text-primary" role="status">{message}</p>}
       </section>
-      <Link to="/board-pieces" className="panel flex items-center gap-3 p-4 transition hover:border-primary/50"><span className="grid h-10 w-10 place-items-center rounded-lg bg-primary/10 text-primary"><Brush className="h-5 w-5" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-bold">Board and pieces</span><span className="mt-1 block text-xs text-muted-foreground">Choose one of six boards and fifteen piece styles.</span></span><ArrowLeft className="h-4 w-4 rotate-180 text-muted-foreground" /></Link>\n      <p className="text-center text-[11px] leading-relaxed text-muted-foreground">Your account is protected by Supabase authentication. Game records are private to your account and protected by database row-level security.</p>
-    </div>
+      <section className="panel space-y-4 p-5 sm:p-6">
+        <div className="flex items-center gap-3">
+          <img src="/brand/berserk-emblem.png" alt="Berserk Sigma" className="h-14 w-14 rounded-xl border border-border object-cover" />
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate text-lg font-bold">{user?.user_metadata?.display_name || user?.email?.split("@")[0] || "Guest profile"}</h2>
+            <p className="truncate text-xs text-muted-foreground">{user?.email || "Sign in to sync your saved games across devices"}</p>
+          </div>
+          <span className="rounded-lg border border-border bg-background px-2 py-1 text-[10px] font-bold text-primary">{user ? "SIGNED IN" : "GUEST"}</span>
+        </div>
+        <div className="border-t border-border pt-4">
+          <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-muted-foreground">PLAN</p>
+          <Link to="/train" className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-primary/40 bg-primary px-4 py-4 text-sm font-extrabold text-primary-foreground shadow-[0_4px_0_#8b5e00] transition hover:brightness-105">
+            <span>Open free training</span><ChevronRight className="h-5 w-5" />
+          </Link>
+          <p className="mt-2 text-[10px] text-muted-foreground">Training, board settings and game analysis are available without a paid plan.</p>
+        </div>
+      </section>
+
+      <section className="panel divide-y divide-border overflow-hidden">
+        <div className="px-4 pb-2 pt-4"><p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-muted-foreground">CHESS</p></div>
+        <Link to="/settings" className="account-setting-row"><span className="account-setting-icon"><Users className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Chess accounts</span><span className="mt-0.5 block text-[10px] text-muted-foreground">{accounts.length ? accounts.length + " connected public profiles" : "Connect Chess.com or Lichess profiles"}</span></span><ChevronRight className="h-4 w-4 text-muted-foreground" /></Link>
+        <Link to="/openings" className="account-setting-row"><span className="account-setting-icon"><BookOpen className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Opening repertoire</span><span className="mt-0.5 block text-[10px] text-muted-foreground">Practice standard opening lines</span></span><ChevronRight className="h-4 w-4 text-muted-foreground" /></Link>
+      </section>
+
+      <section className="panel divide-y divide-border overflow-hidden">
+        <div className="px-4 pb-2 pt-4"><p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-muted-foreground">APP</p></div>
+        <Link to="/board-pieces" className="account-setting-row"><span className="account-setting-icon"><Grid3X3 className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Board and pieces</span><span className="mt-0.5 block text-[10px] text-muted-foreground">Six board themes · fifteen SVG piece sets</span></span><ChevronRight className="h-4 w-4 text-muted-foreground" /></Link>
+        <Link to="/settings" className="account-setting-row"><span className="account-setting-icon"><Brush className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Engine preferences</span><span className="mt-0.5 block text-[10px] text-muted-foreground">Strength, attack style, thinking time and review engine</span></span><ChevronRight className="h-4 w-4 text-muted-foreground" /></Link>
+        <div className="account-setting-row"><span className="account-setting-icon"><ShieldCheck className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Appearance</span><span className="mt-0.5 block text-[10px] text-muted-foreground">Dark workspace · customise your board colours above</span></span><span className="text-xs text-muted-foreground">Dark</span></div>
+      </section>
+
+      <section className="panel divide-y divide-border overflow-hidden">
+        <div className="px-4 pb-2 pt-4"><p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-muted-foreground">NOTIFICATIONS</p></div>
+        <div className="account-setting-row"><span className="account-setting-icon"><Mail className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Email preferences</span><span className="mt-0.5 block text-[10px] text-muted-foreground">Managed by your sign-in email provider settings</span></span></div>
+        <div className="px-4 py-3 text-[10px] leading-5 text-muted-foreground">This web version does not schedule background streak reminders or send promotional email. No notification permission is requested.</div>
+      </section>
+
+      <section className="panel divide-y divide-border overflow-hidden">
+        <div className="px-4 pb-2 pt-4"><p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-muted-foreground">SUPPORT</p></div>
+        <a href="https://github.com/official-knightly/berserk-sigma/releases" target="_blank" rel="noreferrer" className="account-setting-row"><span className="account-setting-icon"><Gift className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold">What’s new</span><span className="mt-0.5 block text-[10px] text-muted-foreground">Repository releases and updates</span></span><ChevronRight className="h-4 w-4 text-muted-foreground" /></a>
+        <a href="https://github.com/official-knightly/berserk-sigma/issues/new" target="_blank" rel="noreferrer" className="account-setting-row"><span className="account-setting-icon"><Send className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Send feedback</span><span className="mt-0.5 block text-[10px] text-muted-foreground">Report an issue or request a feature</span></span><ChevronRight className="h-4 w-4 text-muted-foreground" /></a>
+        <a href="/engine/STOCKFISH-LICENSE.md" target="_blank" rel="noreferrer" className="account-setting-row"><span className="account-setting-icon"><Scale className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Legal and engine licences</span><span className="mt-0.5 block text-[10px] text-muted-foreground">Stockfish GPL notices and attribution</span></span><ChevronRight className="h-4 w-4 text-muted-foreground" /></a>
+      </section>
+
+      <section className="panel p-4">
+        <div className="flex items-center gap-2"><Cloud className="h-4 w-4 text-primary" /><h2 className="text-[10px] font-extrabold uppercase tracking-[.16em] text-muted-foreground">ACCOUNT</h2></div>
+        <p className="mt-2 text-xs leading-5 text-muted-foreground">{user ? "Your games are stored locally and synced to your signed-in account." : "Sign in to sync your games. Guest games stay in this browser."}</p>
+        {user && <button type="button" onClick={handleSignOut} disabled={busy} className="btn btn-secondary mt-3 w-full">{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />} Sign out</button>}
+      </section>
+      <p className="text-center text-[11px] leading-relaxed text-muted-foreground">Account deletion and scheduled notifications are not available in this web version.</p>    </div>
   );
 }
