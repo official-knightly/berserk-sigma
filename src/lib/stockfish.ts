@@ -1,6 +1,6 @@
 import type { Candidate, SearchResult } from "./engine";
 
-type ParsedInfo = Candidate & { multipv: number };
+type ParsedInfo = Candidate & { multipv: number; nodes: string };
 
 function parseInfo(line: string): ParsedInfo | null {
   if (!line.startsWith("info ")) return null;
@@ -29,6 +29,7 @@ function parseInfo(line: string): ParsedInfo | null {
     pv,
     scoreCp,
     mate: scoreType === "mate" ? scoreValue : null,
+    nodes: value("nodes") || "0",
   };
 }
 
@@ -40,6 +41,7 @@ class StockfishBrowserEngine {
     reject: (error: Error) => void;
     infos: Map<number, ParsedInfo>;
     depth: number;
+    nodes: string;
     startedAt: number;
   } | null = null;
   private queue: Promise<unknown> = Promise.resolve();
@@ -74,6 +76,7 @@ class StockfishBrowserEngine {
               const previous = active.infos.get(info.multipv);
               if (!previous || info.depth >= previous.depth) active.infos.set(info.multipv, info);
               active.depth = Math.max(active.depth, info.depth);
+              active.nodes = info.nodes;
             }
           } else if (line.startsWith("bestmove ")) {
             const active = this.pendingSearch;
@@ -87,7 +90,7 @@ class StockfishBrowserEngine {
               bestmove,
               scoreCp: best?.scoreCp ?? 0,
               depth: active.depth,
-              nodes: "0",
+              nodes: active.nodes,
               candidates,
             };
             this.pendingSearch = null;
@@ -137,6 +140,7 @@ class StockfishBrowserEngine {
           reject,
           infos: new Map(),
           depth: 0,
+          nodes: "0",
           startedAt: performance.now(),
         };
         this.worker!.postMessage("position fen " + fen);
