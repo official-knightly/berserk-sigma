@@ -1,5 +1,7 @@
 name: Chess Topper Android APK
 on:
+  pull_request:
+    branches: [main]
   workflow_dispatch:
     inputs:
       app_url:
