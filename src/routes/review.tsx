@@ -23,8 +23,8 @@ export const Route = createFileRoute("/review")({
     meta: [
       { title: "Game Review — Chess Topper" },
       { name: "description", content: "Review every move with Stockfish 19 in Chess Topper." },
-      { property: "og:title", content: "Game Review — Berserk Sigma" },
-      { property: "og:description", content: "Review and evaluate games with the Berserk chess engine." },
+      { property: "og:title", content: "Game Review — Chess Topper" },
+      { property: "og:description", content: "Review every move with Stockfish 19 Lite in Chess Topper." },
     ],
   }),
   component: GameReviewPage,
@@ -213,9 +213,9 @@ export function GameReviewPage() {
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-primary">ANALYSIS ENGINE</p>
-                <p className="mt-1 text-xs text-muted-foreground">Every position is evaluated locally with Stockfish 19.</p>
+                <p className="mt-1 text-xs text-muted-foreground">Every position is analysed locally with Stockfish 19 Lite.</p>
               </div>
-              <span className="status-pill"><span className="status-dot" /> Stockfish 19</span>
+              <span className="status-pill"><span className="status-dot" /> Stockfish 19 Lite</span>
             </div>
             <div className="flex border-b border-border/50 pb-3 gap-2">
               {(["lichess", "chesscom", "worldchess", "pgn"] as SourceTab[]).map((tab) => (
