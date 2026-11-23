@@ -4,10 +4,10 @@ import { GameReviewPage } from "./review";
 export const Route = createFileRoute("/analysis")({
   head: () => ({
     meta: [
-      { title: "Analysis — Berserk Web" },
-      { name: "description", content: "Import and analyze chess games with the Berserk engine." },
-      { property: "og:title", content: "Analysis — Berserk Web" },
-      { property: "og:description", content: "Import and analyze chess games with the Berserk engine." },
+      { title: "Analysis — Chess Topper" },
+      { name: "description", content: "Import and analyze chess games with the Stockfish." },
+      { property: "og:title", content: "Analysis — Chess Topper" },
+      { property: "og:description", content: "Import and analyze chess games with the Stockfish." },
     ],
   }),
   component: GameReviewPage,
