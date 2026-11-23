@@ -26,7 +26,7 @@ import { Board } from "@/components/chess/Board";
 export const Route = createFileRoute("/brain")({
   head: () => ({
     meta: [
-      { title: "Brain Games — Berserk Sigma" },
+      { title: "Brain Games — Chess Topper" },
       { name: "description", content: "Play twelve chess-inspired board vision, memory, tactics and reaction games." },
     ],
   }),
