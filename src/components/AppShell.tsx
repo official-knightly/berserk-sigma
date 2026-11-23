@@ -29,7 +29,7 @@ const PRIMARY_NAV = [
 ] as const;
 
 const TOOL_NAV = [
-  { to: "/play", label: "Play Berserk", icon: Swords },
+  { to: "/play", label: "Play Engine", icon: Swords },
   { to: "/review", label: "Game Review", icon: BookOpen },
   { to: "/analysis", label: "Analysis board", icon: Crosshair },
   { to: "/board-pieces", label: "Board & pieces", icon: Brush },
@@ -39,7 +39,7 @@ const TOOL_NAV = [
 ] as const;
 
 export function Logo({ size = 32 }: { size?: number }) {
-  return <img src="/brand/berserk-emblem.png" alt="Berserk" width={size} height={size} className="rounded-md" />;
+  return <div aria-label="Chess Topper" className="grid place-items-center rounded-xl bg-primary text-primary-foreground font-black shadow-lg shadow-primary/20" style={{ width: size, height: size, fontSize: size * 0.42 }}>CT</div>;
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
