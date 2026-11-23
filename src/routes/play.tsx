@@ -13,9 +13,9 @@ import { saveGame, setPendingPgn, useSettings } from "@/lib/store";
 export const Route = createFileRoute("/play")({
   head: () => ({
     meta: [
-      { title: "Play vs Berserk — Berserk Sigma" },
+      { title: "Play vs Berserk — Chess Topper" },
       { name: "description", content: "Play chess against the Berserk engine with adjustable Elo, attack level and thinking time." },
-      { property: "og:title", content: "Play vs Berserk — Berserk Sigma" },
+      { property: "og:title", content: "Play vs Berserk — Chess Topper" },
       { property: "og:description", content: "Challenge the Berserk chess engine right in your browser." },
     ],
   }),
