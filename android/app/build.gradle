@@ -1,0 +1,20 @@
+plugins { id 'com.android.application' }
+
+def chessTopperUrl = project.findProperty("CHESS_TOPPER_URL") ?: "https://berserk-sigma.akatsuki-x-pain12.workers.dev"
+android {
+    namespace 'com.officialknightly.chesstopper'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'com.officialknightly.chesstopper'
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName '1.0.0'
+        buildConfigField "String", "CHESS_TOPPER_URL", '"' + chessTopperUrl + '"'
+    }
+    buildFeatures { buildConfig true }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
