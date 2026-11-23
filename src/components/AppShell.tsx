@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   BarChart3,
   Brain,
@@ -29,7 +29,7 @@ const PRIMARY_NAV = [
 ] as const;
 
 const TOOL_NAV = [
-  { to: "/play", label: "Play Engine", icon: Swords },
+  { to: "/play", label: "Play Chess Topper", icon: Swords },
   { to: "/review", label: "Game Review", icon: BookOpen },
   { to: "/analysis", label: "Analysis board", icon: Crosshair },
   { to: "/board-pieces", label: "Board & pieces", icon: Brush },
@@ -39,33 +39,12 @@ const TOOL_NAV = [
 ] as const;
 
 export function Logo({ size = 32 }: { size?: number }) {
-  return <div aria-label="Chess Topper" className="grid place-items-center rounded-xl bg-primary text-primary-foreground font-black shadow-lg shadow-primary/20" style={{ width: size, height: size, fontSize: size * 0.42 }}>CT</div>;
+  return <div aria-label="Chess Topper" className="grid shrink-0 place-items-center rounded-xl border border-primary/50 bg-primary text-primary-foreground shadow-[0_3px_0_rgba(0,0,0,.5)]" style={{ width: size, height: size, fontSize: size * 0.72, lineHeight: 1 }}>♞</div>;
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
-
-  useEffect(() => {
-    const mount = document.getElementById("bmc-button-mount");
-    if (!mount || mount.querySelector("script[data-name='bmc-button']")) return;
-
-    const script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src = "https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js";
-    script.dataset["name"] = "bmc-button";
-    script.dataset["slug"] = "Officialknightly";
-    script.dataset["color"] = "#FFDD00";
-    script.dataset["emoji"] = "";
-    script.dataset["font"] = "Cookie";
-    script.dataset["text"] = "Buy me a coffee";
-    script.dataset["outlineColor"] = "#000000";
-    script.dataset["fontColor"] = "#000000";
-    script.dataset["coffeeColor"] = "#ffffff";
-    mount.appendChild(script);
-
-    return () => mount.replaceChildren();
-  }, []);
 
   const renderNav = (items: typeof PRIMARY_NAV | typeof TOOL_NAV) => items.map((item) => (
     <Link
@@ -93,8 +72,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Logo size={34} />
             {!collapsed && (
               <div className="min-w-0">
-                <div className="font-display text-base font-bold leading-tight tracking-tight">BERSERK SIGMA</div>
-                <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Chess workspace</div>
+                <div className="font-display text-base font-bold leading-tight tracking-tight">CHESS TOPPER</div>
+                <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Play · Train · Review</div>
               </div>
             )}
           </Link>
@@ -127,7 +106,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <>
                 <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Engine status</div>
                 <EngineBadge />
-                <p className="mt-2 text-[11px] leading-4 text-muted-foreground">Berserk runs locally in your browser.</p>
+                <p className="mt-2 text-[11px] leading-4 text-muted-foreground">Stockfish-powered chess analysis and training.</p>
               </>
             )}
           </div>
@@ -137,7 +116,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
           {!collapsed && (
             <div className="px-1 text-[10px] leading-4 text-muted-foreground">
-              {user ? `Signed in: ${user.email || "Berserk player"}` : "Free chess tools · Local-first"}
+              {user ? `Signed in: ${user.email || "Chess Topper player"}` : "Free chess tools · Local-first"}
             </div>
           )}
         </div>
@@ -147,7 +126,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background/90 px-3 backdrop-blur lg:hidden">
           <Link to="/" className="flex min-w-0 items-center gap-2">
             <Logo size={29} />
-            <span className="truncate font-display text-sm font-extrabold tracking-tight">BERSERK SIGMA</span>
+            <span className="truncate font-display text-sm font-extrabold tracking-tight">CHESS TOPPER</span>
           </Link>
           <div className="flex items-center gap-2">
             <EngineBadge />
@@ -160,11 +139,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <footer className="border-t border-border px-4 py-5">
           <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 sm:flex-row">
             <div className="text-center sm:text-left">
-              <p className="text-sm font-semibold text-foreground">Berserk Sigma</p>
+              <p className="text-sm font-semibold text-foreground">Chess Topper</p>
               <p className="mt-1 text-xs text-muted-foreground">Free chess play, analysis and training tools.</p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-4">
-              <div id="bmc-button-mount" className="flex min-h-10 items-center" />
+              <a href="https://buymeacoffee.com/Officialknightly" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-muted-foreground transition hover:text-primary">Support the developer</a>
               <a href="https://linktr.ee/OfficialKnightly" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-muted-foreground transition hover:text-primary">OfficialKnightly links</a>
             </div>
           </div>
