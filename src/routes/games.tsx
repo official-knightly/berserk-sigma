@@ -33,7 +33,7 @@ import { syncCloudGames } from "@/lib/supabase";
 export const Route = createFileRoute("/games")({
   head: () => ({
     meta: [
-      { title: "Games — Berserk Sigma" },
+      { title: "Games — Chess Topper" },
       { name: "description", content: "Manage imported and played chess games, filter your history and open game reviews." },
     ],
   }),
