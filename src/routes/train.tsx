@@ -15,7 +15,7 @@ import {
 export const Route = createFileRoute("/train")({
   head: () => ({
     meta: [
-      { title: "Train — Berserk Sigma" },
+      { title: "Train — Chess Topper" },
       { name: "description", content: "Free daily puzzles, sparring, opening practice and mistake training." },
     ],
   }),
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/train")({
 
 const quick = [
   { to: "/analysis", title: "Analysis board", description: "Set up a position, explore legal moves and inspect engine lines.", icon: Crosshair, tag: "TOOLS" },
-  { to: "/daily-puzzle", title: "Daily puzzle", description: "Solve today's real Chessigma puzzle and follow its full continuation.", icon: Target, tag: "DAILY" },
+  { to: "/daily-puzzle", title: "Daily puzzle", description: "Solve today's daily chess puzzle and follow its full continuation.", icon: Target, tag: "DAILY" },
   { to: "/brain", title: "Brain games", description: "Train memory, board vision, calculation and reaction speed.", icon: Brain, tag: "BRAIN" },
   { to: "/play", title: "Sparring", description: "Play a complete game against the local Berserk engine.", icon: Swords, tag: "PLAY" },
 ];
