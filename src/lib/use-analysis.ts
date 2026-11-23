@@ -36,6 +36,7 @@ function searchWithEngine(engineId: ReviewEngineId, fen: string, ms: number, mul
 export function useGameAnalysis(moves: Move[], startFen: string, ms: number, enabled = true, engineId: ReviewEngineId = "berserk") {
   const [positions, setPositions] = useState<(SearchResult | undefined)[]>([]);
   const [running, setRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const keyRef = useRef("");
   const tokenRef = useRef(0);
   const fens = useMemo(() => [startFen, ...moves.map((m) => m.after)], [moves, startFen]);
@@ -52,6 +53,7 @@ export function useGameAnalysis(moves: Move[], startFen: string, ms: number, ena
     let cancelled = false;
     (async () => {
       setRunning(true);
+      setError(null);
       for (let i = 0; i < fens.length; i++) {
         if (cancelled || token !== tokenRef.current) return;
         let have = false;
@@ -69,8 +71,11 @@ export function useGameAnalysis(moves: Move[], startFen: string, ms: number, ena
           const r = await searchWithEngine(engineId, fens[i], ms, 3);
           if (cancelled || token !== tokenRef.current) return;
           setPositions((p) => { const n = p.slice(); n[i] = Object.assign(r, { fen: fens[i] }); return n; });
-        } catch {
-          if (!cancelled && token === tokenRef.current) setRunning(false);
+        } catch (cause) {
+          if (!cancelled && token === tokenRef.current) {
+            setError(cause instanceof Error ? cause.message : "Stockfish analysis failed.");
+            setRunning(false);
+          }
           return;
         }
       }
@@ -99,7 +104,7 @@ export function useGameAnalysis(moves: Move[], startFen: string, ms: number, ena
   }, [positions, moves]);
 
   const done = positions.filter(Boolean).length;
-  return { positions, reviews, running, progress: fens.length ? done / fens.length : 0, total: fens.length, done };
+  return { positions, reviews, running, error, progress: fens.length ? done / fens.length : 0, total: fens.length, done };
 }
 
 
@@ -127,6 +132,7 @@ export function useGameReview(
   return {
     reviews: analysis.reviews,
     running: analysis.running,
+    error: analysis.error,
     progress: analysis.progress,
   };
 }
