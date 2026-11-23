@@ -128,7 +128,7 @@ export function useGameReview(
     return parsed;
   }, [sans, startFen]);
 
-  const analysis = useGameAnalysis(moves, startFen, 300, sans.length > 0, engineId);
+  const analysis = useGameAnalysis(moves, startFen, 650, sans.length > 0, engineId);
   return {
     reviews: analysis.reviews,
     running: analysis.running,
