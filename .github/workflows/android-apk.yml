@@ -8,6 +8,7 @@ on:
       - "public/**"
       - "package.json"
       - "capacitor.config.ts"
+      - "vite.config.ts"
       - "scripts/**"
       - ".github/workflows/android-apk.yml"
   pull_request:
