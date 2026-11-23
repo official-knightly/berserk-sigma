@@ -45,7 +45,7 @@ export function useGameAnalysis(moves: Move[], startFen: string, ms: number, ena
     // Reset when the game itself changes (not when moves are appended).
     const key = engineId + "|" + startFen + "|" + (moves[0]?.san ?? "");
     if (key !== keyRef.current) { keyRef.current = key; tokenRef.current++; setPositions([]); setError(null); }
-  }, [startFen, moves]);
+  }, [startFen, moves, engineId]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -111,7 +111,7 @@ export function useGameAnalysis(moves: Move[], startFen: string, ms: number, ena
 /**
  * Review a SAN move list from the starting position.
  * This adapter keeps the review route API small while reusing the same
- * Berserk-backed position analysis and move classification as live analysis.
+ * Stockfish-backed position analysis and move classification.
  */
 export function useGameReview(
   sans: string[],
