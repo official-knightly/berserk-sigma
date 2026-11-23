@@ -22,9 +22,9 @@ export const Route = createFileRoute("/review")({
   head: () => ({
     meta: [
       { title: "Game Review — Chess Topper" },
-      { name: "description", content: "Review every move with Stockfish and learn from your chess games." },
+      { name: "description", content: "Review every move with Stockfish 19 in Chess Topper." },
       { property: "og:title", content: "Game Review — Chess Topper" },
-      { property: "og:description", content: "Review every move with Stockfish and learn from your chess games." },
+      { property: "og:description", content: "Review every move with Stockfish 19 Lite in Chess Topper." },
     ],
   }),
   component: GameReviewPage,
@@ -71,7 +71,6 @@ export function GameReviewPage() {
       setLoading(false);
     }
   };
-
 
   const handleLoadPgn = () => {
     if (!rawPgn.trim()) return;
@@ -198,7 +197,7 @@ export function GameReviewPage() {
                   <span className="font-semibold text-foreground">{activeReview.grade} move</span>
                   {activeReview.bestSan && (
                     <span className="text-muted-foreground ml-2">
-                      Stockfish best move <span className="font-mono text-foreground font-semibold">{activeReview.bestSan}</span>
+                      Stockfish recommends <span className="font-mono text-foreground font-semibold">{activeReview.bestSan}</span>
                     </span>
                   )}
                 </div>
@@ -211,12 +210,12 @@ export function GameReviewPage() {
         {/* Right: Sources & Summary */}
         <div className="flex flex-col gap-4">
           <div className="panel p-4">
-            <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-primary/25 bg-primary/5 p-3">
+            <div className="mb-3 flex items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-primary">POWERED BY STOCKFISH 19</p>
-                <p className="mt-1 text-xs text-muted-foreground">Every imported move is evaluated locally on your device.</p>
+                <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-primary">ANALYSIS ENGINE</p>
+                <p className="mt-1 text-xs text-muted-foreground">Every position is analysed locally with Stockfish 19 Lite.</p>
               </div>
-              <span className="rounded-full border border-primary/30 px-2.5 py-1 text-[10px] font-bold text-primary">AUTO REVIEW</span>
+              <span className="status-pill"><span className="status-dot" /> Stockfish 19 Lite</span>
             </div>
             <div className="flex border-b border-border/50 pb-3 gap-2">
               {(["lichess", "chesscom", "worldchess", "pgn"] as SourceTab[]).map((tab) => (
@@ -262,7 +261,9 @@ export function GameReviewPage() {
               </div>
             )}
 
-            {error && <div className="mt-2 text-xs text-destructive">{error}</div>}
+            {error && <div className="mt-2 text-xs text-destructive" role="alert">{error}</div>}
+            {analysisError && <div className="mt-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive" role="alert">Stockfish could not analyse this game: {analysisError}. Check the Stockfish engine files and reload the review.</div>}
+            {moves.length > 0 && <p className="mt-3 text-xs text-muted-foreground" role="status">{running ? `Stockfish analysing positions · ${Math.round(progress * 100)}%` : analysisError ? "Analysis needs attention" : reviews.filter(Boolean).length === moves.length ? "Stockfish analysis complete" : "Preparing Stockfish analysis…"}</p>}
 
             {games.length > 0 && (
               <div className="mt-4 max-h-48 overflow-y-auto space-y-1.5">
@@ -286,14 +287,6 @@ export function GameReviewPage() {
             )}
           </div>
 
-          {analysisError && moves.length > 0 && (
-            <div role="alert" className="panel border border-destructive/40 p-4 text-sm">
-              <p className="font-semibold text-destructive">Stockfish analysis could not finish</p>
-              <p className="mt-1 text-xs text-muted-foreground">{analysisError}</p>
-              <p className="mt-2 text-xs text-muted-foreground">No move grades are shown as final until Stockfish successfully evaluates the positions.</p>
-            </div>
-          )}
-
           {/* Accuracy Summary */}
           {moves.length > 0 && (
             <div className="panel p-4">
@@ -313,12 +306,6 @@ export function GameReviewPage() {
                   <div className="text-lg font-bold font-mono">{summary.b.acc !== null ? `${Math.round(summary.b.acc)}%` : "—"}</div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {moves.length > 0 && !analysisError && (
-            <div className="panel p-3 text-xs text-muted-foreground">
-              {running ? <span className="inline-flex items-center gap-2"><Loader2 className="h-3.5 w-3.5 animate-spin text-primary" /> Stockfish reviewing positions · {Math.round(progress * 100)}%</span> : reviews.filter(Boolean).length === moves.length ? "Stockfish completed the full-game review." : "Waiting for Stockfish analysis…"}
             </div>
           )}
 
