@@ -5,6 +5,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient.FileChooserParams;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -13,6 +15,8 @@ import android.webkit.WebViewClient;
 public final class MainActivity extends Activity {
     private WebView webView;
     private String trustedHost;
+    private ValueCallback<Uri[]> pendingFilePicker;
+    private static final int FILE_PICKER_REQUEST = 4217;
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Uri appUri = Uri.parse(BuildConfig.CHESS_TOPPER_URL);
@@ -41,9 +45,35 @@ public final class MainActivity extends Activity {
                 return true;
             }
         });
-        webView.setWebChromeClient(new WebChromeClient());
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
+                if (pendingFilePicker != null) pendingFilePicker.onReceiveValue(null);
+                pendingFilePicker = callback;
+                Intent picker = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                picker.addCategory(Intent.CATEGORY_OPENABLE);
+                picker.setType("text/*");
+                try {
+                    startActivityForResult(picker, FILE_PICKER_REQUEST);
+                    return true;
+                } catch (Exception error) {
+                    pendingFilePicker = null;
+                    callback.onReceiveValue(null);
+                    return false;
+                }
+            }
+        });
         setContentView(webView);
         webView.loadUrl(BuildConfig.CHESS_TOPPER_URL);
+    }
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FILE_PICKER_REQUEST && pendingFilePicker != null) {
+            Uri[] result = resultCode == RESULT_OK && data != null && data.getData() != null
+                ? new Uri[] { data.getData() } : null;
+            pendingFilePicker.onReceiveValue(result);
+            pendingFilePicker = null;
+        }
     }
     @Override public void onBackPressed() {
         if (webView != null && webView.canGoBack()) webView.goBack(); else super.onBackPressed();
