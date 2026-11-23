@@ -3,6 +3,8 @@ on:
   push:
     branches: [chess-topper-platform]
     paths: ["src/**", "package.json", "bun.lock", "vite.config.ts", "tsconfig.json", ".github/workflows/chess-topper-ci.yml"]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
