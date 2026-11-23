@@ -1,0 +1,19 @@
+name: Chess Topper app checks
+on:
+  push:
+    branches: [chess-topper-platform]
+    paths: ["src/**", "package.json", "bun.lock", "vite.config.ts", "tsconfig.json", ".github/workflows/chess-topper-ci.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  web-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - run: bunx tsc --noEmit
