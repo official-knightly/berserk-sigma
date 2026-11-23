@@ -25,22 +25,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
 
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: bun install --no-save
 
       - name: Build web bundle for the native shell
-        run: npm run build
+        run: bun run build
 
       - name: Verify Capacitor web bundle
         run: test -f .output/public/index.html
