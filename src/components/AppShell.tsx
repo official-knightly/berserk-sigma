@@ -126,7 +126,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background/90 px-3 backdrop-blur lg:hidden">
           <Link to="/" className="flex min-w-0 items-center gap-2">
             <Logo size={29} />
-            <span className="truncate font-display text-sm font-extrabold tracking-tight">BERSERK SIGMA</span>
+            <span className="truncate font-display text-sm font-extrabold tracking-tight">CHESS TOPPER</span>
           </Link>
           <div className="flex items-center gap-2">
             <EngineBadge />
