@@ -24,7 +24,7 @@ import {
 export const Route = createFileRoute("/stats")({
   head: () => ({
     meta: [
-      { title: "Coach — Berserk Sigma" },
+      { title: "Coach — Chess Topper" },
       { name: "description", content: "Your saved games, move-quality report, training activity and engine performance." },
       { property: "og:title", content: "Statistics & Benchmarks — Berserk Web" },
       { property: "og:description", content: "Berserk engine benchmarks, match history, accuracy statistics and performance analytics." },
