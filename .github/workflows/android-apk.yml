@@ -1,0 +1,31 @@
+name: Chess Topper Android APK
+on:
+  workflow_dispatch:
+    inputs:
+      app_url:
+        description: "HTTPS URL for the Chess Topper app"
+        required: false
+        default: "https://berserk-sigma.akatsuki-x-pain12.workers.dev"
+  push:
+    branches: [chess-topper-platform]
+    paths: ["android/**", ".github/workflows/android-apk.yml"]
+permissions:
+  contents: read
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "17" }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: "8.9" }
+      - name: Build installable debug APK
+        working-directory: android
+        run: gradle --no-daemon assembleDebug -PCHESS_TOPPER_URL="${{ inputs.app_url || 'https://berserk-sigma.akatsuki-x-pain12.workers.dev' }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chess-topper-android-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
