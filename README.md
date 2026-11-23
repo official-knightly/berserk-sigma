@@ -1,6 +1,6 @@
-# Berserk Sigma
+# Chess Topper
 
-Berserk Sigma is a chess analysis and training web app built around the Berserk engine. It provides a fast browser-based experience for exploring positions, reviewing live games, and working with engine evaluations.
+Chess Topper is a chess training and game-review app. Every imported game is automatically reviewed with Stockfish 19 Lite on the device. It provides a mobile-first chess experience with game review, training, analysis boards, and Android packaging.
 
 ## Live demo
 
@@ -14,7 +14,7 @@ This project is designed to play with Berserk's free analysis tooling in the bro
 ## Features
 
 - Chess board and analysis flows
-- Built-in engine evaluation via a WebAssembly worker
+- Automatic Stockfish 19 Lite game review via a local WebAssembly worker
 - Lichess and Chess.com related workflows
 - Fast Vite + React frontend
 - TypeScript-first app structure
