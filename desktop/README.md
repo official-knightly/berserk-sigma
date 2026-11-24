@@ -1,13 +1,13 @@
-# Chess Topper desktop shell
+# Chess Topper desktop app
 
-The Electron shell loads the hosted Chess Topper client over HTTPS. Its renderer has no Node.js access; the preload exposes only version, update and validated Stockfish operations.
+The Windows, macOS and Linux installers include the built Chess Topper web interface inside the application. Electron serves those bundled files from a loopback-only HTTP server; the renderer does not depend on the hosted website to start or navigate. The renderer has no Node.js access. A narrow preload exposes only version, updater and validated Stockfish operations.
 
 ## Updates
 
-Packaged apps check the latest GitHub Release at startup. The app shows a notification, downloads the signed-by-transport release assets, and restarts to install. Windows/macOS publisher signing is still recommended for distribution trust; this project never disables SmartScreen, Gatekeeper or other OS security checks.
+Packaged apps check the latest GitHub Release at startup. Windows and Linux use Electron's updater metadata; macOS checks the latest DMG and opens it for installation. The app shows an update notification. This project never disables SmartScreen, Gatekeeper or other operating-system security checks. Publisher signing and notarization are required for the best public-distribution experience.
 
-## Native Stockfish
+## Engines
 
-On Windows, the supplied Stockfish release downloader checks the official Stockfish GitHub release, chooses a build matching x64 or ARM64, verifies the PE architecture, and stores the executable under the app user-data folder. The UCI bridge starts the executable directly without invoking a shell. macOS and Linux continue using the bundled Stockfish WebAssembly engine.
+Chess Topper lets players choose Berserk or Stockfish in Play. Game Review uses Stockfish 19 Lite locally in a Web Worker. On Windows, the desktop shell can additionally download the official native Stockfish release, verify the executable's PE architecture, and launch it through a UCI bridge without invoking a shell. macOS and Linux use the bundled Stockfish WebAssembly engine.
 
-Stockfish is GPLv3. Preserve the upstream licence and corresponding source notices with distributed builds.
+Stockfish is GPLv3. Preserve upstream copyright, licence and corresponding-source notices with distributed builds.
