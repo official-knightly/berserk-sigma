@@ -104,7 +104,9 @@ export function AppUpdateNotice() {
     setBusy(true);
     try {
       if (window.chessTopperDesktop) {
-        if (notice?.status === "downloaded") {
+        if (notice?.status === "error") {
+          await window.chessTopperDesktop.updates.check();
+        } else if (notice?.status === "downloaded") {
           await window.chessTopperDesktop.updates.install();
         } else {
           await window.chessTopperDesktop.updates.download();
@@ -156,7 +158,7 @@ export function AppUpdateNotice() {
       {!isDownloading && (
         <button type="button" className="btn btn-primary btn-sm" onClick={handleUpdate} disabled={busy}>
           {busy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : isDownloaded ? <RefreshCw className="h-4 w-4" /> : <ArrowDownToLine className="h-4 w-4" />}
-          {isDownloaded ? "Restart & install" : isDesktop ? "Download update" : "Update now"}
+          {isDownloaded ? "Restart & install" : notice.status === "error" ? "Check again" : isDesktop ? "Download update" : "Update now"}
         </button>
       )}
       <button type="button" className="btn btn-ghost btn-sm btn-icon" aria-label="Dismiss update notice" onClick={() => setDismissed(true)}>
