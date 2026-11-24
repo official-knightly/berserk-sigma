@@ -230,7 +230,7 @@
 @keyframes pulse-dot { 50% { opacity: .3; } }
 
 
-/* Berserk Sigma — Chessigma-inspired monochrome design system */
+/* Chess Topper — Chessigma-inspired monochrome design system */
 :root {
   --background: oklch(0.08 0 0);
   --foreground: oklch(0.97 0 0);
