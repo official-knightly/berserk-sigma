@@ -13,7 +13,7 @@ Push a version tag such as `v1.0.1` to run **Chess Topper Release**. With the st
 
 The Android updater checks the latest GitHub Release and opens the APK in the Android browser/package installer. Android still requires the user to approve the install. The app does not bypass Play Protect or Android's unknown-app safeguards.
 
-Desktop builds use Electron's GitHub updater. They check for updates on startup, show a notification, download the new installer payload, and restart to install. The desktop window loads the hosted Chess Topper client over HTTPS, so it requires an internet connection.
+Desktop builds use Electron's GitHub updater. They check for updates on startup, show a notification, download the new installer payload, and restart to install. Desktop installers bundle the complete built Chess Topper interface and serve it locally from a loopback-only server. The app can open and navigate its core interface without loading the hosted website; online services such as cloud sign-in, public game imports, and update checks still require internet access.
 
 Windows and Linux updates use the Electron updater release manifests. macOS automatic updates require a Developer ID signing certificate; for a public macOS installer, configure the signing/notarization secrets below. Unsigned macOS builds can be produced for testing but are not a complete auto-update distribution.
 
@@ -52,7 +52,7 @@ Stockfish is GPLv3. Keep its upstream license and corresponding-source notices w
 
 ## About
 
-Chess Topper keeps the Berserk engine available for play and uses Stockfish for game review. Browser, Android, macOS and Linux builds use the Stockfish WebAssembly worker. The Windows desktop build can download a native Stockfish executable from the official Stockfish release and verify its PE architecture before using it.
+Chess Topper lets players choose Berserk or Stockfish as an opponent and uses Stockfish for automatic game review. Browser, Android, macOS and Linux builds use the Stockfish WebAssembly worker. The Windows desktop build can download a native Stockfish executable from the official Stockfish release and verify its PE architecture before using it.
 
 ## Features
 
