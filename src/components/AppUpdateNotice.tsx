@@ -43,7 +43,7 @@ export function AppUpdateNotice() {
     if (nativeDesktop) {
       const unsubscribe = nativeDesktop.updates.onState((state) => {
         if (!active) return;
-        if (state.status === "not-available") {
+        if (state.status === "not-available" || state.status === "checking") {
           setNotice(null);
           return;
         }
@@ -129,6 +129,7 @@ export function AppUpdateNotice() {
   const isDesktop = notice.platform === "desktop";
   const isDownloading = notice.status === "downloading";
   const isDownloaded = notice.status === "downloaded";
+  if (notice.status === "checking" || notice.status === "not-available") return null;
   const title = isDownloaded
     ? "Update ready to install"
     : isDownloading
