@@ -42,7 +42,7 @@ jobs:
           sudo apt-get install -y librsvg2-bin
           mkdir -p android/app/src/main/res/drawable-nodpi
           rsvg-convert -w 512 -h 512 branding/chess-topper-icon.svg > android/app/src/main/res/drawable-nodpi/chess_topper_logo.png
-          sed -i 's#android:icon="@mipmap/ic_launcher"#android:icon="@drawable/chess_topper_logo"#g' android/app/src/main/AndroidManifest.xml
+          sed -i -e 's#android:icon="@mipmap/ic_launcher"#android:icon="@drawable/chess_topper_logo"#g' -e 's#android:roundIcon="@mipmap/ic_launcher_round"#android:roundIcon="@drawable/chess_topper_logo"#g' android/app/src/main/AndroidManifest.xml
       - name: Set Android version name and version code
         run: |
           node -e 'const fs=require("node:fs");const p="android/app/build.gradle";let s=fs.readFileSync(p,"utf8");s=s.replace(/versionCode\s+\d+/, "versionCode "+process.env.VERSION_CODE);s=s.replace(/versionName\s+"[^"]+"/, "versionName \""+process.env.APP_VERSION.replace(/^v/,"")+"\"");fs.writeFileSync(p,s)'
@@ -112,7 +112,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: chess-topper-android-release
-          path: release-assets/Chess-Topper.apk
+          path: release-assets/*.apk
           if-no-files-found: error
           retention-days: 30
 
