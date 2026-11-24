@@ -70,6 +70,15 @@
         "repo": "berserk-sigma",
         "releaseType": "release"
       }
+    ],
+    "extraResources": [
+      {
+        "from": "../.output/public",
+        "to": "web",
+        "filter": [
+          "**/*"
+        ]
+      }
     ]
   },
   "author": {
