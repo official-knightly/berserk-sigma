@@ -302,6 +302,28 @@ function PlayPage() {
                 </div>
                 <p className="mt-1.5 text-[11px] text-muted-foreground">{engineChoice === "berserk" ? "Play against Berserk with adjustable strength and aggression." : "Play against Stockfish 19 running locally in a Web Worker."}</p>
               </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Choose your Stockfish bot</label>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {([
+                    { name: "Beginner", elo: 600, note: "Learning" },
+                    { name: "Casual", elo: 1000, note: "Relaxed" },
+                    { name: "Club Player", elo: 1500, note: "Club level" },
+                    { name: "Advanced", elo: 2000, note: "Strong" },
+                    { name: "Expert", elo: 2600, note: "Very strong" },
+                    { name: "Maximum", elo: 3500, note: "Full strength" },
+                  ] as const).map((bot) => (
+                    <button key={bot.name} type="button" data-on={settings.elo === bot.elo}
+                      onClick={() => update({ elo: bot.elo })}
+                      className="rounded-lg border border-border bg-background px-3 py-2 text-left transition hover:border-primary/60"
+                      aria-pressed={settings.elo === bot.elo}>
+                      <span className="block text-xs font-bold">{bot.name}</span>
+                      <span className="mt-0.5 block text-[10px] text-muted-foreground">{bot.elo} target · {bot.note}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-2 text-[10px] leading-4 text-muted-foreground">These are selectable strength profiles using Stockfish's candidate moves and Chess Topper's move-selection logic; the displayed Elo is a target setting, not a certified playing rating.</p>
+              </div>
               <EngineSliders settings={settings} update={update} />
               <button type="button" className="btn btn-primary w-full" disabled={!ready} onClick={() => start()}>
                 {ready ? <PlayIcon className="h-4 w-4" /> : <Loader2 className="h-4 w-4 animate-spin" />}
