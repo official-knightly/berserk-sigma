@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "./AuthProvider";
 import { EngineBadge } from "./chess/parts";
+import { AppUpdateNotice } from "./AppUpdateNotice";
 
 const PRIMARY_NAV = [
   { to: "/", label: "Home", icon: Home },
