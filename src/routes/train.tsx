@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight, BookOpen, Brain, CalendarCheck, CheckCircle2, Crosshair,
-  GraduationCap, LockKeyhole, Puzzle, ShieldCheck, Swords, Target, Trophy, Zap,
+  GraduationCap, Puzzle, ShieldCheck, Swords, Target, Trophy,
 } from "lucide-react";
 
 export const Route = createFileRoute("/train")({
