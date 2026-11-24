@@ -10,6 +10,14 @@ let mainWindow = null;
 let stockfishPathPromise = null;
 let stockfishEngine = null;
 
+function assertTrustedRenderer(event) {
+  const senderUrl = event.senderFrame?.url || "";
+  try {
+    if (new URL(senderUrl).origin === APP_ORIGIN) return;
+  } catch {}
+  throw new Error("This Chess Topper action is only available to the trusted app window.");
+}
+
 function sendUpdateState(state) {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send("updates:state", state);
@@ -73,19 +81,23 @@ autoUpdater.on("download-progress", (progress) => sendUpdateState({ status: "dow
 autoUpdater.on("update-downloaded", (info) => sendUpdateState({ status: "downloaded", version: info.version, message: "The update has been downloaded. Restart to install it." }));
 autoUpdater.on("error", (error) => sendUpdateState({ status: "error", message: error.message || "The update could not be downloaded." }));
 
-ipcMain.handle("app:version", () => app.getVersion());
-ipcMain.handle("updates:check", async () => {
+ipcMain.handle("app:version", (event) => { assertTrustedRenderer(event); return app.getVersion(); });
+ipcMain.handle("stockfish:native-available", (event) => { assertTrustedRenderer(event); return process.platform === "win32"; });
+ipcMain.handle("updates:check", async (event) => {
+  assertTrustedRenderer(event);
   if (!app.isPackaged) {
     sendUpdateState({ status: "not-available", message: "Updates are checked in packaged builds." });
     return;
   }
   await autoUpdater.checkForUpdates();
 });
-ipcMain.handle("updates:download", async () => {
+ipcMain.handle("updates:download", async (event) => {
+  assertTrustedRenderer(event);
   if (!app.isPackaged) throw new Error("The updater is available in installed builds.");
   await autoUpdater.downloadUpdate();
 });
-ipcMain.handle("updates:install", () => {
+ipcMain.handle("updates:install", (event) => {
+  assertTrustedRenderer(event);
   autoUpdater.quitAndInstall(false, true);
 });
 
@@ -100,13 +112,15 @@ async function getStockfishPath() {
   return stockfishPathPromise;
 }
 
-ipcMain.handle("stockfish:ensure", async () => {
+ipcMain.handle("stockfish:ensure", async (event) => {
+  assertTrustedRenderer(event);
   const executable = await getStockfishPath();
   sendEngineState({ status: "ready", message: "Native Stockfish is ready." });
   return { ready: true, executable };
 });
 
-ipcMain.handle("stockfish:search", async (_event, request) => {
+ipcMain.handle("stockfish:search", async (event, request) => {
+  assertTrustedRenderer(event);
   const fen = typeof request?.fen === "string" ? request.fen : "";
   if (!fen || fen.length > 240 || /[\r\n\0]/.test(fen) || fen.split(/\s+/).length !== 6) {
     throw new Error("Invalid FEN supplied to Stockfish.");
