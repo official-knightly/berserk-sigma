@@ -37,7 +37,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const message = typeof body?.error === "string" ? body.error : `Chessigma API error (${response.status})`;
+    const message = typeof body?.error === "string" ? body.error : typeof body?.message === "string" ? body.message : `Chessigma API error (${response.status})`;
     throw new Error(response.status === 429 ? `${message}. Please wait before trying again.` : message);
   }
   return body as T;
