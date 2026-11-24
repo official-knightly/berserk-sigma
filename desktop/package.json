@@ -31,8 +31,10 @@
     ],
     "asar": true,
     "win": {
-      "icon": "../src-tauri/icons/icon.ico",
-      "target": ["nsis"],
+      "icon": "../branding/chess-topper-icon.svg",
+      "target": [
+        "nsis"
+      ],
       "artifactName": "Chess-Topper-Setup-${version}.${ext}"
     },
     "nsis": {
@@ -43,22 +45,30 @@
       "shortcutName": "Chess Topper"
     },
     "mac": {
-      "icon": "../src-tauri/icons/icon.icns",
-      "target": ["dmg", "zip"],
+      "icon": "../branding/chess-topper-icon.svg",
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "category": "public.app-category.games",
       "artifactName": "Chess-Topper-macOS-${version}.${ext}"
     },
     "linux": {
-      "icon": "../src-tauri/icons/128x128.png",
-      "target": ["AppImage", "deb"],
+      "icon": "../branding/chess-topper-icon.svg",
+      "target": [
+        "AppImage",
+        "deb"
+      ],
       "category": "Game",
       "artifactName": "Chess-Topper-Linux-${arch}-${version}.${ext}"
     },
-    "publish": [{
-      "provider": "github",
-      "owner": "official-knightly",
-      "repo": "berserk-sigma",
-      "releaseType": "release"
-    }]
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "official-knightly",
+        "repo": "berserk-sigma",
+        "releaseType": "release"
+      }
+    ]
   }
 }
