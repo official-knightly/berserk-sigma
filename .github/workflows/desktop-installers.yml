@@ -6,7 +6,6 @@ on:
     paths:
       - "desktop/**"
       - "branding/**"
-      - "src-tauri/icons/**"
       - ".github/workflows/desktop-installers.yml"
   pull_request:
     branches: [main]
@@ -32,16 +31,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-
-      - name: Set up Rust for logo asset generation
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install Tauri icon generator
-        run: cargo install tauri-cli --locked
-
-      - name: Generate native icons from the supplied Chess Topper knight logo
-        working-directory: src-tauri
-        run: cargo tauri icon ../branding/chess-topper-icon.svg
 
       - name: Install desktop dependencies
         working-directory: desktop
