@@ -11,6 +11,7 @@ import {
   Gamepad2,
   Home,
   Radio,
+  Sparkles,
   Settings,
   Swords,
   Play,
@@ -27,6 +28,7 @@ const PRIMARY_NAV = [
   { to: "/stats", label: "Coach", icon: BarChart3 },
   { to: "/games", label: "Games", icon: Gamepad2 },
   { to: "/brain", label: "Brain", icon: Brain, badge: "NEW" },
+  { to: "/ai-coach", label: "AI Coach", icon: Sparkles, badge: "AI" },
 ] as const;
 
 const TOOL_NAV = [
