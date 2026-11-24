@@ -18,6 +18,7 @@ declare global {
         onState: (callback: (state: DesktopUpdateState) => void) => () => void;
       };
       stockfish: {
+        nativeAvailable: () => Promise<boolean>;
         ensure: () => Promise<{ ready: boolean; message?: string }>;
         search: (fen: string, milliseconds: number, multiPV?: number) => Promise<SearchResult>;
       };
