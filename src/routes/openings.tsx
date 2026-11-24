@@ -8,7 +8,7 @@ import { OPENING_REPERTOIRE } from "@/lib/openings";
 export const Route = createFileRoute("/openings")({
   head: () => ({
     meta: [
-      { title: "Opening Trainer — Berserk Sigma" },
+      { title: "Opening Trainer — Chess Topper" },
       { name: "description", content: "Practice recalling standard chess opening moves and variations." },
     ],
   }),
