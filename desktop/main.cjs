@@ -6,6 +6,8 @@ const { StockfishUciEngine } = require("./uci-engine");
 
 const APP_URL = process.env.CHESS_TOPPER_URL || "https://berserk-sigma.akatsuki-x-pain12.workers.dev/";
 const APP_ORIGIN = new URL(APP_URL).origin;
+const RELEASE_API = "https://api.github.com/repos/official-knightly/berserk-sigma/releases/latest";
+let macUpdateUrl = null;
 let mainWindow = null;
 let stockfishPathPromise = null;
 let stockfishEngine = null;
@@ -16,6 +18,44 @@ function assertTrustedRenderer(event) {
     if (new URL(senderUrl).origin === APP_ORIGIN) return;
   } catch {}
   throw new Error("This Chess Topper action is only available to the trusted app window.");
+}
+
+function isNewerVersion(candidate, current) {
+  const parts = (value) => value.replace(/^v/i, "").split(/[.+-]/).slice(0, 3).map((part) => Number.parseInt(part, 10) || 0);
+  const next = parts(candidate);
+  const installed = parts(current);
+  for (let index = 0; index < 3; index += 1) {
+    if ((next[index] || 0) !== (installed[index] || 0)) return (next[index] || 0) > (installed[index] || 0);
+  }
+  return false;
+}
+
+async function checkMacUpdate() {
+  sendUpdateState({ status: "checking", message: "Checking for a Chess Topper DMG update…" });
+  const response = await fetch(RELEASE_API, {
+    headers: { Accept: "application/vnd.github+json", "User-Agent": "Chess-Topper-Desktop" },
+    cache: "no-store"
+  });
+  if (!response.ok) throw new Error(`GitHub update check returned HTTP ${response.status}.`);
+  const release = await response.json();
+  const version = typeof release.tag_name === "string" ? release.tag_name : "";
+  if (release.draft || release.prerelease || !version || !isNewerVersion(version, app.getVersion())) {
+    macUpdateUrl = null;
+    sendUpdateState({ status: "not-available" });
+    return;
+  }
+  const asset = (release.assets || []).find((item) => typeof item.name === "string" && /\\.dmg$/i.test(item.name) && typeof item.browser_download_url === "string");
+  if (!asset) {
+    macUpdateUrl = null;
+    sendUpdateState({ status: "error", version, message: "The latest release does not contain a macOS DMG." });
+    return;
+  }
+  macUpdateUrl = asset.browser_download_url;
+  sendUpdateState({
+    status: "available",
+    version,
+    message: "A macOS update is ready. Download the DMG and install it over your current app."
+  });
 }
 
 function sendUpdateState(state) {
@@ -89,11 +129,21 @@ ipcMain.handle("updates:check", async (event) => {
     sendUpdateState({ status: "not-available", message: "Updates are checked in packaged builds." });
     return;
   }
+  if (process.platform === "darwin") {
+    await checkMacUpdate();
+    return;
+  }
   await autoUpdater.checkForUpdates();
 });
 ipcMain.handle("updates:download", async (event) => {
   assertTrustedRenderer(event);
   if (!app.isPackaged) throw new Error("The updater is available in installed builds.");
+  if (process.platform === "darwin") {
+    if (!macUpdateUrl) await checkMacUpdate();
+    if (!macUpdateUrl) throw new Error("No macOS DMG update is currently available.");
+    await shell.openExternal(macUpdateUrl);
+    return;
+  }
   await autoUpdater.downloadUpdate();
 });
 ipcMain.handle("updates:install", (event) => {
@@ -137,7 +187,8 @@ app.whenReady().then(() => {
   createWindow();
   if (app.isPackaged) {
     setTimeout(() => {
-      void autoUpdater.checkForUpdates().catch((error) => sendUpdateState({ status: "error", message: error.message }));
+      const check = process.platform === "darwin" ? checkMacUpdate() : autoUpdater.checkForUpdates();
+      void check.catch((error) => sendUpdateState({ status: "error", message: error.message }));
     }, 4500);
   }
   app.on("activate", () => {
