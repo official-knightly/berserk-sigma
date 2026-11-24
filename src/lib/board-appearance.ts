@@ -4,7 +4,7 @@ export type BoardThemeId = "green" | "grey" | "blue" | "light-wood" | "dark-wood
 export type PieceStyleId =
   | "staunty" | "staunty-wood" | "governor" | "merida" | "merida-traffic"
   | "companion" | "smart" | "alpha-wood" | "fresca" | "mediaeval"
-  | "echiquier-ink" | "kosal-violet" | "horsey" | "byte-gambit" | "fish";
+  | "echiquier-ink" | "kosal-violet" | "horsey" | "byte-gambit" | "fish" | "chesscom";
 
 export type BoardTheme = {
   id: BoardThemeId;
@@ -43,6 +43,7 @@ export const PIECE_STYLES: PieceStyle[] = [
   { id: "horsey", label: "Horsey", palette: { light: "#f7f5eb", dark: "#777e87", outline: "#41464d", accent: "#cad0d4" }, credit: "Original Chess Topper horse-profile knight SVG style" },
   { id: "byte-gambit", label: "1K Byte Gambit", palette: { light: "#24ddd5", dark: "#c63dc5", outline: "#15151b", accent: "#ffdc50", pixel: true }, credit: "Original Chess Topper pixel-inspired SVG style" },
   { id: "fish", label: "Fish", palette: { light: "#f2ddb6", dark: "#24485c", outline: "#173647", accent: "#f2ae45", fish: true }, credit: "Original Chess Topper fish-themed SVG artwork" },
+  { id: "chesscom", label: "Chess.com Style", palette: { light: "#f7f7f7", dark: "#292929", outline: "#171717", accent: "#81b64c" }, credit: "Original Chess Topper Staunton-style SVG artwork; not official Chess.com assets" },
 ];
 
 export type BoardAppearance = { board: BoardThemeId; pieces: PieceStyleId };
@@ -100,6 +101,14 @@ const CLASSIC_SHAPES: Record<string, string> = {
 
 
 const STYLE_SHAPE_SETS: Partial<Record<PieceStyleId, Record<string, string>>> = {
+  chesscom: {
+    p: `<circle cx="50" cy="23" r="11"/><path d="M42 36 Q34 47 35 61 L29 72 H71 L65 61 Q66 47 58 36Z"/>`,
+    r: `<path d="M23 14 H38 V27 H46 V14 H54 V27 H62 V14 H77 V38 H71 V70 H29 V38 H23Z"/>`,
+    n: `<path d="M25 72 Q25 57 34 47 Q29 38 36 29 L50 17 L62 22 L75 14 L71 34 Q67 43 59 49 Q75 54 73 72Z"/><path d="M40 34 L53 43 L43 50" fill="none"/>`,
+    b: `<path d="M50 11 Q68 26 64 43 Q62 51 56 57 L69 71 H31 L44 57 Q38 50 36 43 Q32 26 50 11Z"/><path d="M44 22 L57 45" fill="none" stroke-width="5"/>`,
+    q: `<path d="M21 30 L33 43 L41 19 L50 40 L59 19 L67 43 L79 30 L71 70 H29Z"/><circle cx="21" cy="23" r="5"/><circle cx="41" cy="13" r="5"/><circle cx="59" cy="13" r="5"/><circle cx="79" cy="23" r="5"/>`,
+    k: `<path d="M24 41 L37 49 L43 29 L50 43 L57 29 L63 49 L76 41 L69 71 H31Z"/><path d="M50 6 V28 M39 17 H61" fill="none" stroke-width="6"/>`,
+  },
   governor: {
     p: `<path d="M39 28 Q32 12 50 10 Q68 12 61 28 Q72 45 68 69 H32 Q28 45 39 28Z"/>`,
     r: `<path d="M22 14 H36 V27 H45 V14 H55 V27 H64 V14 H78 V38 H71 V70 H29 V38 H22Z"/>`,
