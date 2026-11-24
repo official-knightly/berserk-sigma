@@ -151,7 +151,7 @@ function PlayPage() {
       if (token === tokenRef.current) setBusy(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.think, settings.elo, settings.attack, checkOver]);
+  }, [settings.think, settings.elo, settings.attack, checkOver, engineChoice]);
 
   function humanMove(m: { from: string; to: string; promotion?: string }) {
     const g = gameRef.current;
