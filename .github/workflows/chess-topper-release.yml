@@ -1,16 +1,20 @@
-name: Chess Topper Release
+name: Chess Topper v1 Release
 
 on:
   push:
-    tags:
-      - "v*"
+    branches: [main]
+    paths:
+      - ".github/workflows/chess-topper-release.yml"
 
 permissions:
   contents: write
 
+env:
+  APP_VERSION: "1.0.0"
+
 jobs:
   android:
-    name: Build Android APK
+    name: Build Chess Topper Android APK
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,17 +25,15 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      - name: Set application version from release tag
+      - name: Set application version
         run: |
-          node -e 'const fs=require("node:fs");const p=JSON.parse(fs.readFileSync("package.json","utf8"));p.version=process.env.APP_VERSION.replace(/^v/,"");fs.writeFileSync("package.json",JSON.stringify(p,null,2)+"\n")'
-        env:
-          APP_VERSION: ${{ github.ref_name }}
+          node -e 'const fs=require("node:fs");const p=JSON.parse(fs.readFileSync("package.json","utf8"));p.version=process.env.APP_VERSION;fs.writeFileSync("package.json",JSON.stringify(p,null,2)+"\n")'
       - name: Install dependencies
         run: bun install --no-save
       - name: Build the Android web bundle
         run: bun run build
         env:
-          VITE_APP_VERSION: ${{ github.ref_name }}
+          VITE_APP_VERSION: ${{ env.APP_VERSION }}
       - name: Add and sync Android project
         run: |
           npx cap add android
@@ -45,13 +47,13 @@ jobs:
           sed -i -e 's#android:icon="@mipmap/ic_launcher"#android:icon="@drawable/chess_topper_logo"#g' -e 's#android:roundIcon="@mipmap/ic_launcher_round"#android:roundIcon="@drawable/chess_topper_logo"#g' android/app/src/main/AndroidManifest.xml
       - name: Set Android version name and version code
         run: |
-          node -e 'const fs=require("node:fs");const p="android/app/build.gradle";let s=fs.readFileSync(p,"utf8");s=s.replace(/versionCode\s+\d+/, "versionCode "+process.env.VERSION_CODE);s=s.replace(/versionName\s+"[^"]+"/, "versionName \""+process.env.APP_VERSION.replace(/^v/,"")+"\"");fs.writeFileSync(p,s)'
+          node -e 'const fs=require("node:fs");const p="android/app/build.gradle";let s=fs.readFileSync(p,"utf8");s=s.replace(/versionCode\s+\d+/, "versionCode "+process.env.VERSION_CODE);s=s.replace(/versionName\s+"[^"]+"/, "versionName \""+process.env.APP_VERSION+"\"");fs.writeFileSync(p,s)'
         env:
           VERSION_CODE: ${{ github.run_number }}
-          APP_VERSION: ${{ github.ref_name }}
+          APP_VERSION: ${{ env.APP_VERSION }}
       - name: Harden Android networking and backup
         run: node scripts/harden-android.mjs
-      - name: Check whether a stable Android release keystore is configured
+      - name: Check for a stable Android signing key
         id: android-signing
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -97,11 +99,11 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: ./gradlew --no-daemon assembleRelease
-      - name: Build debug-signed APK when release signing is not configured
+      - name: Build debug-signed APK for first-install testing
         if: steps.android-signing.outputs.configured != 'true'
         working-directory: android
         run: ./gradlew --no-daemon assembleDebug
-      - name: Stage standalone APK release asset
+      - name: Stage standalone Android APK
         run: |
           mkdir -p release-assets
           if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
@@ -122,7 +124,13 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix:
-        os: [ubuntu-22.04, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-22.04
+            asset_globs: linux
+          - os: macos-latest
+            asset_globs: mac
+          - os: windows-latest
+            asset_globs: windows
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -131,39 +139,84 @@ jobs:
           node-version: "22"
       - name: Set desktop package version
         working-directory: desktop
-        run: node -e 'const fs=require("node:fs");const p=JSON.parse(fs.readFileSync("package.json","utf8"));p.version=process.env.APP_VERSION.replace(/^v/,"");fs.writeFileSync("package.json",JSON.stringify(p,null,2)+"\n")'
         env:
-          APP_VERSION: ${{ github.ref_name }}
+          APP_VERSION: ${{ env.APP_VERSION }}
+        run: |
+          node -e 'const fs=require("node:fs");const p=JSON.parse(fs.readFileSync("package.json","utf8"));p.version=process.env.APP_VERSION;fs.writeFileSync("package.json",JSON.stringify(p,null,2)+"\n")'
       - name: Install desktop dependencies
         working-directory: desktop
         run: npm install --no-audit --no-fund
-      - name: Build and publish platform installers plus updater manifests
+      - name: Build installers without ZIP packages or early publishing
         working-directory: desktop
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CSC_LINK: ${{ runner.os == 'Windows' && secrets.WIN_CSC_LINK || runner.os == 'macOS' && secrets.MAC_CSC_LINK || '' }}
-          CSC_KEY_PASSWORD: ${{ runner.os == 'Windows' && secrets.WIN_CSC_KEY_PASSWORD || runner.os == 'macOS' && secrets.MAC_CSC_KEY_PASSWORD || '' }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: npm run dist -- --publish always
+        run: npm run dist -- --publish never
+      - name: Upload direct Windows installer and updater manifest
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: chess-topper-windows
+          path: |
+            desktop/dist/*.exe
+            desktop/dist/*.exe.blockmap
+            desktop/dist/latest.yml
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload direct macOS DMG installer
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: chess-topper-macos
+          path: desktop/dist/*.dmg
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload Linux AppImage, DEB and updater metadata
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: chess-topper-linux
+          path: |
+            desktop/dist/*.AppImage
+            desktop/dist/*.AppImage.blockmap
+            desktop/dist/*.deb
+            desktop/dist/latest-linux.yml
+          if-no-files-found: error
+          retention-days: 30
+
   publish:
-    name: Publish standalone installers
+    name: Publish Chess Topper v1.0.0 release assets
     needs: [android, desktop]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: chess-topper-android-release
+          pattern: chess-topper-*
           path: release-assets
-      - name: List release assets
-        run: find release-assets -maxdepth 2 -type f -printf '%f\n'
-      - name: Publish Chess Topper release
+          merge-multiple: true
+      - name: Verify that no ZIP packages are being published
+        run: |
+          find release-assets -type f -printf '%f\n'
+          if find release-assets -type f -iname '*.zip' | grep -q .; then
+            echo "ZIP packages are not allowed in the Chess Topper release."
+            exit 1
+          fi
+      - name: Publish Chess Topper v1.0.0
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Chess Topper ${{ github.ref_name }}
-          generate_release_notes: true
+          tag_name: v1.0.0
+          target_commitish: ${{ github.sha }}
+          name: Chess Topper v1.0.0
+          body: |
+            ## Chess Topper v1.0.0
+
+            First public application release. Download the installer for your platform below.
+
+            - Android: `Chess-Topper.apk` when stable signing is configured; otherwise `Chess-Topper-debug.apk` for first-install testing.
+            - Windows: `Chess-Topper-Setup-1.0.0.exe`
+            - macOS: `Chess-Topper-macOS-1.0.0.dmg`
+            - Linux: `Chess-Topper-Linux-x86_64-1.0.0.AppImage` or the `.deb` package.
+
+            Windows and Linux release manifests are included for desktop update checks. macOS updates are delivered as a DMG download. No ZIP installer packages are published.
           draft: false
           prerelease: false
+          generate_release_notes: true
+          fail_on_unmatched_files: true
           files: release-assets/*
