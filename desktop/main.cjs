@@ -44,7 +44,7 @@ async function checkMacUpdate() {
     sendUpdateState({ status: "not-available" });
     return;
   }
-  const asset = (release.assets || []).find((item) => typeof item.name === "string" && /\\.dmg$/i.test(item.name) && typeof item.browser_download_url === "string");
+  const asset = (release.assets || []).find((item) => typeof item.name === "string" && /\.dmg$/i.test(item.name) && typeof item.browser_download_url === "string");
   if (!asset) {
     macUpdateUrl = null;
     sendUpdateState({ status: "error", version, message: "The latest release does not contain a macOS DMG." });
