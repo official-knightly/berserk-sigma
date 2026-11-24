@@ -11,7 +11,6 @@ import {
   Gamepad2,
   Home,
   Radio,
-  Sparkles,
   Settings,
   Swords,
   Play,
@@ -28,7 +27,6 @@ const PRIMARY_NAV = [
   { to: "/stats", label: "Coach", icon: BarChart3 },
   { to: "/games", label: "Games", icon: Gamepad2 },
   { to: "/brain", label: "Brain", icon: Brain, badge: "NEW" },
-  { to: "/ai-coach", label: "AI Coach", icon: Sparkles, badge: "AI" },
 ] as const;
 
 const TOOL_NAV = [
@@ -154,7 +152,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </footer>
       </div>
 
-      <nav aria-label="Mobile navigation" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-6 border-t border-border bg-sidebar/95 px-1 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_rgba(0,0,0,.25)] backdrop-blur lg:hidden">
+      <nav aria-label="Mobile navigation" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border bg-sidebar/95 px-1 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_rgba(0,0,0,.25)] backdrop-blur lg:hidden">
         {PRIMARY_NAV.map((item) => (
           <Link key={item.to} to={item.to} className="mnav-item min-h-[58px] gap-1 py-2" activeOptions={{ exact: item.to === "/" }}>
             <span className="relative">
