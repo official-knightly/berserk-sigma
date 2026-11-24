@@ -79,6 +79,9 @@ export function AppUpdateNotice() {
         const selected = platform === "android"
           ? assets.find((asset) => /^chess-topper\.apk$/i.test(asset.name))
           : detectDesktopAsset(assets);
+        // Never advertise a debug-signed Android APK as an in-place update.
+        // Android requires the same stable signing key for upgrades.
+        if (platform === "android" && !selected) return;
         setNotice({
           status: "available",
           version,
