@@ -446,3 +446,51 @@
   background: var(--background);
   color: var(--foreground);
 }
+
+
+/* Reference-inspired training hub: dark raised cards, compact two-column grid and gold actions. */
+.train-hub { padding-bottom: 1.25rem; }
+.train-feature, .train-resume {
+  display:flex; align-items:center; gap:1rem; min-width:0; border:1px solid var(--border);
+  border-radius:18px; background:#242424; box-shadow:0 7px 0 #090909;
+  transition:transform .16s ease,border-color .16s ease;
+}
+.train-feature:hover,.train-resume:hover,.train-tile:hover { transform:translateY(-2px); border-color:color-mix(in srgb,var(--primary) 55%,var(--border)); }
+.train-feature-icon { display:grid; place-items:center; width:56px; height:56px; flex:0 0 auto; border-radius:14px; background:#123e39; color:#18c5ad; }
+.train-resume { background:#1d1d1d; }
+.train-bird { display:grid; place-items:center; width:56px; height:56px; flex:0 0 auto; font-size:2.5rem; }
+.train-resume-button { display:inline-flex; align-items:center; justify-content:center; border-radius:12px; background:#ffb800; color:#171717; padding:13px 18px; font-weight:900; box-shadow:0 5px 0 #946400; }
+.train-section-label { display:flex; align-items:center; justify-content:center; gap:12px; color:#aaa; font-size:.72rem; font-weight:900; letter-spacing:.16em; }
+.train-section-label:before,.train-section-label:after { content:""; height:1px; flex:1; background:var(--border); }
+.train-section-label span:first-child { font-size:1.1rem; letter-spacing:0; }
+.train-tile { display:flex; min-width:0; min-height:205px; flex-direction:column; align-items:flex-start; padding:18px 16px; border:1px solid var(--border); border-radius:17px; background:#242424; box-shadow:0 6px 0 #090909; transition:transform .16s ease,border-color .16s ease; }
+.train-tile-icon { width:46px; height:46px; margin-bottom:15px; stroke-width:2.1; }
+.train-tile h2 { font-size:clamp(1rem,2.4vw,1.25rem); font-weight:750; letter-spacing:-.025em; }
+.train-tile p { margin-top:5px; color:#aaa; font-size:.88rem; line-height:1.55; }
+.train-tile-status { display:flex; align-items:center; gap:6px; margin-top:auto; padding-top:18px; color:#12c69d; font-size:.78rem; font-weight:800; }
+.train-tile-status svg { width:15px; height:15px; }
+.train-icon-teal { color:#17bba7; }.train-icon-gold { color:#ffb800; }.train-icon-blue { color:#6597f5; }.train-icon-red { color:#f05b43; }
+.train-brain-link { display:flex; align-items:center; gap:12px; padding:15px; border:1px solid var(--border); border-radius:14px; background:#202020; }
+.train-brain-link small { display:block; margin-top:3px; color:var(--muted-foreground); font-size:.72rem; }
+@media(max-width:390px) {
+  .train-tile { min-height:190px; padding:14px 12px; }
+  .train-tile-icon { width:39px; height:39px; }
+  .train-tile p { font-size:.78rem; }
+  .train-resume-button { width:100%; }
+}
+
+/* Game review hierarchy, player comparison and move-by-move report. */
+.review-player-card { display:flex; min-width:0; align-items:center; gap:9px; padding:11px; border:1px solid var(--border); border-radius:13px; background:var(--surface); }
+.review-player-card strong { flex:0 0 auto; font:800 1.15rem var(--font-mono); color:var(--primary); }
+.review-player-card small { display:block; margin-top:2px; color:var(--muted-foreground); font-size:.68rem; }
+.review-player-avatar { display:grid; width:35px; height:35px; flex:0 0 auto; place-items:center; border-radius:10px; font-weight:900; }
+.review-player-avatar.is-white { background:#f1f0e9; color:#242424; }.review-player-avatar.is-black { background:#111; border:1px solid #444; color:#eee; }
+.review-stat { min-width:0; padding:10px; border:1px solid var(--border); border-radius:11px; background:var(--surface); }
+.review-stat span { display:block; color:var(--muted-foreground); font-size:.62rem; text-transform:uppercase; letter-spacing:.09em; }
+.review-stat b { display:block; overflow:hidden; margin-top:4px; font:800 1.05rem var(--font-mono); text-overflow:ellipsis; white-space:nowrap; }
+.review-report .panel,.review-insights .panel { border-radius:14px; }
+@media(max-width:430px) {
+  .review-player-card { gap:6px; padding:8px; }
+  .review-player-avatar { width:29px; height:29px; }
+  .review-player-card strong { font-size:.95rem; }
+}
