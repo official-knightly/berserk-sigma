@@ -5,7 +5,7 @@ on:
     branches: [main]
   push:
     branches: [main, android/chess-topper]
-    paths: ["src-tauri/**", "desktop-web/**", ".github/workflows/desktop-installers.yml"]
+    paths: ["src-tauri/**", "desktop-web/**", "branding/**", ".github/workflows/desktop-installers.yml"]
 permissions:
   contents: read
 jobs:
@@ -32,6 +32,9 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Install Tauri CLI
         run: cargo install tauri-cli --locked
+      - name: Generate desktop icons from supplied Chess Topper logo
+        working-directory: src-tauri
+        run: cargo tauri icon ../branding/chess-topper-icon.svg
       - name: Build desktop installer
         working-directory: src-tauri
         run: cargo tauri build --bundles ${{ matrix.bundle }}
