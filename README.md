@@ -9,7 +9,7 @@ Chess Topper is a free chess training, analysis and game-review application. Imp
 
 ## Android and desktop installers
 
-Push a version tag such as `v1.0.1` to run **Chess Topper Release**. The workflow publishes the APK as a standalone `Chess-Topper.apk` GitHub Release asset (not an APK inside a ZIP), plus Windows, macOS and Linux desktop installers. macOS ZIP update metadata is also published for Electron's updater.
+Push a version tag such as `v1.0.1` to run **Chess Topper Release**. With the stable Android signing secrets configured, the workflow publishes a standalone `Chess-Topper.apk` GitHub Release asset (not an APK inside a ZIP). Without the keystore, it publishes `Chess-Topper-debug.apk` for testing only; the Android update notice will not offer that debug APK as an in-place update. Windows, macOS and Linux desktop installers plus Electron update manifests are published alongside the APK.
 
 The Android updater checks the latest GitHub Release and opens the APK in the Android browser/package installer. Android still requires the user to approve the install. The app does not bypass Play Protect or Android's unknown-app safeguards.
 
