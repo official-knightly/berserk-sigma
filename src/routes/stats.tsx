@@ -6,6 +6,7 @@ import { loadGames, clearGames, saveGame, SavedGame } from "@/lib/store";
 import { fetchLichessGames, fetchChessComGames } from "@/lib/game-import";
 import { GradeIcon, Panel } from "@/components/chess/parts";
 import { Grade } from "@/lib/chess-logic";
+import { calculateChessigmaElo, CHESSIGMA_ATTRIBUTION, type ChessigmaEloResult } from "@/lib/chessigma-api";
 import { deleteCloudGames, syncCloudGames } from "@/lib/supabase";
 import {
   Trophy,
@@ -40,6 +41,14 @@ function StatsPage() {
   const [importUsername, setImportUsername] = useState("");
   const [importBusy, setImportBusy] = useState(false);
   const [importMessage, setImportMessage] = useState<string | null>(null);
+  const [eloYou, setEloYou] = useState("1200");
+  const [eloOpponent, setEloOpponent] = useState("1200");
+  const [eloOutcome, setEloOutcome] = useState<"win" | "draw" | "loss">("win");
+  const [eloSystem, setEloSystem] = useState<"fide" | "chesscom" | "lichess">("fide");
+  const [eloKFactor, setEloKFactor] = useState("20");
+  const [eloBusy, setEloBusy] = useState(false);
+  const [eloError, setEloError] = useState<string | null>(null);
+  const [eloEstimate, setEloEstimate] = useState<ChessigmaEloResult | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -204,6 +213,31 @@ function StatsPage() {
       setImportMessage(error instanceof Error ? error.message : "Stockfish benchmark failed.");
     } finally {
       setStockfishBenchRunning(false);
+    }
+  };
+
+  const runChessigmaElo = async () => {
+    const yourRating = Number(eloYou);
+    const opponentRating = Number(eloOpponent);
+    const kFactor = Number(eloKFactor);
+    if (!Number.isInteger(yourRating) || !Number.isInteger(opponentRating) || yourRating < 0 || opponentRating < 0 || yourRating > 4000 || opponentRating > 4000) {
+      setEloError("Enter whole-number ratings from 0 to 4000.");
+      return;
+    }
+    if (!Number.isFinite(kFactor) || kFactor < 1 || kFactor > 100) {
+      setEloError("K-factor must be between 1 and 100.");
+      return;
+    }
+    setEloBusy(true);
+    setEloError(null);
+    setEloEstimate(null);
+    try {
+      const result = await calculateChessigmaElo({ yourRating, opponentRating, result: eloOutcome, system: eloSystem, kFactor });
+      setEloEstimate(result);
+    } catch (error) {
+      setEloError(error instanceof Error ? error.message : "Chessigma could not calculate this rating estimate.");
+    } finally {
+      setEloBusy(false);
     }
   };
 
@@ -399,6 +433,56 @@ function StatsPage() {
         <p className="mt-2 text-[10px] text-muted-foreground">Average of {stockfishBenchResult?.samples ?? 9} measured samples; first evaluation is recorded when depth 5 appears, and total time when depth {stockfishBenchResult?.depth ?? 13} appears.</p>
         <p className="mt-3 text-[10px] leading-5 text-muted-foreground">This is a local-device measurement, not an Elo rating. Results vary with browser, CPU, temperature and other running applications.</p>
       </div>
+      <section className="panel space-y-4 p-5 sm:p-6">
+        <div>
+          <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-primary">CHESSIGMA PUBLIC API</p>
+          <h2 className="mt-1 text-base font-bold">Elo change calculator</h2>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">Estimate the rating change for one game using Chessigma's public rating endpoint.</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="space-y-1 text-xs font-semibold">Your rating
+            <input className="field" type="number" min="0" max="4000" step="1" value={eloYou} onChange={(event) => setEloYou(event.target.value)} />
+          </label>
+          <label className="space-y-1 text-xs font-semibold">Opponent rating
+            <input className="field" type="number" min="0" max="4000" step="1" value={eloOpponent} onChange={(event) => setEloOpponent(event.target.value)} />
+          </label>
+          <label className="space-y-1 text-xs font-semibold">Game result
+            <select className="field" value={eloOutcome} onChange={(event) => setEloOutcome(event.target.value as "win" | "draw" | "loss")}>
+              <option value="win">Win</option>
+              <option value="draw">Draw</option>
+              <option value="loss">Loss</option>
+            </select>
+          </label>
+          <label className="space-y-1 text-xs font-semibold">Rating system
+            <select className="field" value={eloSystem} onChange={(event) => setEloSystem(event.target.value as "fide" | "chesscom" | "lichess")}>
+              <option value="fide">FIDE</option>
+              <option value="chesscom">Chess.com</option>
+              <option value="lichess">Lichess</option>
+            </select>
+          </label>
+          <label className="space-y-1 text-xs font-semibold">K-factor
+            <input className="field" type="number" min="1" max="100" step="1" value={eloKFactor} onChange={(event) => setEloKFactor(event.target.value)} />
+          </label>
+          <div className="flex items-end">
+            <button type="button" onClick={() => void runChessigmaElo()} disabled={eloBusy} className="btn btn-primary w-full">
+              {eloBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gauge className="h-4 w-4" />}
+              {eloBusy ? "Calculating…" : "Calculate rating change"}
+            </button>
+          </div>
+        </div>
+        {eloError && <p className="text-xs text-destructive" role="alert">{eloError}</p>}
+        {eloEstimate && (
+          <div className="grid gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4 sm:grid-cols-3" role="status">
+            <div><p className="text-[10px] text-muted-foreground">Estimated new rating</p><p className="mt-1 font-mono text-2xl font-extrabold">{Math.round(eloEstimate.newRating)}</p></div>
+            <div><p className="text-[10px] text-muted-foreground">Rating change</p><p className="mt-1 font-mono text-2xl font-extrabold">{eloEstimate.change > 0 ? "+" : ""}{Number(eloEstimate.change.toFixed(2))}</p></div>
+            <div><p className="text-[10px] text-muted-foreground">Expected score</p><p className="mt-1 font-mono text-2xl font-extrabold">{(eloEstimate.expectedScore <= 1 ? eloEstimate.expectedScore * 100 : eloEstimate.expectedScore).toFixed(1)}%</p></div>
+          </div>
+        )}
+        <p className="text-[10px] leading-5 text-muted-foreground">
+          Powered by <a href={CHESSIGMA_ATTRIBUTION.developersUrl} target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">{CHESSIGMA_ATTRIBUTION.name}</a>. This is an estimate; Chess.com and Lichess use rating systems that are not identical to FIDE Elo.
+        </p>
+      </section>
+
       {/* Tactical Move Distribution */}
       <div className="panel p-6">
         <h2 className="text-sm font-semibold flex items-center gap-2 mb-4">
