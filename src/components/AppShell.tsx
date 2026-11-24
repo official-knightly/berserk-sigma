@@ -135,6 +135,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
         <main className="min-w-0 flex-1 px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 sm:px-5 lg:px-7 lg:pb-7 lg:pt-6">
+          <AppUpdateNotice />
           {children}
         </main>
         <footer className="border-t border-border px-4 py-5">
