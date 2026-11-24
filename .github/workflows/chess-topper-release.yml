@@ -51,8 +51,18 @@ jobs:
           APP_VERSION: ${{ github.ref_name }}
       - name: Harden Android networking and backup
         run: node scripts/harden-android.mjs
-      - name: Configure stable Android release signing when keystore secrets are present
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+      - name: Check whether a stable Android release keystore is configured
+        id: android-signing
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Configure stable Android release signing
+        if: steps.android-signing.outputs.configured == 'true'
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -80,7 +90,7 @@ jobs:
           EOF
           echo "CHESS_TOPPER_KEYSTORE_PATH=$RUNNER_TEMP/chess-topper-release.jks" >> "$GITHUB_ENV"
       - name: Build signed release APK
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        if: steps.android-signing.outputs.configured == 'true'
         working-directory: android
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -88,7 +98,7 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: ./gradlew --no-daemon assembleRelease
       - name: Build debug-signed APK when release signing is not configured
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 == '' }}
+        if: steps.android-signing.outputs.configured != 'true'
         working-directory: android
         run: ./gradlew --no-daemon assembleDebug
       - name: Stage standalone APK release asset
