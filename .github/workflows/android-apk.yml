@@ -10,6 +10,7 @@ on:
       - "capacitor.config.ts"
       - "vite.config.ts"
       - "scripts/**"
+      - "branding/**"
       - ".github/workflows/android-apk.yml"
   pull_request:
     branches: [main]
@@ -51,6 +52,14 @@ jobs:
 
       - name: Sync native project
         run: npx cap sync android
+
+      - name: Apply Chess Topper knight app icon
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin
+          mkdir -p android/app/src/main/res/drawable-nodpi
+          rsvg-convert -w 512 -h 512 branding/chess-topper-icon.svg > android/app/src/main/res/drawable-nodpi/chess_topper_logo.png
+          sed -i 's#android:icon="@mipmap/ic_launcher"#android:icon="@drawable/chess_topper_logo"#g' android/app/src/main/AndroidManifest.xml
 
       - name: Apply Android network security defaults
         run: node scripts/harden-android.mjs
