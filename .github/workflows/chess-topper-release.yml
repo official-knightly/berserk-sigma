@@ -1,0 +1,165 @@
+name: Chess Topper Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Set application version from release tag
+        run: |
+          node -e 'const fs=require("node:fs");const p=JSON.parse(fs.readFileSync("package.json","utf8"));p.version=process.env.APP_VERSION.replace(/^v/,"");fs.writeFileSync("package.json",JSON.stringify(p,null,2)+"\n")'
+        env:
+          APP_VERSION: ${{ github.ref_name }}
+      - name: Install dependencies
+        run: bun install --no-save
+      - name: Build the Android web bundle
+        run: bun run build
+        env:
+          VITE_APP_VERSION: ${{ github.ref_name }}
+      - name: Add and sync Android project
+        run: |
+          npx cap add android
+          npx cap sync android
+      - name: Apply Chess Topper knight icon
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin
+          mkdir -p android/app/src/main/res/drawable-nodpi
+          rsvg-convert -w 512 -h 512 branding/chess-topper-icon.svg > android/app/src/main/res/drawable-nodpi/chess_topper_logo.png
+          sed -i 's#android:icon="@mipmap/ic_launcher"#android:icon="@drawable/chess_topper_logo"#g' android/app/src/main/AndroidManifest.xml
+      - name: Set Android version name and version code
+        run: |
+          node -e 'const fs=require("node:fs");const p="android/app/build.gradle";let s=fs.readFileSync(p,"utf8");s=s.replace(/versionCode\s+\d+/, "versionCode "+process.env.VERSION_CODE);s=s.replace(/versionName\s+"[^"]+"/, "versionName \""+process.env.APP_VERSION.replace(/^v/,"")+"\"");fs.writeFileSync(p,s)'
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+          APP_VERSION: ${{ github.ref_name }}
+      - name: Harden Android networking and backup
+        run: node scripts/harden-android.mjs
+      - name: Configure stable Android release signing when keystore secrets are present
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/chess-topper-release.jks"
+          cat >> android/app/build.gradle <<'EOF'
+
+          android {
+              signingConfigs {
+                  release {
+                      storeFile file(System.getenv("CHESS_TOPPER_KEYSTORE_PATH"))
+                      storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                      keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                      keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+                  }
+              }
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.release
+                  }
+              }
+          }
+          EOF
+          echo "CHESS_TOPPER_KEYSTORE_PATH=$RUNNER_TEMP/chess-topper-release.jks" >> "$GITHUB_ENV"
+      - name: Build signed release APK
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew --no-daemon assembleRelease
+      - name: Build debug-signed APK when release signing is not configured
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 == '' }}
+        working-directory: android
+        run: ./gradlew --no-daemon assembleDebug
+      - name: Stage standalone APK release asset
+        run: |
+          mkdir -p release-assets
+          if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
+            cp android/app/build/outputs/apk/release/app-release.apk release-assets/Chess-Topper.apk
+          else
+            cp android/app/build/outputs/apk/debug/app-debug.apk release-assets/Chess-Topper.apk
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chess-topper-android-release
+          path: release-assets/Chess-Topper.apk
+          if-no-files-found: error
+          retention-days: 30
+
+  desktop:
+    name: Build desktop installer (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install Tauri icon generator
+        run: cargo install tauri-cli --locked
+      - name: Generate Chess Topper platform icons
+        working-directory: src-tauri
+        run: cargo tauri icon ../branding/chess-topper-icon.svg
+      - name: Set desktop package version
+        working-directory: desktop
+        run: node -e 'const fs=require("node:fs");const p=JSON.parse(fs.readFileSync("package.json","utf8"));p.version=process.env.APP_VERSION.replace(/^v/,"");fs.writeFileSync("package.json",JSON.stringify(p,null,2)+"\n")'
+        env:
+          APP_VERSION: ${{ github.ref_name }}
+      - name: Install desktop dependencies
+        working-directory: desktop
+        run: npm install --no-audit --no-fund
+      - name: Build platform installers and updater metadata
+        working-directory: desktop
+        run: npm run dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chess-topper-desktop-${{ runner.os }}
+          path: desktop/dist/**
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    name: Publish standalone installers
+    needs: [android, desktop]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: chess-topper-*
+          path: release-assets
+          merge-multiple: true
+      - name: List release assets
+        run: find release-assets -maxdepth 2 -type f -printf '%f\n'
+      - name: Publish Chess Topper release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Chess Topper ${{ github.ref_name }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          files: release-assets/*
