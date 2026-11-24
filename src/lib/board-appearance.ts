@@ -28,21 +28,21 @@ type Palette = { light: string; dark: string; outline: string; accent: string; p
 export type PieceStyle = { id: PieceStyleId; label: string; palette: Palette; credit: string };
 
 export const PIECE_STYLES: PieceStyle[] = [
-  { id: "staunty", label: "Staunty", palette: { light: "#f7f4e9", dark: "#343638", outline: "#242628", accent: "#c2a35c" }, credit: "Original Berserk Sigma Staunton-inspired SVG artwork" },
-  { id: "staunty-wood", label: "Staunty Wood", palette: { light: "#e7c39c", dark: "#86553b", outline: "#543a2c", accent: "#f3d5ae" }, credit: "Original Berserk Sigma SVG artwork and wood palette" },
-  { id: "governor", label: "Governor", palette: { light: "#ffffff", dark: "#161616", outline: "#111111", accent: "#c8a34e" }, credit: "Original Berserk Sigma SVG artwork and gold detailing" },
-  { id: "merida", label: "Merida", palette: { light: "#f2eddd", dark: "#302d2c", outline: "#242323", accent: "#a79d88" }, credit: "Original Berserk Sigma classical SVG style" },
-  { id: "merida-traffic", label: "Merida Traffic", palette: { light: "#f2c84f", dark: "#233b5d", outline: "#172a44", accent: "#e45a3e" }, credit: "Original Berserk Sigma SVG artwork and traffic palette" },
-  { id: "companion", label: "Companion", palette: { light: "#fff8ed", dark: "#55545d", outline: "#363640", accent: "#96b4d3" }, credit: "Original Berserk Sigma rounded SVG style" },
-  { id: "smart", label: "Smart", palette: { light: "#ffffff", dark: "#202124", outline: "#141414", accent: "#a7adb2" }, credit: "Original Berserk Sigma clean monochrome SVG style" },
-  { id: "alpha-wood", label: "Alpha Wood", palette: { light: "#dfbd92", dark: "#67452f", outline: "#4b3323", accent: "#c38b56" }, credit: "Original Berserk Sigma SVG artwork and wood palette" },
-  { id: "fresca", label: "Fresca", palette: { light: "#fff5e6", dark: "#3c8880", outline: "#245b55", accent: "#ef816b" }, credit: "Original Berserk Sigma fresh-colour SVG style" },
-  { id: "mediaeval", label: "Mediaeval", palette: { light: "#e9dfc9", dark: "#3e352b", outline: "#28231c", accent: "#b38c4f" }, credit: "Original Berserk Sigma ornamental SVG style" },
-  { id: "echiquier-ink", label: "Echiquier Ink", palette: { light: "#c9e4f4", dark: "#183452", outline: "#10263f", accent: "#5aa6cc" }, credit: "Original Berserk Sigma ink-blue SVG style" },
-  { id: "kosal-violet", label: "Kosal Violet", palette: { light: "#e2d4f4", dark: "#59457d", outline: "#3b2c59", accent: "#b18bdc" }, credit: "Original Berserk Sigma violet SVG style" },
-  { id: "horsey", label: "Horsey", palette: { light: "#f7f5eb", dark: "#777e87", outline: "#41464d", accent: "#cad0d4" }, credit: "Original Berserk Sigma horse-profile knight SVG style" },
-  { id: "byte-gambit", label: "1K Byte Gambit", palette: { light: "#24ddd5", dark: "#c63dc5", outline: "#15151b", accent: "#ffdc50", pixel: true }, credit: "Original Berserk Sigma pixel-inspired SVG style" },
-  { id: "fish", label: "Fish", palette: { light: "#f2ddb6", dark: "#24485c", outline: "#173647", accent: "#f2ae45", fish: true }, credit: "Original Berserk Sigma fish-themed SVG artwork" },
+  { id: "staunty", label: "Staunty", palette: { light: "#f7f4e9", dark: "#343638", outline: "#242628", accent: "#c2a35c" }, credit: "Original Chess Topper Staunton-inspired SVG artwork" },
+  { id: "staunty-wood", label: "Staunty Wood", palette: { light: "#e7c39c", dark: "#86553b", outline: "#543a2c", accent: "#f3d5ae" }, credit: "Original Chess Topper SVG artwork and wood palette" },
+  { id: "governor", label: "Governor", palette: { light: "#ffffff", dark: "#161616", outline: "#111111", accent: "#c8a34e" }, credit: "Original Chess Topper SVG artwork and gold detailing" },
+  { id: "merida", label: "Merida", palette: { light: "#f2eddd", dark: "#302d2c", outline: "#242323", accent: "#a79d88" }, credit: "Original Chess Topper classical SVG style" },
+  { id: "merida-traffic", label: "Merida Traffic", palette: { light: "#f2c84f", dark: "#233b5d", outline: "#172a44", accent: "#e45a3e" }, credit: "Original Chess Topper SVG artwork and traffic palette" },
+  { id: "companion", label: "Companion", palette: { light: "#fff8ed", dark: "#55545d", outline: "#363640", accent: "#96b4d3" }, credit: "Original Chess Topper rounded SVG style" },
+  { id: "smart", label: "Smart", palette: { light: "#ffffff", dark: "#202124", outline: "#141414", accent: "#a7adb2" }, credit: "Original Chess Topper clean monochrome SVG style" },
+  { id: "alpha-wood", label: "Alpha Wood", palette: { light: "#dfbd92", dark: "#67452f", outline: "#4b3323", accent: "#c38b56" }, credit: "Original Chess Topper SVG artwork and wood palette" },
+  { id: "fresca", label: "Fresca", palette: { light: "#fff5e6", dark: "#3c8880", outline: "#245b55", accent: "#ef816b" }, credit: "Original Chess Topper fresh-colour SVG style" },
+  { id: "mediaeval", label: "Mediaeval", palette: { light: "#e9dfc9", dark: "#3e352b", outline: "#28231c", accent: "#b38c4f" }, credit: "Original Chess Topper ornamental SVG style" },
+  { id: "echiquier-ink", label: "Echiquier Ink", palette: { light: "#c9e4f4", dark: "#183452", outline: "#10263f", accent: "#5aa6cc" }, credit: "Original Chess Topper ink-blue SVG style" },
+  { id: "kosal-violet", label: "Kosal Violet", palette: { light: "#e2d4f4", dark: "#59457d", outline: "#3b2c59", accent: "#b18bdc" }, credit: "Original Chess Topper violet SVG style" },
+  { id: "horsey", label: "Horsey", palette: { light: "#f7f5eb", dark: "#777e87", outline: "#41464d", accent: "#cad0d4" }, credit: "Original Chess Topper horse-profile knight SVG style" },
+  { id: "byte-gambit", label: "1K Byte Gambit", palette: { light: "#24ddd5", dark: "#c63dc5", outline: "#15151b", accent: "#ffdc50", pixel: true }, credit: "Original Chess Topper pixel-inspired SVG style" },
+  { id: "fish", label: "Fish", palette: { light: "#f2ddb6", dark: "#24485c", outline: "#173647", accent: "#f2ae45", fish: true }, credit: "Original Chess Topper fish-themed SVG artwork" },
 ];
 
 export type BoardAppearance = { board: BoardThemeId; pieces: PieceStyleId };
