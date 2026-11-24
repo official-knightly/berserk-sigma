@@ -27,8 +27,8 @@ export const Route = createFileRoute("/stats")({
     meta: [
       { title: "Coach — Chess Topper" },
       { name: "description", content: "Your saved games, move-quality report, training activity and engine performance." },
-      { property: "og:title", content: "Statistics & Benchmarks — Berserk Web" },
-      { property: "og:description", content: "Berserk engine benchmarks, match history, accuracy statistics and performance analytics." },
+      { property: "og:title", content: "Coach — Chess Topper" },
+      { property: "og:description", content: "Chess Topper engine benchmarks, match history, accuracy statistics and performance analytics." },
     ],
   }),
   component: StatsPage,
@@ -58,7 +58,7 @@ function StatsPage() {
         if (!active) return;
         setGames(merged);
       } catch (error) {
-        console.warn("Berserk cloud history sync failed:", error);
+        console.warn("Chess Topper cloud history sync failed:", error);
       }
     };
     void refreshCloudHistory();
@@ -271,7 +271,7 @@ function StatsPage() {
           </p>
         </div>
         <Link to="/play" className="btn btn-primary text-xs flex items-center gap-1.5">
-          <Swords className="w-3.5 h-3.5" /> Play Berserk
+          <Swords className="w-3.5 h-3.5" /> Play Chess Topper
         </Link>
       </div>
 
@@ -283,7 +283,7 @@ function StatsPage() {
       <div hidden={activeTab !== "overview"}>
       {/* Top 3 Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Record vs Berserk */}
+        {/* Record vs Chess Topper */}
         <div className="panel p-5">
           <div className="flex items-center justify-between text-muted-foreground text-xs mb-3">
             <span className="font-semibold flex items-center gap-1.5 text-foreground">
@@ -506,7 +506,7 @@ function StatsPage() {
       {games.length > 0 && (
         <div className="panel p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold">Saved Games Against Berserk</h2>
+            <h2 className="text-sm font-semibold">Saved Games Against Chess Topper</h2>
             <button onClick={handleClear} className="text-xs text-destructive hover:underline flex items-center gap-1">
               <RotateCcw className="w-3 h-3" /> Clear History
             </button>
@@ -515,7 +515,7 @@ function StatsPage() {
             {games.map((g) => (
               <div key={g.id} className="flex justify-between items-center text-xs p-2.5 rounded bg-background/40 border border-border/30">
                 <div>
-                  <span className="font-semibold">{g.humanSide === "w" ? "White" : "Black"}</span> vs Berserk ({g.elo} Elo)
+                  <span className="font-semibold">{g.humanSide === "w" ? "White" : "Black"}</span> vs Chess Topper ({g.elo} Elo)
                   <div className="text-[10px] text-muted-foreground">{new Date(g.date).toLocaleDateString()}</div>
                 </div>
                 <div className="flex items-center gap-3">
