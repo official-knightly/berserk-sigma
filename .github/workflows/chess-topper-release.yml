@@ -147,13 +147,6 @@ jobs:
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: npm run dist -- --publish always
-      - uses: actions/upload-artifact@v4
-        with:
-          name: chess-topper-desktop-${{ runner.os }}
-          path: desktop/dist/**
-          if-no-files-found: error
-          retention-days: 30
-
   publish:
     name: Publish standalone installers
     needs: [android, desktop]
@@ -161,9 +154,8 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          pattern: chess-topper-*
+          name: chess-topper-android-release
           path: release-assets
-          merge-multiple: true
       - name: List release assets
         run: find release-assets -maxdepth 2 -type f -printf '%f\n'
       - name: Publish Chess Topper release
