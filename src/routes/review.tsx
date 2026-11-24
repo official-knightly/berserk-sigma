@@ -3,9 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Board } from "@/components/chess/Board";
 import { MoveList, EvalBar, GradeIcon } from "@/components/chess/parts";
 import { parseGame, useGameReview, summarize } from "@/lib/use-analysis";
-import { takePendingPgn, takePendingChessProfile, useSettings } from "@/lib/store";
+import { takePendingPgn, takePendingChessProfile } from "@/lib/store";
 import { identifyOpening } from "@/lib/openings";
-import { submitChessigmaGame } from "@/lib/chessigma-api";
 import {
   fetchLichessGames,
   fetchChessComGames,
@@ -15,7 +14,6 @@ import {
 import {
   Download,
   Loader2,
-  Sparkles,
   Upload,
   Trophy,
 } from "lucide-react";
@@ -23,10 +21,10 @@ import {
 export const Route = createFileRoute("/review")({
   head: () => ({
     meta: [
-      { title: "Game Review — Berserk Sigma" },
-      { name: "description", content: "Review and evaluate games with the Berserk chess engine." },
-      { property: "og:title", content: "Game Review — Berserk Sigma" },
-      { property: "og:description", content: "Review and evaluate games with the Berserk chess engine." },
+      { title: "Game Review — Chess Topper" },
+      { name: "description", content: "Review every move with Stockfish 19 in Chess Topper." },
+      { property: "og:title", content: "Game Review — Chess Topper" },
+      { property: "og:description", content: "Review every move with Stockfish 19 Lite in Chess Topper." },
     ],
   }),
   component: GameReviewPage,
@@ -37,7 +35,6 @@ type SourceTab = "lichess" | "chesscom" | "worldchess" | "pgn";
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 export function GameReviewPage() {
-  const [settings, updateSettings] = useSettings();
   const [source, setSource] = useState<SourceTab>("lichess");
   const [username, setUsername] = useState("");
   const [rawPgn, setRawPgn] = useState("");
@@ -45,15 +42,13 @@ export function GameReviewPage() {
   const [error, setError] = useState<string | null>(null);
   const [games, setGames] = useState<ImportedGame[]>([]);
   const [selectedGame, setSelectedGame] = useState<ImportedGame | null>(null);
-  const [chessigmaSubmitting, setChessigmaSubmitting] = useState(false);
-  const [chessigmaLink, setChessigmaLink] = useState<string | null>(null);
 
   const [moves, setMoves] = useState<{ san: string; uci: string; fenAfter: string }[]>([]);
   const [startFen, setStartFen] = useState(START_FEN);
   const [currentPly, setCurrentPly] = useState(0);
 
   const sans = useMemo(() => moves.map((m) => m.san), [moves]);
-  const { reviews, running, progress } = useGameReview(sans, startFen, settings.reviewEngine);
+  const { reviews, running, progress, error: analysisError } = useGameReview(sans, startFen, "stockfish");
   const summary = useMemo(() => summarize(reviews), [reviews]);
   const opening = useMemo(() => identifyOpening(sans), [sans]);
 
@@ -74,25 +69,6 @@ export function GameReviewPage() {
       setError(err?.message || "Failed to fetch games");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleSendToChessigma = async () => {
-    const pgn = selectedGame?.pgn?.trim();
-    if (!pgn) {
-      setError("Load a complete PGN game before sending it to Chessigma.");
-      return;
-    }
-    setChessigmaSubmitting(true);
-    setChessigmaLink(null);
-    setError(null);
-    try {
-      const submitted = await submitChessigmaGame(pgn);
-      setChessigmaLink(submitted.url);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not submit this game to Chessigma.");
-    } finally {
-      setChessigmaSubmitting(false);
     }
   };
 
@@ -221,7 +197,7 @@ export function GameReviewPage() {
                   <span className="font-semibold text-foreground">{activeReview.grade} move</span>
                   {activeReview.bestSan && (
                     <span className="text-muted-foreground ml-2">
-                      Berserk preferred <span className="font-mono text-foreground font-semibold">{activeReview.bestSan}</span>
+                      Stockfish recommends <span className="font-mono text-foreground font-semibold">{activeReview.bestSan}</span>
                     </span>
                   )}
                 </div>
@@ -234,15 +210,12 @@ export function GameReviewPage() {
         {/* Right: Sources & Summary */}
         <div className="flex flex-col gap-4">
           <div className="panel p-4">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-primary">ANALYSIS ENGINE</p>
-                <p className="mt-1 text-xs text-muted-foreground">Choose which browser engine evaluates this game.</p>
+                <p className="mt-1 text-xs text-muted-foreground">Every position is analysed locally with Stockfish 19 Lite.</p>
               </div>
-              <select aria-label="Game review engine" className="field h-9 min-w-[145px] text-xs" value={settings.reviewEngine} onChange={(event) => updateSettings({ reviewEngine: event.target.value as "berserk" | "stockfish" })}>
-                <option value="berserk">Berserk WASM</option>
-                <option value="stockfish">Stockfish 19 Lite</option>
-              </select>
+              <span className="status-pill"><span className="status-dot" /> Stockfish 19 Lite</span>
             </div>
             <div className="flex border-b border-border/50 pb-3 gap-2">
               {(["lichess", "chesscom", "worldchess", "pgn"] as SourceTab[]).map((tab) => (
@@ -288,32 +261,9 @@ export function GameReviewPage() {
               </div>
             )}
 
-            {error && <div className="mt-2 text-xs text-destructive">{error}</div>}
-
-            {selectedGame?.pgn && (
-              <div className="mt-3 rounded-lg border border-border bg-background/50 p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <p className="text-xs font-semibold">Chessigma analysis</p>
-                    <p className="mt-0.5 text-[10px] text-muted-foreground">Open this PGN in Chessigma's browser-based Stockfish analyzer.</p>
-                  </div>
-                  <button
-                    onClick={handleSendToChessigma}
-                    disabled={chessigmaSubmitting}
-                    className="btn btn-secondary btn-sm"
-                  >
-                    {chessigmaSubmitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                    {chessigmaSubmitting ? "Sending…" : "Send to Chessigma"}
-                  </button>
-                </div>
-                {chessigmaLink && (
-                  <a href={chessigmaLink} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex text-xs font-semibold text-primary underline underline-offset-4">
-                    Open Stockfish game review ↗
-                  </a>
-                )}
-                <p className="mt-2 text-[10px] text-muted-foreground">Powered by the Chessigma public API. Analysis starts when you open the returned link.</p>
-              </div>
-            )}
+            {error && <div className="mt-2 text-xs text-destructive" role="alert">{error}</div>}
+            {analysisError && <div className="mt-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive" role="alert">Stockfish could not analyse this game: {analysisError}. Check the Stockfish engine files and reload the review.</div>}
+            {moves.length > 0 && <p className="mt-3 text-xs text-muted-foreground" role="status">{running ? `Stockfish analysing positions · ${Math.round(progress * 100)}%` : analysisError ? "Analysis needs attention" : reviews.filter(Boolean).length === moves.length ? "Stockfish analysis complete" : "Preparing Stockfish analysis…"}</p>}
 
             {games.length > 0 && (
               <div className="mt-4 max-h-48 overflow-y-auto space-y-1.5">

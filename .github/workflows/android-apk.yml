@@ -1,0 +1,68 @@
+name: Chess Topper Android APK
+
+on:
+  push:
+    branches: [main, android/chess-topper]
+    paths:
+      - "src/**"
+      - "public/**"
+      - "package.json"
+      - "capacitor.config.ts"
+      - "vite.config.ts"
+      - "scripts/**"
+      - ".github/workflows/android-apk.yml"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android-debug-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --no-save
+
+      - name: Build web bundle for the native shell
+        run: bun run build
+
+      - name: Verify Capacitor web bundle
+        run: test -f .output/public/index.html
+
+      - name: Generate native Android project
+        run: npx cap add android
+
+      - name: Sync native project
+        run: npx cap sync android
+
+      - name: Apply Android network security defaults
+        run: node scripts/harden-android.mjs
+
+      - name: Build signed debug APK
+        working-directory: android
+        run: ./gradlew --no-daemon assembleDebug
+
+      - name: Upload installable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: chess-topper-android-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30

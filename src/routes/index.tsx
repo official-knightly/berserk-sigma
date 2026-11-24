@@ -25,9 +25,9 @@ import { getConnectedChessAccounts, loadGames, setPendingPgn, type ChessAccount,
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Berserk Sigma — Free Chess Workspace" },
-      { name: "description", content: "Play, train, review and analyze chess with Berserk Sigma." },
-      { property: "og:title", content: "Berserk Sigma — Free Chess Workspace" },
+      { title: "Chess Topper — Free Chess Workspace" },
+      { name: "description", content: "Play, train, review and analyse chess with Chess Topper." },
+      { property: "og:title", content: "Chess Topper — Free Chess Workspace" },
       { property: "og:description", content: "A free chess workspace for play, training, game review and analysis." },
     ],
   }),
@@ -39,7 +39,7 @@ const workspaces = [
   { to: "/games", title: "Games library", description: "Browse, filter, import and review your saved chess games.", icon: Gamepad2, eyebrow: "GAMES", accent: "from-orange-500/15 to-transparent" },
   { to: "/review", title: "Game review", description: "Inspect your moves, engine grades and important moments.", icon: BookOpen, eyebrow: "IMPROVE", accent: "from-orange-500/15 to-transparent" },
   { to: "/analysis", title: "Analysis board", description: "Explore a position, follow variations and inspect engine lines.", icon: Crosshair, eyebrow: "EXPLORE", accent: "from-yellow-500/15 to-transparent" },
-  { to: "/live", title: "Live games", description: "Follow live games and inspect the current position with Berserk.", icon: Radio, eyebrow: "WATCH", accent: "from-emerald-500/10 to-transparent" },
+  { to: "/live", title: "Live games", description: "Follow live games and inspect positions with the engine.", icon: Radio, eyebrow: "WATCH", accent: "from-emerald-500/10 to-transparent" },
 ] as const;
 
 function Metric({ label, value, note, icon: Icon }: { label: string; value: string; note: string; icon: typeof Trophy }) {
@@ -130,14 +130,14 @@ function Home() {
             <span className="block text-primary">Play stronger.</span>
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-            One place to play, train, review your games and understand your chess. Powered by Berserk, built around your progress.
+            One place to play, train, review your games and understand your chess. Berserk for play. Stockfish for every game review. Built around your progress.
           </p>
           <div className="mt-6 flex flex-wrap gap-2.5">
             <Link to="/train" className="btn btn-primary"><GraduationCap className="h-4 w-4" /> Start training <ArrowRight className="h-4 w-4" /></Link>
             <Link to="/games" className="btn btn-secondary"><Gamepad2 className="h-4 w-4" /> Open games</Link>
           </div>
           <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border/80 pt-4 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-2"><Zap className="h-3.5 w-3.5 text-primary" /> Local Berserk engine</span>
+            <span className="inline-flex items-center gap-2"><Zap className="h-3.5 w-3.5 text-primary" /> Berserk play engine</span>
             <span className="inline-flex items-center gap-2"><Brain className="h-3.5 w-3.5 text-primary" /> Training and brain games</span>
             <span className="inline-flex items-center gap-2"><CalendarDays className="h-3.5 w-3.5 text-primary" /> Your activity stays yours</span>
           </div>
@@ -149,8 +149,8 @@ function Home() {
               <p className="text-xs font-bold uppercase tracking-[.16em] text-muted-foreground">Engine room</p>
               <span className="rounded-md border border-border bg-background px-2 py-1 text-[10px] text-muted-foreground">LOCAL</span>
             </div>
-            <h2 className="mt-4 text-xl font-bold">Berserk is ready to work.</h2>
-            <p className="mt-2 text-sm leading-5 text-muted-foreground">Play against the engine or open a position for analysis. Your board stays in your browser.</p>
+            <h2 className="mt-4 text-xl font-bold">Your chess analysis workspace.</h2>
+            <p className="mt-2 text-sm leading-5 text-muted-foreground">Play against Berserk, then review every game with Stockfish 19 Lite.</p>
           </div>
           <div className="mt-6 rounded-xl border border-border bg-background p-3">
             <EngineBadge />
@@ -221,7 +221,7 @@ function Home() {
           <div className="flex items-end justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-primary">KEEP IMPROVING</p><h2 className="mt-1 text-xl font-bold tracking-tight">Training corner</h2></div></div>
           <Link to="/daily-puzzle" className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition hover:border-primary/55">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><Target className="h-6 w-6" /></div>
-            <div className="min-w-0 flex-1"><h3 className="font-bold">Daily puzzle</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Solve a real puzzle from the Chessigma public API.</p></div>
+            <div className="min-w-0 flex-1"><h3 className="font-bold">Daily puzzle</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Solve a fresh daily chess puzzle.</p></div>
             <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />
           </Link>
           <Link to="/brain" className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition hover:border-primary/55">
@@ -236,7 +236,7 @@ function Home() {
           </Link>
           <Link to="/settings" className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition hover:border-primary/55">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><Zap className="h-6 w-6" /></div>
-            <div className="min-w-0 flex-1"><h3 className="font-bold">Engine & accounts</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Tune Berserk and manage connected chess profiles.</p></div>
+            <div className="min-w-0 flex-1"><h3 className="font-bold">Engine & accounts</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Manage engines, board themes and connected chess profiles.</p></div>
             <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" />
           </Link>
         </div>

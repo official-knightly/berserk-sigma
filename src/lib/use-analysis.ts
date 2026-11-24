@@ -33,9 +33,10 @@ function searchWithEngine(engineId: ReviewEngineId, fen: string, ms: number, mul
  * Incrementally analyze every position of a move sequence with real engine searches.
  * positions[i] = search of the position after i plies. New plies (live games) are analyzed as they arrive.
  */
-export function useGameAnalysis(moves: Move[], startFen: string, ms: number, enabled = true, engineId: ReviewEngineId = "berserk") {
+export function useGameAnalysis(moves: Move[], startFen: string, ms: number, enabled = true, engineId: ReviewEngineId = "stockfish") {
   const [positions, setPositions] = useState<(SearchResult | undefined)[]>([]);
   const [running, setRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const keyRef = useRef("");
   const tokenRef = useRef(0);
   const fens = useMemo(() => [startFen, ...moves.map((m) => m.after)], [moves, startFen]);
@@ -43,8 +44,8 @@ export function useGameAnalysis(moves: Move[], startFen: string, ms: number, ena
   useEffect(() => {
     // Reset when the game itself changes (not when moves are appended).
     const key = engineId + "|" + startFen + "|" + (moves[0]?.san ?? "");
-    if (key !== keyRef.current) { keyRef.current = key; tokenRef.current++; setPositions([]); }
-  }, [startFen, moves]);
+    if (key !== keyRef.current) { keyRef.current = key; tokenRef.current++; setPositions([]); setError(null); }
+  }, [startFen, moves, engineId]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -52,6 +53,7 @@ export function useGameAnalysis(moves: Move[], startFen: string, ms: number, ena
     let cancelled = false;
     (async () => {
       setRunning(true);
+      setError(null);
       for (let i = 0; i < fens.length; i++) {
         if (cancelled || token !== tokenRef.current) return;
         let have = false;
@@ -69,8 +71,11 @@ export function useGameAnalysis(moves: Move[], startFen: string, ms: number, ena
           const r = await searchWithEngine(engineId, fens[i], ms, 3);
           if (cancelled || token !== tokenRef.current) return;
           setPositions((p) => { const n = p.slice(); n[i] = Object.assign(r, { fen: fens[i] }); return n; });
-        } catch {
-          if (!cancelled && token === tokenRef.current) setRunning(false);
+        } catch (err) {
+          if (!cancelled && token === tokenRef.current) {
+            setError(err instanceof Error ? err.message : "Stockfish analysis failed. Check that the Stockfish engine files are available.");
+            setRunning(false);
+          }
           return;
         }
       }
@@ -99,19 +104,19 @@ export function useGameAnalysis(moves: Move[], startFen: string, ms: number, ena
   }, [positions, moves]);
 
   const done = positions.filter(Boolean).length;
-  return { positions, reviews, running, progress: fens.length ? done / fens.length : 0, total: fens.length, done };
+  return { positions, reviews, running, error, progress: fens.length ? done / fens.length : 0, total: fens.length, done };
 }
 
 
 /**
  * Review a SAN move list from the starting position.
  * This adapter keeps the review route API small while reusing the same
- * Berserk-backed position analysis and move classification as live analysis.
+ * Stockfish-backed position analysis and move classification.
  */
 export function useGameReview(
   sans: string[],
   startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-  engineId: ReviewEngineId = "berserk",
+  engineId: ReviewEngineId = "stockfish",
 ) {
   const moves = useMemo(() => {
     const chess = new Chess(startFen);
@@ -123,11 +128,12 @@ export function useGameReview(
     return parsed;
   }, [sans, startFen]);
 
-  const analysis = useGameAnalysis(moves, startFen, 300, sans.length > 0, engineId);
+  const analysis = useGameAnalysis(moves, startFen, 650, sans.length > 0, engineId);
   return {
     reviews: analysis.reviews,
     running: analysis.running,
     progress: analysis.progress,
+    error: analysis.error,
   };
 }
 

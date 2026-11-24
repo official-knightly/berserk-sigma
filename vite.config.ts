@@ -8,8 +8,15 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
   tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
+    // Keep the existing Nitro server entry for web deployments.
     server: { entry: "server" },
+    // Embed a static app entry point in the Android package. The router then
+    // handles in-app navigation without requiring a remote website shell.
+    prerender: {
+      enabled: true,
+      crawlLinks: false,
+      autoStaticPathsDiscovery: false,
+    },
+    pages: [{ path: "/", prerender: { enabled: true, outputPath: "/index.html" } }],
   },
 });
