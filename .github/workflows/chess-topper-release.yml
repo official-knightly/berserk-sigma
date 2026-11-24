@@ -120,6 +120,7 @@ jobs:
     name: Build desktop installer (${{ matrix.os }})
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         os: [ubuntu-22.04, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
@@ -142,9 +143,11 @@ jobs:
       - name: Install desktop dependencies
         working-directory: desktop
         run: npm install --no-audit --no-fund
-      - name: Build platform installers and updater metadata
+      - name: Build and publish platform installers plus updater manifests
         working-directory: desktop
-        run: npm run dist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist -- --publish always
       - uses: actions/upload-artifact@v4
         with:
           name: chess-topper-desktop-${{ runner.os }}
