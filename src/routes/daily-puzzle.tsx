@@ -22,8 +22,8 @@ function parseSolution(fen: string, raw: string[]): UciMove[] {
 export const Route = createFileRoute("/daily-puzzle")({
   head: () => ({
     meta: [
-      { title: "Daily Puzzle — Berserk Sigma" },
-      { name: "description", content: "Solve the daily chess puzzle powered by the Chessigma public API." },
+      { title: "Daily Puzzle — Chess Topper" },
+      { name: "description", content: "Solve a new daily chess puzzle and review your tactical progress." },
     ],
   }),
   component: DailyPuzzlePage,
