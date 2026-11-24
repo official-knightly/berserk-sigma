@@ -184,6 +184,13 @@ export function GameReviewPage() {
   const whiteGrades = summary.w.counts;
   const blackGrades = summary.b.counts;
   const gradeOrder = ["Brilliant", "Great", "Best", "Excellent", "Good", "Inaccuracy", "Mistake", "Blunder", "Book"] as const;
+  const accuracyChart = useMemo(() => {
+    const points = (side: "w" | "b") => {
+      const values = reviews.filter((item) => item?.color === side);
+      return values.map((item, index) => `${values.length <= 1 ? 300 : (index / (values.length - 1)) * 600},${100 - (item!.accuracy * 0.9)}`).join(" ");
+    };
+    return { white: points("w"), black: points("b") };
+  }, [reviews]);
 
   return (
     <div className="mx-auto w-full max-w-[1440px] space-y-4 pb-6">
@@ -361,6 +368,11 @@ export function GameReviewPage() {
                     <span>{whiteName}</span><div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${summary.w.acc ?? 0}%` }} /></div>
                     <span>{blackName}</span><div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-slate-500" style={{ width: `${summary.b.acc ?? 0}%` }} /></div>
                   </div>
+                  <svg viewBox="0 0 600 110" role="img" aria-label="Accuracy by move for both players" className="mt-4 h-28 w-full overflow-visible">
+                    <path d="M0 100 H600" stroke="currentColor" opacity=".16" strokeWidth="1" />
+                    {accuracyChart.white && <polyline points={accuracyChart.white} fill="none" stroke="#ffb800" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />}
+                    {accuracyChart.black && <polyline points={accuracyChart.black} fill="none" stroke="#8b8b8b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />}
+                  </svg>
                 </div>
                 <div className="rounded-xl border border-border bg-surface p-4">
                   <h3 className="text-sm font-bold">Where the game changed</h3>
