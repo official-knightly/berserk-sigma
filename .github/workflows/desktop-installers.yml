@@ -38,7 +38,7 @@ jobs:
 
       - name: Build desktop installer
         working-directory: desktop
-        run: npm run dist
+        run: npm run dist -- --publish never
 
       - name: Upload desktop installers
         uses: actions/upload-artifact@v4
