@@ -6,6 +6,7 @@ import { Board, type Premove } from "@/components/chess/Board";
 import { EngineBadge, GradeIcon, MoveList, Panel, PlayerStrip, useEngineStatus } from "@/components/chess/parts";
 import { Logo } from "@/components/AppShell";
 import { engine, type SearchResult } from "@/lib/engine";
+import { stockfishEngine } from "@/lib/stockfish";
 import { chooseEngineMove, classify, formatEval, multiPvForElo, scoreOf, toWhite, type Grade } from "@/lib/chess-logic";
 import { isBookPly } from "@/lib/openings";
 import { saveGame, setPendingPgn, useSettings } from "@/lib/store";
@@ -13,10 +14,10 @@ import { saveGame, setPendingPgn, useSettings } from "@/lib/store";
 export const Route = createFileRoute("/play")({
   head: () => ({
     meta: [
-      { title: "Play vs Berserk — Chess Topper" },
-      { name: "description", content: "Play chess against the Berserk engine with adjustable Elo, attack level and thinking time." },
+      { title: "Play vs Chess Engines — Chess Topper" },
+      { name: "description", content: "Play chess against Berserk or Stockfish with adjustable strength and thinking time." },
       { property: "og:title", content: "Play vs Berserk — Chess Topper" },
-      { property: "og:description", content: "Challenge the Berserk chess engine right in your browser." },
+      { property: "og:description", content: "Challenge Berserk or Stockfish right in Chess Topper." },
     ],
   }),
   component: PlayPage,
@@ -31,6 +32,9 @@ function PlayPage() {
   const gameRef = useRef(new Chess());
   const [fen, setFen] = useState(gameRef.current.fen());
   const [started, setStarted] = useState(false);
+  const [engineChoice, setEngineChoice] = useState<"berserk" | "stockfish">("berserk");
+  const [stockfishReady, setStockfishReady] = useState(false);
+  const [stockfishError, setStockfishError] = useState<string | null>(null);
   const [human, setHuman] = useState<"w" | "b">("w");
   const [busy, setBusy] = useState(false);
   const [premove, setPremove] = useState<Premove | null>(null);
@@ -48,7 +52,24 @@ function PlayPage() {
   const game = gameRef.current;
   const history = game.history({ verbose: true });
   const last = history[history.length - 1];
-  const ready = engineState.status === "ready";
+  const ready = engineChoice === "berserk" ? engineState.status === "ready" : stockfishReady;
+  const engineLabel = engineChoice === "berserk" ? "Berserk" : "Stockfish";
+
+  useEffect(() => {
+    if (engineChoice !== "stockfish") return;
+    let active = true;
+    setStockfishReady(false);
+    setStockfishError(null);
+    stockfishEngine.ready().then(() => { if (active) setStockfishReady(true); }).catch((error: unknown) => {
+      if (active) setStockfishError(error instanceof Error ? error.message : "Stockfish could not start.");
+    });
+    return () => { active = false; };
+  }, [engineChoice]);
+
+  const searchPosition = (position: string, milliseconds: number, multiPV: number) =>
+    engineChoice === "stockfish"
+      ? stockfishEngine.search(position, milliseconds, multiPV)
+      : engine.search(position, milliseconds, multiPV);
 
   const sync = () => setFen(gameRef.current.fen());
 
@@ -56,7 +77,7 @@ function PlayPage() {
     setResult(res);
     setPremove(null);
     const g = gameRef.current;
-    g.header("White", human === "w" ? "You" : `Berserk (${settings.elo})`, "Black", human === "b" ? "You" : `Berserk (${settings.elo})`, "Result", res.split(" ")[0]);
+    g.header("White", human === "w" ? "You" : `${engineLabel} (${settings.elo})`, "Black", human === "b" ? "You" : `${engineLabel} (${settings.elo})`, "Result", res.split(" ")[0]);
     setReviews((r) => {
       const list = Object.values(r);
       const grades: Partial<Record<Grade, number>> = {};
@@ -67,7 +88,7 @@ function PlayPage() {
       }
       return r;
     });
-  }, [human, settings.elo]);
+  }, [human, settings.elo, engineLabel]);
 
   const checkOver = useCallback(() => {
     const g = gameRef.current;
@@ -81,7 +102,7 @@ function PlayPage() {
   const prepareBefore = () => {
     const f = gameRef.current.fen();
     const token = tokenRef.current;
-    beforeRef.current = { fen: f, p: engine.search(f, 500, 3) };
+    beforeRef.current = { fen: f, p: searchPosition(f, 500, 3) };
     beforeRef.current.p.then((r) => {
       if (token !== tokenRef.current || gameRef.current.fen() !== f) return;
       setLastEval(toWhite(scoreOf(r), f));
@@ -96,7 +117,7 @@ function PlayPage() {
     setBusy(true);
     try {
       const searchFen = g.fen();
-      const res = await engine.search(searchFen, settings.think * 1000, multiPvForElo(settings.elo));
+      const res = await searchPosition(searchFen, settings.think * 1000, multiPvForElo(settings.elo));
       if (token !== tokenRef.current) return;
       setLastEval(toWhite(scoreOf(res), searchFen));
       // Grade the human's previous move with real engine data.
@@ -204,7 +225,7 @@ function PlayPage() {
     setHintLoading(true);
     setHint(null);
     try {
-      const search = await engine.search(position, Math.max(1000, settings.think * 1000), 1);
+      const search = await searchPosition(position, Math.max(1000, settings.think * 1000), 1);
       if (token !== tokenRef.current || gameRef.current.fen() !== position) return;
       const uci = search.candidates?.[0]?.uci || search.bestmove;
       if (!uci || uci === "(none)" || uci === "0000") return;
@@ -222,7 +243,7 @@ function PlayPage() {
 
   const orientation = human === "w" ? "white" : "black";
   const berserkTop = (
-    <PlayerStrip name="Berserk" sub={`${settings.elo} Elo · attack ${settings.attack}/10 · ${settings.think}s`}
+    <PlayerStrip name={engineLabel} sub={`${settings.elo} Elo · attack ${settings.attack}/10 · ${settings.think}s`}
       avatar={<Logo size={32} />} active={started && !result && game.turn() !== human}
       right={<EngineBadge busy={busy} />} />
   );
@@ -273,12 +294,21 @@ function PlayPage() {
                   ))}
                 </div>
               </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Chess engine</label>
+                <div className="seg">
+                  <button type="button" data-on={engineChoice === "berserk"} onClick={() => setEngineChoice("berserk")}>Berserk</button>
+                  <button type="button" data-on={engineChoice === "stockfish"} onClick={() => setEngineChoice("stockfish")}>Stockfish 19</button>
+                </div>
+                <p className="mt-1.5 text-[11px] text-muted-foreground">{engineChoice === "berserk" ? "Play against Berserk with adjustable strength and aggression." : "Play against Stockfish 19 running locally in a Web Worker."}</p>
+              </div>
               <EngineSliders settings={settings} update={update} />
               <button type="button" className="btn btn-primary w-full" disabled={!ready} onClick={() => start()}>
                 {ready ? <PlayIcon className="h-4 w-4" /> : <Loader2 className="h-4 w-4 animate-spin" />}
                 {ready ? "Start game" : engineState.status === "error" ? "Engine unavailable" : `Loading engine ${Math.round(engineState.progress * 100)}%`}
               </button>
-              {engineState.status === "error" && <p className="text-xs text-danger">{engineState.error}</p>}
+              {engineChoice === "berserk" && engineState.status === "error" && <p className="text-xs text-danger">{engineState.error}</p>}
+              {engineChoice === "stockfish" && stockfishError && <p className="text-xs text-danger">{stockfishError}</p>}
             </div>
           </Panel>
         ) : (
