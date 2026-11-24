@@ -129,12 +129,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Install Tauri icon generator
-        run: cargo install tauri-cli --locked
-      - name: Generate Chess Topper platform icons
-        working-directory: src-tauri
-        run: cargo tauri icon ../branding/chess-topper-icon.svg
       - name: Set desktop package version
         working-directory: desktop
         run: node -e 'const fs=require("node:fs");const p=JSON.parse(fs.readFileSync("package.json","utf8"));p.version=process.env.APP_VERSION.replace(/^v/,"");fs.writeFileSync("package.json",JSON.stringify(p,null,2)+"\n")'
