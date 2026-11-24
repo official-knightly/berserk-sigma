@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as BrainRouteImport } from './routes/brain'
-import { Route as AICoachRouteImport } from './routes/ai-coach'
 import { Route as DailyPuzzleRouteImport } from './routes/daily-puzzle'
 import { Route as GamesRouteImport } from './routes/games'
 import { Route as OpeningsRouteImport } from './routes/openings'
@@ -60,11 +59,6 @@ const BrainRoute = BrainRouteImport.update({
   path: '/brain',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AICoachRoute = AICoachRouteImport.update({
-  id: '/ai-coach',
-  path: '/ai-coach',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
@@ -102,7 +96,6 @@ const StatsRoute = StatsRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/ai-coach': typeof AICoachRoute
   '/daily-puzzle': typeof DailyPuzzleRoute
   '/games': typeof GamesRoute
   '/openings': typeof OpeningsRoute
@@ -184,7 +177,6 @@ export interface RootRouteChildren {
   TrainRoute: typeof TrainRoute
   BoardPiecesRoute: typeof BoardPiecesRoute
   BrainRoute: typeof BrainRoute
-  AICoachRoute: typeof AICoachRoute
   AccountRoute: typeof AccountRoute
   IndexRoute: typeof IndexRoute
   AnalysisRoute: typeof AnalysisRoute
@@ -230,13 +222,6 @@ declare module '@tanstack/react-router' {
       path: '/board-pieces'
       fullPath: '/board-pieces'
       preLoaderRoute: typeof BoardPiecesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ai-coach': {
-      id: '/ai-coach'
-      path: '/ai-coach'
-      fullPath: '/ai-coach'
-      preLoaderRoute: typeof AICoachRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/brain': {
@@ -312,7 +297,6 @@ const rootRouteChildren: RootRouteChildren = {
   TrainRoute: TrainRoute,
   BoardPiecesRoute: BoardPiecesRoute,
   BrainRoute: BrainRoute,
-  AICoachRoute: AICoachRoute,
   AccountRoute: AccountRoute,
   IndexRoute: IndexRoute,
   AnalysisRoute: AnalysisRoute,
