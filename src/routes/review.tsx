@@ -5,6 +5,7 @@ import { MoveList, EvalBar, GradeIcon } from "@/components/chess/parts";
 import { parseGame, useGameReview, summarize } from "@/lib/use-analysis";
 import { takePendingPgn, takePendingChessProfile } from "@/lib/store";
 import { identifyOpening } from "@/lib/openings";
+import { CHESSIGMA_ATTRIBUTION, submitChessigmaGame } from "@/lib/chessigma-api";
 import {
   fetchLichessGames,
   fetchChessComGames,
@@ -16,6 +17,7 @@ import {
   Loader2,
   Upload,
   Trophy,
+  ExternalLink,
 } from "lucide-react";
 
 export const Route = createFileRoute("/review")({
@@ -42,6 +44,9 @@ export function GameReviewPage() {
   const [error, setError] = useState<string | null>(null);
   const [games, setGames] = useState<ImportedGame[]>([]);
   const [selectedGame, setSelectedGame] = useState<ImportedGame | null>(null);
+  const [chessigmaBusy, setChessigmaBusy] = useState(false);
+  const [chessigmaError, setChessigmaError] = useState<string | null>(null);
+  const [chessigmaUrl, setChessigmaUrl] = useState<string | null>(null);
 
   const [moves, setMoves] = useState<{ san: string; uci: string; fenAfter: string }[]>([]);
   const [startFen, setStartFen] = useState(START_FEN);
@@ -94,6 +99,8 @@ export function GameReviewPage() {
         fenAfter: m.after,
       }));
       setSelectedGame(game);
+      setChessigmaUrl(null);
+      setChessigmaError(null);
       setStartFen(parsed.startFen);
       setMoves(items);
       setCurrentPly(0);
@@ -131,6 +138,21 @@ export function GameReviewPage() {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [loadGame]);
+
+  const handleShareToChessigma = async () => {
+    if (!selectedGame?.pgn?.trim() || chessigmaBusy) return;
+    setChessigmaBusy(true);
+    setChessigmaError(null);
+    setChessigmaUrl(null);
+    try {
+      const submitted = await submitChessigmaGame(selectedGame.pgn);
+      setChessigmaUrl(submitted.url);
+    } catch (err) {
+      setChessigmaError(err instanceof Error ? err.message : "Could not create a Chessigma analysis link.");
+    } finally {
+      setChessigmaBusy(false);
+    }
+  };
 
   const currentFen = useMemo(() => {
     if (currentPly === 0 || moves.length === 0) return startFen;
@@ -286,6 +308,27 @@ export function GameReviewPage() {
               </div>
             )}
           </div>
+
+          {selectedGame?.pgn && (
+            <section className="panel space-y-3 p-4">
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-primary">CHESSIGMA PUBLIC API</p>
+                <h2 className="mt-1 text-sm font-bold">Open hosted game analysis</h2>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Send this PGN to Chessigma and get a link to its browser-based Stockfish analysis. Your Chess Topper review remains available here.
+                </p>
+              </div>
+              <button type="button" onClick={() => void handleShareToChessigma()} disabled={chessigmaBusy} className="btn btn-secondary w-full">
+                {chessigmaBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
+                {chessigmaBusy ? "Creating analysis link…" : "Create Chessigma analysis link"}
+              </button>
+              {chessigmaError && <p className="text-xs text-destructive" role="alert">{chessigmaError}</p>}
+              {chessigmaUrl && <a href={chessigmaUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2.5 text-xs font-semibold text-primary"><ExternalLink className="h-3.5 w-3.5" /> Open hosted analysis</a>}
+              <p className="text-[10px] text-muted-foreground">
+                Powered by <a href={CHESSIGMA_ATTRIBUTION.developersUrl} target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">{CHESSIGMA_ATTRIBUTION.name}</a>. No API key required; the public API has a shared rate limit.
+              </p>
+            </section>
+          )}
 
           {/* Accuracy Summary */}
           {moves.length > 0 && (
