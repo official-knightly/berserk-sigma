@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld("chessTopperDesktop", {
     }
   },
   stockfish: {
+    nativeAvailable: () => ipcRenderer.invoke("stockfish:native-available"),
     ensure: () => ipcRenderer.invoke("stockfish:ensure"),
     search: (fen, milliseconds, multiPV = 1) => ipcRenderer.invoke("stockfish:search", { fen, milliseconds, multiPV }),
     onState: (callback) => {
