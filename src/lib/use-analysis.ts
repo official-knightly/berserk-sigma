@@ -23,10 +23,11 @@ export function parseGame(pgn: string) {
 
 export type ReviewEngineId = "berserk" | "stockfish";
 
-function searchWithEngine(engineId: ReviewEngineId, fen: string, ms: number, multiPV: number) {
+async function searchWithEngine(engineId: ReviewEngineId, fen: string, ms: number, multiPV: number) {
   if (engineId !== "stockfish") return engine.search(fen, ms, multiPV);
-  if (typeof window !== "undefined" && window.chessTopperDesktop?.stockfish) {
-    return window.chessTopperDesktop.stockfish.search(fen, ms, multiPV);
+  const desktopStockfish = typeof window !== "undefined" ? window.chessTopperDesktop?.stockfish : undefined;
+  if (desktopStockfish && await desktopStockfish.nativeAvailable()) {
+    return desktopStockfish.search(fen, ms, multiPV);
   }
   return stockfishEngine.search(fen, ms, multiPV);
 }
