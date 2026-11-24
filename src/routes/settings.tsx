@@ -4,7 +4,7 @@ import { ArrowLeft, Brush, ExternalLink, Link2, Plus, Trash2, Zap } from "lucide
 import { getConnectedChessAccounts, saveConnectedChessAccounts, setPendingChessProfile, useSettings, type ChessAccount } from "@/lib/store";
 
 export const Route = createFileRoute("/settings")({
-  head: () => ({ meta: [{ title: "Settings — Berserk Sigma" }, { name: "description", content: "Configure Berserk Sigma and connect chess profiles." }] }),
+  head: () => ({ meta: [{ title: "Settings — Chess Topper" }, { name: "description", content: "Configure Chess Topper and connect chess profiles." }] }),
   component: SettingsPage,
 });
 
@@ -46,7 +46,7 @@ function SettingsPage() {
       <section className="panel p-5 sm:p-6">
         <div className="flex items-center gap-3">
           <div className="grid h-11 w-11 place-items-center rounded-xl bg-primary/10 text-primary"><Zap className="h-5 w-5" /></div>
-          <div><h1 className="font-display text-2xl font-semibold">Settings</h1><p className="text-xs text-muted-foreground">Tune Berserk Sigma without changing your workspace.</p></div>
+          <div><h1 className="font-display text-2xl font-semibold">Settings</h1><p className="text-xs text-muted-foreground">Tune Chess Topper without changing your workspace.</p></div>
         </div>
         <div className="mt-6 space-y-5">
           <div>
