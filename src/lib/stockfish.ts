@@ -65,7 +65,7 @@ class StockfishBrowserEngine {
 
     this.initPromise = new Promise<void>((resolve, reject) => {
       const worker = new Worker("/engine/stockfish-19-lite-single.js", {
-        name: "Berserk-Sigma-Stockfish-19",
+        name: "Chess-Topper-Stockfish-19",
       });
       this.worker = worker;
 
