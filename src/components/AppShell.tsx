@@ -39,7 +39,7 @@ const TOOL_NAV = [
 ] as const;
 
 export function Logo({ size = 32 }: { size?: number }) {
-  return <div aria-label="Chess Topper" className="grid shrink-0 place-items-center rounded-xl border border-primary/50 bg-primary text-primary-foreground shadow-[0_3px_0_rgba(0,0,0,.5)]" style={{ width: size, height: size, fontSize: size * 0.72, lineHeight: 1 }}>♞</div>;
+  return <img src="/brand/chess-topper-icon.svg" alt="Chess Topper" width={size} height={size} className="shrink-0 rounded-lg object-contain" />;
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
