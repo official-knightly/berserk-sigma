@@ -60,7 +60,9 @@
         "deb"
       ],
       "category": "Game",
-      "artifactName": "Chess-Topper-Linux-${arch}-${version}.${ext}"
+      "artifactName": "Chess-Topper-Linux-${arch}-${version}.${ext}",
+      "maintainer": "OfficialKnightly <akatsuki.x.pain12@gmail.com>",
+      "syncDesktopName": true
     },
     "publish": [
       {
@@ -70,5 +72,12 @@
         "releaseType": "release"
       }
     ]
-  }
+  },
+  "author": {
+    "name": "OfficialKnightly",
+    "email": "akatsuki.x.pain12@gmail.com",
+    "url": "https://github.com/official-knightly"
+  },
+  "homepage": "https://github.com/official-knightly/berserk-sigma",
+  "desktopName": "com.officialknightly.chesstopper"
 }
