@@ -112,7 +112,6 @@ export interface FileRoutesByFullPath {
   '/stats': typeof StatsRoute
 }
 export interface FileRoutesByTo {
-  '/ai-coach': typeof AICoachRoute
   '/daily-puzzle': typeof DailyPuzzleRoute
   '/games': typeof GamesRoute
   '/openings': typeof OpeningsRoute
@@ -149,7 +148,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/daily-puzzle' | '/games' | '/openings' | '/train' | '/board-pieces' | '/brain' | '/ai-coach' | '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
+    '/daily-puzzle' | '/games' | '/openings' | '/train' | '/board-pieces' | '/brain' | '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
   fileRoutesByTo: FileRoutesByTo
   to: '/daily-puzzle' | '/games' | '/openings' | '/train' | '/board-pieces' | '/brain' | '/account' | '/' | '/analysis' | '/live' | '/play' | '/review' | '/settings' | '/stats'
   id:
