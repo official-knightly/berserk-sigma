@@ -35,6 +35,7 @@ export const Route = createFileRoute("/brain")({
 
 type Mode = "board" | "knight" | "blind" | "square" | "check" | "mate" | "spot" | "legal" | "minefield" | "reaction" | "queens" | "memory";
 type MiniPiece = { square: string; type: string; color: "w" | "b" };
+type MemoryPiece = { cell: number; type: string; color: "w" | "b" };
 const FILES = "abcdefgh";
 const PIECE_TYPES = ["k", "q", "r", "b", "n", "p"];
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -93,12 +94,13 @@ function parseFenPieces(fen: string): MiniPiece[] {
   return pieces;
 }
 
-function randomBoardMemoryPieces(): MiniPiece[] {
-  const squares = new Set<string>();
-  while (squares.size < 5) squares.add(randomSquare());
-  return [...squares].map((square, index) => ({
-    square,
-    type: ["q", "r", "b", "n", "p"][index],
+function randomBoardMemoryPieces(size: number): MemoryPiece[] {
+  const count = Math.min(size + 1, size * size - 1);
+  const cells = new Set<number>();
+  while (cells.size < count) cells.add(Math.floor(Math.random() * size * size));
+  return [...cells].map((cell, index) => ({
+    cell,
+    type: ["q", "r", "b", "n", "p", "r", "b", "n", "p"][index % 9],
     color: index % 2 === 0 ? "w" : "b",
   }));
 }
@@ -221,7 +223,10 @@ function BrainGamesPage() {
   const [appearance] = useBoardAppearance();
 
   // Board Memory
-  const [memoryPieces, setMemoryPieces] = useState<MiniPiece[]>([]);
+  const [memoryPieces, setMemoryPieces] = useState<MemoryPiece[]>([]);
+  const [memoryLevel, setMemoryLevel] = useState(1);
+  const [memoryLives, setMemoryLives] = useState(3);
+  const memoryGridSize = Math.min(3 + memoryLevel, 8);
   const [memoryPhase, setMemoryPhase] = useState<"idle" | "peek" | "recall" | "done">("idle");
   const [memoryFound, setMemoryFound] = useState<string[]>([]);
   const [memoryMessage, setMemoryMessage] = useState("Memorize the five pieces, then rebuild their squares.");
@@ -370,28 +375,52 @@ function BrainGamesPage() {
     if (memoryTimer.current) window.clearTimeout(memoryTimer.current);
   }, []);
 
-  function startBoardMemory() {
-    setMemoryPieces(randomBoardMemoryPieces());
+  function startBoardMemory(nextLevel = memoryLevel) {
+    const size = Math.min(3 + nextLevel, 8);
+    setMemoryPieces(randomBoardMemoryPieces(size));
     setMemoryFound([]);
     setMemoryPhase("peek");
-    setMemoryMessage("Memorize these five pieces and their squares.");
+    setMemoryMessage("Memorize every piece and its square before the board hides.");
   }
 
-  function tapMemorySquare(square: string) {
-    if (memoryPhase !== "recall" || memoryFound.includes(square)) return;
-    const target = memoryPieces.find((piece) => piece.square === square);
+  function tapMemorySquare(cell: number) {
+    if (memoryPhase !== "recall" || memoryFound.includes(String(cell))) return;
+    const target = memoryPieces.find((piece) => piece.cell === cell);
     if (!target) {
-      setMemoryMessage("That square was empty. Keep looking for the remembered pieces.");
+      const remaining = memoryLives - 1;
+      setMemoryLives(remaining);
+      if (remaining <= 0) {
+        setMemoryPhase("done");
+        setMemoryMessage("No hearts left. Your memory run is over.");
+      } else {
+        setMemoryMessage("Empty square! You lost a heart. Keep going.");
+      }
       return;
     }
-    const next = [...memoryFound, square];
+    const next = [...memoryFound, String(cell)];
     setMemoryFound(next);
     if (next.length === memoryPieces.length) {
       setMemoryPhase("done");
-      setMemoryMessage("Board reconstructed correctly. Nice visual memory.");
+      setMemoryMessage("Perfect recall! Ready for a bigger board.");
     } else {
-      setMemoryMessage(`Correct square — ${next.length} of ${memoryPieces.length} found.`);
+      setMemoryMessage(`Correct! ${next.length} / ${memoryPieces.length} pieces found.`);
     }
+  }
+
+  function advanceBoardMemory() {
+    const nextLevel = memoryLevel + 1;
+    setMemoryLevel(nextLevel);
+    setMemoryLives(3);
+    startBoardMemory(nextLevel);
+  }
+
+  function resetBoardMemory() {
+    setMemoryLevel(1);
+    setMemoryLives(3);
+    setMemoryPieces([]);
+    setMemoryFound([]);
+    setMemoryPhase("idle");
+    setMemoryMessage("Memorize the pieces, then find every correct square. Wrong taps cost hearts.");
   }
 
   function moveKnight(target: number) {
@@ -650,11 +679,29 @@ function BrainGamesPage() {
         <section className="panel min-w-0 p-4 sm:p-6">
           {mode === "board" && (
             <div className="mx-auto max-w-[620px] space-y-4">
-              <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-primary">VISUAL MEMORY</p><h2 className="mt-1 text-2xl font-extrabold">Board Memory</h2><p className="mt-1 text-xs text-muted-foreground">Study the five pieces for 3.5 seconds, then tap the squares where they were placed.</p></div>
-              <div className="flex flex-wrap gap-2"><span className="rounded-lg bg-background px-3 py-2 text-xs">Pieces: <strong className="font-mono">{memoryPieces.length || 5}</strong></span><span className="rounded-lg bg-background px-3 py-2 text-xs">Found: <strong className="font-mono">{memoryFound.length}</strong></span></div>
-              <MiniBoard pieces={memoryPieces} hidePieces={memoryPhase === "recall"} found={memoryFound} onSquare={tapMemorySquare} disabled={memoryPhase === "idle" || memoryPhase === "peek" || memoryPhase === "done"} />
-              <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-muted-foreground">{memoryMessage}</p><button type="button" onClick={startBoardMemory} className="btn btn-primary"><Eye className="h-4 w-4" /> {memoryPhase === "idle" || memoryPhase === "done" ? "Start round" : "New layout"}</button></div>
-              {memoryPhase === "done" && <button type="button" onClick={() => setMemoryPhase("peek")} className="btn btn-secondary w-full">Review the layout</button>}
+              <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-primary">VISUAL MEMORY · SURVIVE THE LEVELS</p><h2 className="mt-1 text-2xl font-extrabold">Board Memory</h2><p className="mt-1 text-xs text-muted-foreground">The board grows every level. Memorize the chess pieces, then tap every square they occupied. Wrong squares cost a heart.</p></div>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="rounded-xl border border-border bg-background p-3"><p className="text-[9px] font-bold uppercase text-muted-foreground">Level</p><p className="font-mono text-2xl font-black text-primary">{memoryLevel}</p></div>
+                <div className="rounded-xl border border-border bg-background p-3"><p className="text-[9px] font-bold uppercase text-muted-foreground">Board</p><p className="font-mono text-2xl font-black">{memoryGridSize}×{memoryGridSize}</p></div>
+                <div className="rounded-xl border border-border bg-background p-3"><p className="text-[9px] font-bold uppercase text-muted-foreground">Lives</p><p className="text-xl tracking-wide" aria-label={`${memoryLives} hearts remaining`}>{Array.from({length:3},(_,i)=><span key={i} className={i < memoryLives ? "text-rose-500" : "text-muted-foreground/30"}>♥</span>)}</p></div>
+              </div>
+              <div className="flex flex-wrap gap-2"><span className="rounded-lg bg-background px-3 py-2 text-xs">Pieces: <strong className="font-mono">{memoryPieces.length || memoryGridSize + 1}</strong></span><span className="rounded-lg bg-background px-3 py-2 text-xs">Found: <strong className="font-mono">{memoryFound.length}</strong></span><span className="rounded-lg bg-background px-3 py-2 text-xs">Recall time: <strong className="font-mono">3.5s</strong></span></div>
+              <div className="mx-auto grid w-full max-w-[540px] gap-1.5 rounded-xl border border-border bg-background p-2" style={{gridTemplateColumns:`repeat(${memoryGridSize}, minmax(0, 1fr))`}}>
+                {Array.from({length:memoryGridSize*memoryGridSize},(_,cell)=>{
+                  const piece=memoryPieces.find(item=>item.cell===cell);
+                  const found=memoryFound.includes(String(cell));
+                  const show=memoryPhase==="peek" || found || memoryPhase==="done" && memoryLives===0;
+                  return <button key={cell} type="button" onClick={()=>tapMemorySquare(cell)} disabled={memoryPhase!=="recall" || found || memoryLives===0} aria-label={`Memory square ${cell+1}`} className={`grid aspect-square min-w-0 place-items-center rounded-md border transition ${found?"border-emerald-400 bg-emerald-500/20":"border-border bg-[#292929] hover:border-primary"}`}>
+                    {show && piece && <img src={pieceImageSource(piece.color,piece.type,appearance.pieces)} alt="" className="h-[82%] w-[82%] object-contain"/>}
+                    {found && <span className="absolute text-[9px] text-emerald-300">✓</span>}
+                  </button>;
+                })}
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-3"><p className="min-w-0 flex-1 text-xs text-muted-foreground">{memoryMessage}</p>
+                {memoryPhase==="idle" && <button type="button" onClick={()=>{setMemoryLives(3);setMemoryLevel(1);startBoardMemory(1);}} className="btn btn-primary"><Eye className="h-4 w-4"/>Start</button>}
+                {memoryPhase==="done" && memoryLives>0 && <button type="button" onClick={advanceBoardMemory} className="btn btn-primary">Next level <MoveRight className="h-4 w-4"/></button>}
+                {(memoryPhase==="done" && memoryLives===0 || memoryPhase==="peek" || memoryPhase==="recall") && <button type="button" onClick={resetBoardMemory} className="btn btn-secondary"><RotateCcw className="h-4 w-4"/>Restart</button>}
+              </div>
             </div>
           )}
 
