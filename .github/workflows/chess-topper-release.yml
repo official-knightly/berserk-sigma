@@ -138,6 +138,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Build the Chess Topper web interface for local desktop use
+        run: |
+          bun install --no-save
+          bun run build
       - name: Set desktop package version
         working-directory: desktop
         env:
