@@ -40,7 +40,7 @@ function AICoachPage() {
       env.useBrowserCache = true;
       generator.current = await pipeline("text-generation", MODEL_ID, {
         device: "webgpu",
-        dtype: "q4",
+        dtype: "q4f16",
         progress_callback: (event: any) => {
           if (event?.status === "progress" && typeof event.progress === "number") {
             setModelError("Downloading model: " + Math.round(event.progress) + "%");
@@ -104,8 +104,10 @@ function AICoachPage() {
         do_sample: true,
         return_full_text: false,
       });
-      const answer = output?.[0]?.generated_text;
-      setMessages((current) => [...current, { role: "assistant", content: typeof answer === "string" ? answer.trim() : "I couldn't generate a reply. Try asking again." }]);
+      const generated = output?.[0]?.generated_text;
+      const answer = Array.isArray(generated) ? generated.at(-1)?.content : generated;
+      const cleanAnswer = typeof answer === "string" ? answer.replace(/<think>[\\s\\S]*?<\\/think>/g, "").trim() : "";
+      setMessages((current) => [...current, { role: "assistant", content: cleanAnswer || "I couldn't generate a reply. Try asking again." }]);
     } catch (error) {
       setMessages((current) => [...current, { role: "assistant", content: "I couldn't analyse that position. Check that the FEN is valid and Stockfish is available. " + (error instanceof Error ? error.message : "") }]);
     } finally {
