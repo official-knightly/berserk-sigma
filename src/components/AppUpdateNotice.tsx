@@ -58,6 +58,12 @@ export function AppUpdateNotice() {
       };
     }
 
+    // The update banner belongs to the installed Android app, not the public website.
+    if (Capacitor.getPlatform() !== "android") {
+      active = false;
+      return;
+    }
+
     const checkRelease = async () => {
       try {
         const response = await fetch(RELEASE_API, {
