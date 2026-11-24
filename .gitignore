@@ -30,3 +30,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+desktop/node_modules/
+desktop/dist/
+src-tauri/target/
+src-tauri/icons/
+*.jks
+*.keystore
+android/.gradle/
+android/local.properties
+android/app/build/
