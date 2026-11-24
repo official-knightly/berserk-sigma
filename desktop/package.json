@@ -47,8 +47,7 @@
     "mac": {
       "icon": "../branding/chess-topper-icon.svg",
       "target": [
-        "dmg",
-        "zip"
+        "dmg"
       ],
       "category": "public.app-category.games",
       "artifactName": "Chess-Topper-macOS-${version}.${ext}"
