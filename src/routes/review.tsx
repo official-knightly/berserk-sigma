@@ -38,6 +38,7 @@ const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 export function GameReviewPage() {
   const [source, setSource] = useState<SourceTab>("lichess");
+  const [activeTab, setActiveTab] = useState<"report" | "analysis" | "insights">("analysis");
   const [username, setUsername] = useState("");
   const [rawPgn, setRawPgn] = useState("");
   const [loading, setLoading] = useState(false);
@@ -177,194 +178,190 @@ export function GameReviewPage() {
     }];
   }, [activeReview]);
 
+  const whiteName = selectedGame?.white?.name || "White";
+  const blackName = selectedGame?.black?.name || "Black";
+  const reviewCount = reviews.filter(Boolean).length;
+  const whiteGrades = summary.w.counts;
+  const blackGrades = summary.b.counts;
+  const gradeOrder = ["Brilliant", "Great", "Best", "Excellent", "Good", "Inaccuracy", "Mistake", "Blunder", "Book"] as const;
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6">
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 items-start">
-        {/* Left: Board & Controls */}
-        <div className="flex flex-col items-center">
-          <div className="w-full max-w-[560px] flex items-stretch gap-3">
-            <EvalBar cpWhite={currentEval} />
-            <div className="flex-1">
-              <Board
-                fen={currentFen}
-                orientation="white"
-                lastMove={lastMoveSquares}
-                arrows={bestMoveArrow}
-              />
+    <div className="mx-auto w-full max-w-[1440px] space-y-4 pb-6">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[10px] font-extrabold uppercase tracking-[.2em] text-primary">CHESS TOPPER · GAME REVIEW</p>
+          <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">Review your game</h1>
+          <p className="mt-1 text-xs text-muted-foreground">Stockfish checks every position locally. Select any move to replay it.</p>
+        </div>
+        <button type="button" onClick={() => { setSource("pgn"); setRawPgn(""); }} className="btn btn-secondary">
+          <Upload className="h-4 w-4" /> Import another game
+        </button>
+      </header>
+
+      <details className="panel">
+        <summary className="panel-head cursor-pointer list-none">
+          <div><h2>Load a game</h2><p className="mt-1 text-[11px] normal-case tracking-normal text-muted-foreground">Lichess · Chess.com · World Chess PGN · any PGN</p></div>
+          <span className="text-xs text-primary">Open import</span>
+        </summary>
+        <div className="space-y-3 p-4">
+          <div className="tabs">
+            {(["lichess", "chesscom", "worldchess", "pgn"] as SourceTab[]).map((tab) => (
+              <button key={tab} type="button" data-on={source === tab} onClick={() => { setSource(tab); setError(null); }}>
+                {tab === "chesscom" ? "Chess.com" : tab === "worldchess" ? "World Chess PGN" : tab === "pgn" ? "Other PGN" : "Lichess"}
+              </button>
+            ))}
+          </div>
+          {source === "lichess" || source === "chesscom" ? (
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input type="text" placeholder={`${source === "lichess" ? "Lichess" : "Chess.com"} username`} value={username} onChange={(e) => setUsername(e.target.value)} onKeyDown={(e) => e.key === "Enter" && void handleFetch()} className="field min-w-0 flex-1" />
+              <button type="button" onClick={() => void handleFetch()} disabled={loading || !username.trim()} className="btn btn-primary">
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Fetch recent games
+              </button>
             </div>
-          </div>
-
-          {/* Stepper Controls */}
-          <div className="flex items-center gap-2 mt-4">
-            <button onClick={() => setCurrentPly(0)} disabled={currentPly === 0} className="btn btn-secondary text-xs">|&lt;</button>
-            <button onClick={() => setCurrentPly((p) => Math.max(0, p - 1))} disabled={currentPly === 0} className="btn btn-secondary text-xs">&lt; Prev</button>
-            <span className="text-sm font-mono px-3">{currentPly} / {moves.length}</span>
-            <button onClick={() => setCurrentPly((p) => Math.min(moves.length, p + 1))} disabled={currentPly >= moves.length} className="btn btn-secondary text-xs">Next &gt;</button>
-            <button onClick={() => setCurrentPly(moves.length)} disabled={currentPly >= moves.length} className="btn btn-secondary text-xs">&gt;|</button>
-
-            {running && (
-              <span className="text-xs text-muted-foreground ml-3 flex items-center gap-1.5">
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                Reviewing ({Math.round(progress * 100)}%)
-              </span>
-            )}
-          </div>
-
-          {/* Active Move Feedback */}
-          {activeReview && (
-            <div className="panel mt-4 p-3 w-full max-w-[560px] flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <GradeIcon grade={activeReview.grade} size={20} />
-                <div>
-                  <span className="font-semibold text-foreground">{activeReview.grade} move</span>
-                  {activeReview.bestSan && (
-                    <span className="text-muted-foreground ml-2">
-                      Stockfish recommends <span className="font-mono text-foreground font-semibold">{activeReview.bestSan}</span>
-                    </span>
-                  )}
-                </div>
-              </div>
-              <span className="font-mono text-muted-foreground">{activeReview.accuracy}% acc</span>
+          ) : (
+            <div className="space-y-2">
+              <textarea placeholder="Paste a complete PGN here. Export the game from World Chess, then paste it below." value={rawPgn} onChange={(e) => setRawPgn(e.target.value)} rows={5} className="field w-full font-mono text-xs" />
+              <button type="button" onClick={handleLoadPgn} disabled={!rawPgn.trim()} className="btn btn-primary">Load PGN</button>
             </div>
           )}
+          {error && <p className="text-xs text-destructive" role="alert">{error}</p>}
+          {games.length > 0 && <div className="grid gap-2 sm:grid-cols-2">{games.map((g) => (
+            <button key={g.id} type="button" onClick={() => loadGame(g)} className={`rounded-lg border p-3 text-left text-xs transition ${selectedGame?.id === g.id ? "border-primary bg-primary/10" : "border-border bg-surface hover:bg-accent"}`}>
+              <span className="font-semibold">{g.white.name}</span> <span className="text-muted-foreground">vs</span> <span className="font-semibold">{g.black.name}</span>
+              <span className="mt-1 block text-muted-foreground">{g.date} · {g.timeControl} · {g.result}</span>
+            </button>
+          ))}</div>}
         </div>
+      </details>
 
-        {/* Right: Sources & Summary */}
-        <div className="flex flex-col gap-4">
-          <div className="panel p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-primary">ANALYSIS ENGINE</p>
-                <p className="mt-1 text-xs text-muted-foreground">Every position is analysed locally with Stockfish 19 Lite.</p>
+      {moves.length === 0 ? (
+        <div className="panel flex min-h-[360px] flex-col items-center justify-center gap-3 p-8 text-center">
+          <div className="text-4xl">♟</div>
+          <h2 className="text-xl font-bold">Your review board is ready</h2>
+          <p className="max-w-md text-sm text-muted-foreground">Import a game from Lichess or Chess.com, or paste a PGN exported from World Chess or another chess site.</p>
+          <button type="button" onClick={() => { setSource("pgn"); document.querySelector("details")?.setAttribute("open", ""); }} className="btn btn-primary">Load a PGN</button>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <div className="panel p-3"><p className="text-[10px] uppercase tracking-wider text-muted-foreground">White accuracy</p><p className="mt-1 font-mono text-xl font-extrabold">{summary.w.acc === null ? "—" : `${Math.round(summary.w.acc)}%`}</p></div>
+            <div className="panel p-3"><p className="text-[10px] uppercase tracking-wider text-muted-foreground">Black accuracy</p><p className="mt-1 font-mono text-xl font-extrabold">{summary.b.acc === null ? "—" : `${Math.round(summary.b.acc)}%`}</p></div>
+            <div className="panel p-3"><p className="text-[10px] uppercase tracking-wider text-muted-foreground">Analysis</p><p className="mt-1 font-mono text-xl font-extrabold">{reviewCount}/{moves.length}</p><p className="text-[10px] text-muted-foreground">{running ? `${Math.round(progress * 100)}% running` : analysisError ? "Needs attention" : reviewCount === moves.length ? "Complete" : "Preparing"}</p></div>
+          </div>
+
+          <div className="panel overflow-hidden">
+            <div className="flex items-center justify-between gap-3 border-b border-border p-3 sm:p-4">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold">{whiteName} <span className="font-normal text-muted-foreground">vs</span> {blackName}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">{opening?.name || "Game review"} · {moves.length} plies · Stockfish 19</p>
               </div>
-              <span className="status-pill"><span className="status-dot" /> Stockfish 19 Lite</span>
+              <span className={`status-pill shrink-0 ${analysisError ? "status-error" : running ? "status-busy" : "status-ready"}`}><span className="status-dot" />{analysisError ? "Engine error" : running ? "Analysing" : "Stockfish ready"}</span>
             </div>
-            <div className="flex border-b border-border/50 pb-3 gap-2">
-              {(["lichess", "chesscom", "worldchess", "pgn"] as SourceTab[]).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => { setSource(tab); setError(null); }}
-                  className={`px-3 py-1.5 text-xs rounded-md font-medium capitalize transition whitespace-nowrap ${
-                    source === tab ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  {tab === "chesscom" ? "Chess.com" : tab === "pgn" ? "PGN / Other" : tab === "worldchess" ? "World Chess" : "Lichess"}
-                </button>
+            <div className="grid grid-cols-3 gap-1 border-b border-border bg-surface p-1">
+              {(["report", "analysis", "insights"] as const).map((tab) => (
+                <button key={tab} type="button" onClick={() => setActiveTab(tab)} data-on={activeTab === tab} className="rounded-md px-2 py-2.5 text-xs font-bold capitalize text-muted-foreground transition data-[on=true]:bg-primary data-[on=true]:text-primary-foreground">{tab === "report" ? "📊 Report" : tab === "analysis" ? "▦ Analysis" : "💡 Insights"}</button>
               ))}
             </div>
 
-            {source === "lichess" || source === "chesscom" ? (
-              <div className="mt-3 flex gap-2">
-                <input
-                  type="text"
-                  placeholder={`${source === "lichess" ? "Lichess" : "Chess.com"} username`}
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleFetch()}
-                  className="input text-sm flex-1"
-                />
-                <button onClick={handleFetch} disabled={loading || !username.trim()} className="btn btn-primary text-xs">
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                </button>
-              </div>
-            ) : (
-              <div className="mt-3 flex flex-col gap-2">
-                <textarea
-                  placeholder="Paste Worldchess or PGN here..."
-                  value={rawPgn}
-                  onChange={(e) => setRawPgn(e.target.value)}
-                  rows={4}
-                  className="input font-mono text-xs w-full"
-                />
-                <button onClick={handleLoadPgn} disabled={!rawPgn.trim()} className="btn btn-primary text-xs self-end flex items-center gap-1.5">
-                  <Upload className="w-3.5 h-3.5" />
-                  Load PGN
-                </button>
-              </div>
-            )}
-
-            {error && <div className="mt-2 text-xs text-destructive" role="alert">{error}</div>}
-            {analysisError && <div className="mt-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive" role="alert">Stockfish could not analyse this game: {analysisError}. Check the Stockfish engine files and reload the review.</div>}
-            {moves.length > 0 && <p className="mt-3 text-xs text-muted-foreground" role="status">{running ? `Stockfish analysing positions · ${Math.round(progress * 100)}%` : analysisError ? "Analysis needs attention" : reviews.filter(Boolean).length === moves.length ? "Stockfish analysis complete" : "Preparing Stockfish analysis…"}</p>}
-
-            {games.length > 0 && (
-              <div className="mt-4 max-h-48 overflow-y-auto space-y-1.5">
-                <p className="text-xs font-semibold text-muted-foreground mb-1">Recent Games:</p>
-                {games.map((g) => (
-                  <button
-                    key={g.id}
-                    onClick={() => loadGame(g)}
-                    className={`w-full text-left p-2 rounded text-xs flex items-center justify-between transition ${
-                      selectedGame?.id === g.id ? "bg-primary/10 border border-primary/30" : "bg-background/40 hover:bg-muted"
-                    }`}
-                  >
-                    <div>
-                      <span className="font-semibold">{g.white.name}</span> vs <span className="font-semibold">{g.black.name}</span>
-                      <div className="text-[10px] text-muted-foreground">{g.date} • {g.timeControl}</div>
+            {activeTab === "analysis" && (
+              <div className="space-y-3 p-3 sm:p-4">
+                {analysisError && <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive" role="alert">Stockfish could not analyse this game: {analysisError}</div>}
+                <div className="mx-auto flex w-full max-w-[760px] items-stretch gap-2">
+                  <EvalBar cpWhite={currentEval} />
+                  <div className="min-w-0 flex-1"><Board fen={currentFen} orientation="white" lastMove={lastMoveSquares} arrows={bestMoveArrow} /></div>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[11px] text-muted-foreground">Move {currentPly} of {moves.length}</span>
+                  <div className="flex gap-1.5">
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => setCurrentPly(0)} disabled={currentPly === 0}>|‹</button>
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => setCurrentPly((p) => Math.max(0, p - 1))} disabled={currentPly === 0}>‹</button>
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => setCurrentPly((p) => Math.min(moves.length, p + 1))} disabled={currentPly >= moves.length}>›</button>
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => setCurrentPly(moves.length)} disabled={currentPly >= moves.length}>›|</button>
+                  </div>
+                </div>
+                <div className="flex gap-1.5 overflow-x-auto rounded-lg border border-border bg-background p-2">
+                  <button type="button" onClick={() => setCurrentPly(0)} className={`shrink-0 rounded-md px-2 py-2 font-mono text-xs ${currentPly === 0 ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>Start</button>
+                  {moves.map((move, index) => (
+                    <button key={`${index}-${move.uci}`} type="button" onClick={() => setCurrentPly(index + 1)} className={`flex shrink-0 items-center gap-1 rounded-md px-2 py-2 font-mono text-xs ${currentPly === index + 1 ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
+                      {index % 2 === 0 && <span className="text-[10px] opacity-60">{Math.floor(index / 2) + 1}.</span>}
+                      {move.san}
+                      {reviews[index] && <GradeIcon grade={reviews[index]!.grade} size={14} />}
+                    </button>
+                  ))}
+                </div>
+                {activeReview ? (
+                  <div className="rounded-xl border border-border bg-surface p-3 sm:p-4">
+                    <div className="flex items-start gap-3">
+                      <GradeIcon grade={activeReview.grade} size={34} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold">{activeReview.san} · {activeReview.grade}</p>
+                        <p className="mt-1 text-xs leading-5 text-muted-foreground">{activeReview.bestSan ? `Stockfish preferred ${activeReview.bestSan}. ` : ""}{Math.round(activeReview.loss)} centipawn loss · {activeReview.accuracy}% move accuracy</p>
+                      </div>
+                      <span className="font-mono text-sm font-bold">{activeReview.afterWhite > 0 ? "+" : ""}{(activeReview.afterWhite / 100).toFixed(2)}</span>
                     </div>
-                    <span className="font-mono font-bold text-xs">{g.result}</span>
-                  </button>
-                ))}
+                  </div>
+                ) : <p className="rounded-lg bg-surface p-3 text-xs text-muted-foreground">{running ? `Stockfish is analysing this move · ${Math.round(progress * 100)}% complete` : "Select a move to see its engine evaluation and classification."}</p>}
+                {running && <div className="h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.round(progress * 100)}%` }} /></div>}
+              </div>
+            )}
+
+            {activeTab === "report" && (
+              <div className="space-y-4 p-3 sm:p-4">
+                <div className="grid grid-cols-2 gap-3">
+                  {([{ label: whiteName, side: summary.w, grades: whiteGrades }, { label: blackName, side: summary.b, grades: blackGrades }]).map((player) => (
+                    <div key={player.label} className="rounded-xl border border-border bg-surface p-3">
+                      <p className="truncate text-xs font-bold">{player.label}</p>
+                      <p className="mt-2 font-mono text-3xl font-extrabold">{player.side.acc === null ? "—" : `${Math.round(player.side.acc)}%`}</p>
+                      <p className="text-[10px] text-muted-foreground">Accuracy · {player.side.list.length} analysed moves</p>
+                      <p className="mt-2 text-[11px] text-muted-foreground">Avg. centipawn loss: {player.side.acpl === null ? "—" : Math.round(player.side.acpl)}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="rounded-xl border border-border p-3">
+                  <h3 className="text-sm font-bold">Move classifications</h3>
+                  <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
+                    {gradeOrder.map((grade) => {
+                      const count = (whiteGrades[grade] || 0) + (blackGrades[grade] || 0);
+                      return <div key={grade} className="flex items-center justify-between gap-2 text-xs"><span className="text-muted-foreground">{grade}</span><span className="font-mono font-bold">{count}</span></div>;
+                    })}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button type="button" onClick={() => setActiveTab("analysis")} className="btn btn-primary">Review moves <span aria-hidden="true">→</span></button>
+                  <button type="button" onClick={() => void handleShareToChessigma()} disabled={!selectedGame?.pgn || chessigmaBusy} className="btn btn-secondary">{chessigmaBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />} Share to Chessigma</button>
+                </div>
+                {chessigmaError && <p className="text-xs text-destructive" role="alert">{chessigmaError}</p>}
+                {chessigmaUrl && <a href={chessigmaUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-primary underline">Open Chessigma analysis</a>}
+                <p className="text-[10px] text-muted-foreground">Chessigma API attribution: <a href={CHESSIGMA_ATTRIBUTION.developersUrl} target="_blank" rel="noopener noreferrer" className="underline">{CHESSIGMA_ATTRIBUTION.name}</a>. Its API stores PGN and returns a browser-analysis link; Stockfish analysis in this app is performed locally.</p>
+              </div>
+            )}
+
+            {activeTab === "insights" && (
+              <div className="space-y-3 p-3 sm:p-4">
+                <div className="rounded-xl border border-border bg-surface p-4">
+                  <h3 className="text-sm font-bold">Where the game changed</h3>
+                  {reviews.filter(Boolean).length ? (
+                    <div className="mt-3 space-y-2">
+                      {reviews.filter((r): r is NonNullable<typeof r> => !!r).filter((r) => ["Blunder", "Mistake", "Inaccuracy", "Brilliant"].includes(r.grade)).slice(0, 8).map((r) => (
+                        <button key={r.ply} type="button" onClick={() => { setCurrentPly(r.ply); setActiveTab("analysis"); }} className="flex w-full items-center gap-3 rounded-lg p-2 text-left hover:bg-muted">
+                          <GradeIcon grade={r.grade} size={24} />
+                          <span className="min-w-0 flex-1 text-xs"><b>{r.san}</b> · {r.grade}<span className="block text-muted-foreground">Move {Math.ceil(r.ply / 2)} · {Math.round(r.loss)} cp lost</span></span>
+                          <span className="text-xs text-primary">Review →</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : <p className="mt-2 text-xs text-muted-foreground">Critical moments will appear here after Stockfish finishes analysing the game.</p>}
+                </div>
+                <div className="rounded-xl border border-border p-4">
+                  <h3 className="text-sm font-bold">Opening</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{opening?.name || "Opening not identified"}</p>
+                  <p className="mt-3 text-xs text-muted-foreground">Analysis progress: {reviewCount} of {moves.length} moves classified by Stockfish.</p>
+                </div>
               </div>
             )}
           </div>
-
-          {selectedGame?.pgn && (
-            <section className="panel space-y-3 p-4">
-              <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-primary">CHESSIGMA PUBLIC API</p>
-                <h2 className="mt-1 text-sm font-bold">Open hosted game analysis</h2>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  Send this PGN to Chessigma and get a link to its browser-based Stockfish analysis. Your Chess Topper review remains available here.
-                </p>
-              </div>
-              <button type="button" onClick={() => void handleShareToChessigma()} disabled={chessigmaBusy} className="btn btn-secondary w-full">
-                {chessigmaBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
-                {chessigmaBusy ? "Creating analysis link…" : "Create Chessigma analysis link"}
-              </button>
-              {chessigmaError && <p className="text-xs text-destructive" role="alert">{chessigmaError}</p>}
-              {chessigmaUrl && <a href={chessigmaUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2.5 text-xs font-semibold text-primary"><ExternalLink className="h-3.5 w-3.5" /> Open hosted analysis</a>}
-              <p className="text-[10px] text-muted-foreground">
-                Powered by <a href={CHESSIGMA_ATTRIBUTION.developersUrl} target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">{CHESSIGMA_ATTRIBUTION.name}</a>. No API key required; the public API has a shared rate limit.
-              </p>
-            </section>
-          )}
-
-          {/* Accuracy Summary */}
-          {moves.length > 0 && (
-            <div className="panel p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold flex items-center gap-1.5">
-                  <Trophy className="w-3.5 h-3.5 text-accent" /> Accuracy
-                </span>
-                {opening && <span className="text-[10px] text-muted-foreground truncate max-w-[180px]">{opening.name}</span>}
-              </div>
-              <div className="grid grid-cols-2 gap-3 text-center">
-                <div className="bg-background/50 rounded p-2 border border-border/40">
-                  <div className="text-[10px] text-muted-foreground">White</div>
-                  <div className="text-lg font-bold font-mono">{summary.w.acc !== null ? `${Math.round(summary.w.acc)}%` : "—"}</div>
-                </div>
-                <div className="bg-background/50 rounded p-2 border border-border/40">
-                  <div className="text-[10px] text-muted-foreground">Black</div>
-                  <div className="text-lg font-bold font-mono">{summary.b.acc !== null ? `${Math.round(summary.b.acc)}%` : "—"}</div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Move List */}
-          <div className="panel p-4 flex-1 flex flex-col min-h-[260px]">
-            <h2 className="text-xs font-semibold mb-2">Moves</h2>
-            <div className="flex-1 overflow-y-auto max-h-[300px]">
-              <MoveList
-                moves={moves.map((m, idx) => ({ san: m.san, grade: reviews[idx]?.grade }))}
-                ply={currentPly}
-                onSelect={(ply) => setCurrentPly(ply)}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }
