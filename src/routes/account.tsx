@@ -97,7 +97,7 @@ function AccountPage() {
       </section>
       <section className="panel space-y-4 p-5 sm:p-6">
         <div className="flex items-center gap-3">
-          <img src="/brand/berserk-emblem.png" alt="Berserk Sigma" className="h-14 w-14 rounded-xl border border-border object-cover" />
+          <img src="/brand/chess-topper-icon.svg" alt="Chess Topper" className="h-14 w-14 rounded-xl border border-border object-cover" />
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-lg font-bold">{user?.user_metadata?.display_name || user?.email?.split("@")[0] || "Guest profile"}</h2>
             <p className="truncate text-xs text-muted-foreground">{user?.email || "Sign in to sync your saved games across devices"}</p>
