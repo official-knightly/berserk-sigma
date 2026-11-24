@@ -306,7 +306,21 @@ export function GameReviewPage() {
             )}
 
             {activeTab === "report" && (
-              <div className="space-y-4 p-3 sm:p-4">
+              <div className="review-report space-y-4 p-3 sm:p-4">
+                <div className="review-player-compare grid grid-cols-2 gap-3">
+                  {[{ name: whiteName, side: summary.w, mark: "W" }, { name: blackName, side: summary.b, mark: "B" }].map((player) => (
+                    <div key={player.mark} className="review-player-card">
+                      <span className={`review-player-avatar ${player.mark === "W" ? "is-white" : "is-black"}`}>{player.mark}</span>
+                      <span className="min-w-0 flex-1"><b className="block truncate">{player.name}</b><small>{player.mark === "W" ? "White" : "Black"}</small></span>
+                      <strong>{player.side.acc === null ? "—" : `${Math.round(player.side.acc)}%`}</strong>
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                  <div className="review-stat"><span>Moves</span><b>{moves.length}</b></div>
+                  <div className="review-stat"><span>Opening</span><b className="truncate">{opening?.eco || "—"}</b></div>
+                  <div className="review-stat"><span>Reviewed</span><b>{reviewCount}/{moves.length}</b></div>
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   {([{ label: whiteName, side: summary.w, grades: whiteGrades }, { label: blackName, side: summary.b, grades: blackGrades }]).map((player) => (
                     <div key={player.label} className="rounded-xl border border-border bg-surface p-3">
@@ -337,7 +351,17 @@ export function GameReviewPage() {
             )}
 
             {activeTab === "insights" && (
-              <div className="space-y-3 p-3 sm:p-4">
+              <div className="review-insights space-y-3 p-3 sm:p-4">
+                <div className="rounded-xl border border-border bg-surface p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div><h3 className="text-sm font-bold">Accuracy per move</h3><p className="mt-1 text-[10px] text-muted-foreground">Stockfish evaluation across the full game</p></div>
+                    <span className="text-xs font-bold text-primary">{summary.w.acc === null ? "—" : Math.round(summary.w.acc) + "%"} <span className="text-muted-foreground">/</span> {summary.b.acc === null ? "—" : Math.round(summary.b.acc) + "%"}</span>
+                  </div>
+                  <div className="mt-4 grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 text-[10px] text-muted-foreground">
+                    <span>{whiteName}</span><div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${summary.w.acc ?? 0}%` }} /></div>
+                    <span>{blackName}</span><div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-slate-500" style={{ width: `${summary.b.acc ?? 0}%` }} /></div>
+                  </div>
+                </div>
                 <div className="rounded-xl border border-border bg-surface p-4">
                   <h3 className="text-sm font-bold">Where the game changed</h3>
                   {reviews.filter(Boolean).length ? (
