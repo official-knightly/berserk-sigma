@@ -1,0 +1,64 @@
+{
+  "name": "chess-topper-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chess Topper desktop application",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --publish never"
+  },
+  "dependencies": {
+    "electron-updater": "^6.6.2",
+    "extract-zip": "^2.0.1"
+  },
+  "devDependencies": {
+    "electron": "^39.2.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.officialknightly.chesstopper",
+    "productName": "Chess Topper",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "stockfish-manager.cjs",
+      "uci-engine.cjs",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "icon": "../src-tauri/icons/icon.ico",
+      "target": ["nsis"],
+      "artifactName": "Chess-Topper-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Chess Topper"
+    },
+    "mac": {
+      "icon": "../src-tauri/icons/icon.icns",
+      "target": ["dmg", "zip"],
+      "category": "public.app-category.games",
+      "artifactName": "Chess-Topper-macOS-${version}.${ext}"
+    },
+    "linux": {
+      "icon": "../src-tauri/icons/128x128.png",
+      "target": ["AppImage", "deb"],
+      "category": "Game",
+      "artifactName": "Chess-Topper-Linux-${arch}-${version}.${ext}"
+    },
+    "publish": [{
+      "provider": "github",
+      "owner": "official-knightly",
+      "repo": "berserk-sigma",
+      "releaseType": "release"
+    }]
+  }
+}
