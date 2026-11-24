@@ -32,7 +32,7 @@ function PlayPage() {
   const gameRef = useRef(new Chess());
   const [fen, setFen] = useState(gameRef.current.fen());
   const [started, setStarted] = useState(false);
-  const [engineChoice, setEngineChoice] = useState<"berserk" | "stockfish">("berserk");
+  const [engineChoice, setEngineChoice] = useState<"berserk" | "stockfish">("stockfish");
   const [stockfishReady, setStockfishReady] = useState(false);
   const [stockfishError, setStockfishError] = useState<string | null>(null);
   const [human, setHuman] = useState<"w" | "b">("w");
@@ -268,7 +268,7 @@ function PlayPage() {
           lastMove={last ? { from: last.from, to: last.to } : null}
           arrows={hint ? [{ from: hint.from, to: hint.to, tone: "best" }] : []}
           badge={lastReview && history[lastReview.ply - 1] ? { square: history[lastReview.ply - 1].to, icon: `/classification/${gradeFile(lastReview.grade)}`, label: lastReview.grade } : null} />
-        {hint && <p className="px-1 text-xs text-muted-foreground">Berserk suggestion: <span className="font-semibold text-foreground">{hint.san}</span></p>}
+        {hint && <p className="px-1 text-xs text-muted-foreground">{engineLabel} suggestion: <span className="font-semibold text-foreground">{hint.san}</span></p>}
         {youBottom}
       </div>
 
@@ -303,7 +303,7 @@ function PlayPage() {
                 <p className="mt-1.5 text-[11px] text-muted-foreground">{engineChoice === "berserk" ? "Play against Berserk with adjustable strength and aggression." : "Play against Stockfish 19 running locally in a Web Worker."}</p>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Choose your Stockfish bot</label>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Choose your {engineChoice === "stockfish" ? "Stockfish" : "Berserk"} bot profile</label>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {([
                     { name: "Beginner", elo: 600, note: "Learning" },
@@ -334,7 +334,7 @@ function PlayPage() {
             </div>
           </Panel>
         ) : (
-          <Panel title={result ? "Game over" : busy ? "Berserk is thinking" : game.turn() === human ? "Your move" : "Berserk to move"}
+          <Panel title={result ? "Game over" : busy ? `${engineLabel} is thinking` : game.turn() === human ? "Your move" : `${engineLabel} to move`}
             icon={busy ? <Loader2 className="h-4 w-4 animate-spin text-warn" /> : <Swords className="h-4 w-4" />}
             action={<span className="text-xs text-muted-foreground">Move {Math.floor(history.length / 2) + 1}</span>}>
             {result && (
@@ -373,7 +373,7 @@ function PlayPage() {
           </details>
         )}
         <p className="px-1 text-[11px] leading-relaxed text-muted-foreground">
-          Tap a piece to see its legal moves, then tap a square — or drag. During Berserk's turn you can queue a premove; tap an empty square to cancel it.
+          Tap a piece to see its legal moves, then tap a square — or drag. During the engine's turn you can queue a premove; tap an empty square to cancel it.
         </p>
       </div>
     </div>
