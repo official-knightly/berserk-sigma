@@ -45,7 +45,12 @@ class StockfishUciEngine {
       const child = spawn(this.executable, [], { windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
       this.child = child;
       const reader = createInterface({ input: child.stdout });
-      const startupTimeout = setTimeout(() => reject(new Error("Stockfish did not initialise in time.")), 30000);
+      const startupTimeout = setTimeout(() => {
+        child.kill();
+        this.child = null;
+        this.readyPromise = null;
+        reject(new Error("Stockfish did not initialise in time."));
+      }, 30000);
       reader.on("line", (line) => {
         const text = line.trim();
         if (text === "uciok") {
@@ -82,6 +87,8 @@ class StockfishUciEngine {
         clearTimeout(startupTimeout);
         this.activeSearch?.reject(error);
         this.activeSearch = null;
+        this.child = null;
+        this.readyPromise = null;
         reject(error);
       });
       child.once("exit", (code) => {
