@@ -9,7 +9,7 @@ type NoticeState = DesktopUpdateState & { downloadUrl?: string; releaseUrl?: str
 const OWNER = "official-knightly";
 const REPOSITORY = "berserk-sigma";
 const RELEASE_API = `https://api.github.com/repos/${OWNER}/${REPOSITORY}/releases/latest`;
-const CURRENT_VERSION = import.meta.env.VITE_APP_VERSION || "1.0.0";
+const CURRENT_VERSION = import.meta.env["VITE_APP_VERSION"] || "1.0.0";
 
 function versionParts(value: string) {
   return value.replace(/^v/i, "").split(/[.+-]/).slice(0, 3).map((part) => Number.parseInt(part, 10) || 0);
