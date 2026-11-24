@@ -1,10 +1,11 @@
-name: Chess Topper v1 Release
+name: Chess Topper v1.0.0 Release
 
 on:
   push:
     branches: [main]
     paths:
       - ".github/workflows/chess-topper-release.yml"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -182,7 +183,7 @@ jobs:
           retention-days: 30
 
   publish:
-    name: Publish Chess Topper v1.0.0 release assets
+    name: Publish Chess Topper v1.0.0 release assets (no ZIP installers)
     needs: [android, desktop]
     runs-on: ubuntu-latest
     steps:
@@ -209,12 +210,12 @@ jobs:
 
             First public application release. Download the installer for your platform below.
 
-            - Android: `Chess-Topper.apk` when stable signing is configured; otherwise `Chess-Topper-debug.apk` for first-install testing.
+            - Android: `Chess-Topper.apk` when stable signing is configured; otherwise `Chess-Topper-debug.apk` for first-install testing only. Debug builds cannot be used for seamless in-place updates.
             - Windows: `Chess-Topper-Setup-1.0.0.exe`
             - macOS: `Chess-Topper-macOS-1.0.0.dmg`
             - Linux: `Chess-Topper-Linux-x86_64-1.0.0.AppImage` or the `.deb` package.
 
-            Windows and Linux release manifests are included for desktop update checks. macOS updates are delivered as a DMG download. No ZIP installer packages are published.
+            Windows and Linux release manifests are included for desktop update checks. macOS updates are delivered as a DMG download. Installers are published as direct APK, EXE, DMG, AppImage and DEB files; no ZIP installer packages are published.
           draft: false
           prerelease: false
           generate_release_notes: true
