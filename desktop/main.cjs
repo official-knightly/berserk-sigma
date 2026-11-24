@@ -1,16 +1,74 @@
 const { app, BrowserWindow, ipcMain, shell } = require("electron");
+const http = require("node:http");
+const fs = require("node:fs");
+const { pipeline } = require("node:stream/promises");
 const { autoUpdater } = require("electron-updater");
 const path = require("node:path");
 const { ensureStockfish } = require("./stockfish-manager");
 const { StockfishUciEngine } = require("./uci-engine");
 
-const APP_URL = process.env.CHESS_TOPPER_URL || "https://berserk-sigma.akatsuki-x-pain12.workers.dev/";
-const APP_ORIGIN = new URL(APP_URL).origin;
+let APP_URL = process.env.CHESS_TOPPER_URL || "";
+let APP_ORIGIN = "";
 const RELEASE_API = "https://api.github.com/repos/official-knightly/berserk-sigma/releases/latest";
 let macUpdateUrl = null;
 let mainWindow = null;
 let stockfishPathPromise = null;
 let stockfishEngine = null;
+let localWebServer = null;
+
+const MIME_TYPES = {
+  ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8", ".svg": "image/svg+xml",
+  ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+  ".webp": "image/webp", ".woff": "font/woff", ".woff2": "font/woff2",
+  ".wasm": "application/wasm", ".ico": "image/x-icon", ".txt": "text/plain; charset=utf-8"
+};
+
+async function startLocalWebServer() {
+  if (APP_URL) {
+    const external = new URL(APP_URL);
+    if (external.protocol !== "https:") throw new Error("CHESS_TOPPER_URL must use HTTPS.");
+    APP_ORIGIN = external.origin;
+    return;
+  }
+  const webRoot = app.isPackaged
+    ? path.join(process.resourcesPath, "web")
+    : path.resolve(__dirname, "../.output/public");
+  const indexPath = path.join(webRoot, "index.html");
+  if (!fs.existsSync(indexPath)) throw new Error("The bundled Chess Topper interface is missing. Rebuild the desktop app with the web bundle.");
+  localWebServer = http.createServer(async (request, response) => {
+    try {
+      const pathname = decodeURIComponent(new URL(request.url || "/", "http://127.0.0.1").pathname);
+      const candidate = path.resolve(webRoot, "." + pathname);
+      if (candidate !== webRoot && !candidate.startsWith(webRoot + path.sep)) {
+        response.writeHead(403).end("Forbidden");
+        return;
+      }
+      let file = candidate;
+      try {
+        if (!fs.statSync(file).isFile()) file = indexPath;
+      } catch { file = indexPath; }
+      const extension = path.extname(file).toLowerCase();
+      response.setHeader("Content-Type", MIME_TYPES[extension] || "application/octet-stream");
+      response.setHeader("X-Content-Type-Options", "nosniff");
+      response.setHeader("Referrer-Policy", "no-referrer");
+      response.setHeader("Content-Security-Policy", "default-src 'self' https: data: blob:; script-src 'self' 'wasm-unsafe-eval' https://chessigma.com https://www.chessigma.com; worker-src 'self' blob:; connect-src 'self' https: wss:; img-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'");
+      response.setHeader("Cache-Control", file === indexPath ? "no-cache" : "public, max-age=31536000, immutable");
+      await pipeline(fs.createReadStream(file), response);
+    } catch {
+      if (!response.headersSent) response.writeHead(500).end("Chess Topper could not load this resource.");
+      else response.destroy();
+    }
+  });
+  await new Promise((resolve, reject) => {
+    localWebServer.once("error", reject);
+    localWebServer.listen(0, "127.0.0.1", resolve);
+  });
+  const address = localWebServer.address();
+  APP_URL = `http://127.0.0.1:${address.port}/`;
+  APP_ORIGIN = new URL(APP_URL).origin;
+}
 
 function assertTrustedRenderer(event) {
   const senderUrl = event.senderFrame?.url || "";
