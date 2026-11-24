@@ -15,8 +15,8 @@ const PREVIEW_FEN = "rnbqkbnr/pppppppp/8/8/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 
 export const Route = createFileRoute("/board-pieces")({
   head: () => ({
     meta: [
-      { title: "Board and Pieces — Berserk Sigma" },
-      { name: "description", content: "Customize chessboard colors and SVG chess piece styles in Berserk Sigma." },
+      { title: "Board and Pieces — Chess Topper" },
+      { name: "description", content: "Customize chessboard colors and SVG chess piece styles in Chess Topper." },
     ],
   }),
   component: BoardPiecesPage,
@@ -68,7 +68,7 @@ function BoardPiecesPage() {
         <div className="mx-auto w-full max-w-[520px]">
           <Board fen={PREVIEW_FEN} orientation="white" />
         </div>
-        <p className="mt-3 text-center text-[11px] text-muted-foreground">Changes apply immediately to every board in Berserk Sigma and are saved on this device.</p>
+        <p className="mt-3 text-center text-[11px] text-muted-foreground">Changes apply immediately to every board in Chess Topper and are saved on this device.</p>
       </section>
 
       <section className="space-y-3">
