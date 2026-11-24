@@ -1,85 +1,97 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  ArrowRight,
-  BookOpen,
-  Brain,
-  Crosshair,
-  GraduationCap,
-  ShieldCheck,
-  Swords,
-  Target,
-  Trophy,
-  Zap,
+  ArrowRight, BookOpen, Brain, CalendarCheck, CheckCircle2, Crosshair,
+  GraduationCap, LockKeyhole, Puzzle, ShieldCheck, Swords, Target, Trophy, Zap,
 } from "lucide-react";
 
 export const Route = createFileRoute("/train")({
-  head: () => ({
-    meta: [
-      { title: "Train — Chess Topper" },
-      { name: "description", content: "Free daily puzzles, sparring, opening practice and mistake training." },
-    ],
-  }),
+  head: () => ({ meta: [
+    { title: "Train — Chess Topper" },
+    { name: "description", content: "Free daily puzzles, tactics, openings, sparring and game-review training." },
+  ] }),
   component: TrainPage,
 });
 
-const quick = [
-  { to: "/analysis", title: "Analysis board", description: "Set up a position, explore legal moves and inspect engine lines.", icon: Crosshair, tag: "TOOLS" },
-  { to: "/daily-puzzle", title: "Daily puzzle", description: "Solve today's daily chess puzzle and follow its full continuation.", icon: Target, tag: "DAILY" },
-  { to: "/brain", title: "Brain games", description: "Train memory, board vision, calculation and reaction speed.", icon: Brain, tag: "BRAIN" },
-  { to: "/play", title: "Sparring", description: "Play a complete game against the local Berserk engine.", icon: Swords, tag: "PLAY" },
-];
-
-const supercoach = [
-  { title: "Woodpecker", text: "Repeat tactics and track your solving accuracy.", icon: Target, to: "/daily-puzzle", action: "Open puzzles" },
-  { title: "Opening Trainer", text: "Study known opening lines and review your repertoire.", icon: BookOpen, to: "/openings", action: "Open repertoire" },
-  { title: "Sparring", text: "Play against Berserk with adjustable strength and time.", icon: Swords, to: "/play", action: "Start a game" },
-  { title: "Blunder Shield", text: "Practice checking threats before committing to a move.", icon: ShieldCheck, to: "/analysis", action: "Open analysis" },
-  { title: "Blunder Training", text: "Review your own games and revisit engine-marked mistakes.", icon: GraduationCap, to: "/review", action: "Review games" },
-  { title: "Conversion Trainer", text: "Practice winning positions by playing them out against Berserk.", icon: Trophy, to: "/play", action: "Train endgames" },
+const coach = [
+  { title: "Woodpecker", text: "Tactics that become instinct", icon: Target, to: "/daily-puzzle", status: "Continue training", tone: "teal" },
+  { title: "Opening Trainer", text: "Know your lines by heart", icon: BookOpen, to: "/openings", status: "Explore repertoire", tone: "gold" },
+  { title: "Sparring", text: "Climb a ladder of rivals", icon: Swords, to: "/play", status: "Choose an engine", tone: "teal" },
+  { title: "Blunder Shield", text: "Spot danger before you move", icon: ShieldCheck, to: "/analysis", status: "Practice safely", tone: "blue" },
+  { title: "Blunder Training", text: "Never repeat your own blunders", icon: GraduationCap, to: "/review", status: "Review a game", tone: "red" },
+  { title: "Conversion Trainer", text: "Win the games you were winning", icon: Trophy, to: "/play", status: "Practice endgames", tone: "gold" },
 ];
 
 function TrainPage() {
   return (
-    <div className="mx-auto w-full max-w-[1440px] space-y-7 pb-4">
-      <header>
-        <p className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[.18em] text-primary"><Zap className="h-3.5 w-3.5" /> Build better habits</p>
-        <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">Train</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">A free training workspace for tactics, openings, calculation and practical play.</p>
+    <div className="train-hub mx-auto w-full max-w-[1120px] space-y-8 pb-5">
+      <header className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-extrabold uppercase tracking-[.2em] text-primary">CHESS TOPPER · TRAINING</p>
+          <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">Train</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Build stronger habits, one session at a time.</p>
+        </div>
+        <Link to="/account" aria-label="Your profile" className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-border bg-surface text-lg font-black text-primary">♞</Link>
       </header>
 
+      <Link to="/analysis" className="train-feature group flex items-center gap-4 p-4 sm:p-5">
+        <span className="train-feature-icon"><Crosshair className="h-7 w-7" /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-lg font-bold">Analysis board</span>
+          <span className="mt-1 block text-sm text-muted-foreground">Scan a picture or set up any position.</span>
+        </span>
+        <ArrowRight className="h-5 w-5 shrink-0 text-primary transition group-hover:translate-x-1" />
+      </Link>
+
+      <Link to="/daily-puzzle" className="train-resume group flex flex-wrap items-center gap-3 p-4 sm:flex-nowrap sm:p-5">
+        <span className="train-bird" aria-hidden="true">🐦</span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-lg font-bold">Woodpecker</span>
+          <span className="mt-1 block text-xs text-muted-foreground">Tactics practice · Continue where you left off</span>
+          <span className="mt-3 flex items-center gap-3">
+            <span className="h-2.5 min-w-0 max-w-48 flex-1 overflow-hidden rounded-full bg-black/40"><span className="block h-full w-[27%] rounded-full bg-primary" /></span>
+            <span className="text-xs font-bold text-muted-foreground">Daily practice</span>
+          </span>
+        </span>
+        <span className="train-resume-button">▶ Resume</span>
+      </Link>
+
       <section className="space-y-3">
-        <div className="flex items-end justify-between gap-3"><div><p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-primary">START HERE</p><h2 className="mt-1 text-xl font-bold">Daily practice</h2></div><span className="text-[10px] text-muted-foreground">No subscriptions · No locked tools</span></div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {quick.map((item) => (
-            <Link key={item.to} to={item.to} className="training-card group flex min-w-0 gap-4 p-4 sm:p-5">
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-border bg-background text-primary"><item.icon className="h-6 w-6" /></span>
-              <span className="min-w-0 flex-1">
-                <span className="flex flex-wrap items-center gap-2"><span className="text-sm font-bold">{item.title}</span><span className="rounded bg-primary/10 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wide text-primary">{item.tag}</span></span>
-                <span className="mt-1.5 block text-xs leading-5 text-muted-foreground">{item.description}</span>
-                <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-primary">Continue <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" /></span>
-              </span>
+        <div className="train-section-label"><span>🧩</span><span>PUZZLES</span></div>
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          <Link to="/daily-puzzle" className="train-tile">
+            <CalendarCheck className="train-tile-icon text-[#ff5945]" />
+            <h2>Daily puzzle</h2>
+            <p>A fresh puzzle every day</p>
+            <span className="train-tile-status"><CheckCircle2 /> Train today</span>
+          </Link>
+          <Link to="/daily-puzzle" className="train-tile">
+            <Puzzle className="train-tile-icon text-[#ffb800]" />
+            <h2>Classic</h2>
+            <p>Endless puzzles at your level</p>
+            <span className="train-tile-status"><CheckCircle2 /> Start solving</span>
+          </Link>
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <div className="train-section-label"><span>🧑‍🏫</span><span>SUPERCOACH</span></div>
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          {coach.map((item) => (
+            <Link key={item.title} to={item.to} className="train-tile train-coach-tile group">
+              <item.icon className={`train-tile-icon train-icon-${item.tone}`} />
+              <h2>{item.title}</h2>
+              <p>{item.text}</p>
+              <span className="train-tile-status"><ArrowRight /> {item.status}</span>
             </Link>
           ))}
         </div>
       </section>
 
-      <section className="space-y-3">
-        <div><p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-primary">SUPERCOACH</p><h2 className="mt-1 text-xl font-bold">Train with a purpose</h2><p className="mt-1 text-xs text-muted-foreground">Training paths that use the working puzzle, engine, analysis and review tools.</p></div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {supercoach.map((item) => (
-            <article key={item.title} className="training-card flex min-w-0 flex-col p-4">
-              <div className="flex items-start justify-between gap-3">
-                <span className="grid h-10 w-10 place-items-center rounded-lg bg-primary/10 text-primary"><item.icon className="h-5 w-5" /></span>
-                <span className="text-[10px] font-semibold text-muted-foreground">FREE</span>
-              </div>
-              <h3 className="mt-4 text-sm font-bold">{item.title}</h3>
-              <p className="mt-1 flex-1 text-xs leading-5 text-muted-foreground">{item.text}</p>
-              <Link to={item.to} className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-background px-3 py-2.5 text-xs font-bold transition hover:border-primary/50 hover:text-primary">{item.action}<ArrowRight className="h-3.5 w-3.5" /></Link>
-            </article>
-          ))}
-        </div>
-      </section>
-      <p className="rounded-xl border border-border bg-card p-4 text-[11px] leading-5 text-muted-foreground">Training note: Woodpecker, Blunder Shield and Conversion Trainer currently open the real underlying puzzle, analysis, review and sparring tools. Dedicated adaptive sets and per-module history are not yet implemented.</p>
+      <Link to="/brain" className="train-brain-link">
+        <Brain className="h-5 w-5 text-primary" />
+        <span className="min-w-0 flex-1"><b>Brain games</b><small>Queens, memory and board-vision challenges</small></span>
+        <ArrowRight className="h-4 w-4" />
+      </Link>
     </div>
   );
 }
