@@ -15,6 +15,8 @@ The Android updater checks the latest GitHub Release and opens the APK in the An
 
 Desktop builds use Electron's GitHub updater. They check for updates on startup, show a notification, download the new installer payload, and restart to install. The desktop window loads the hosted Chess Topper client over HTTPS, so it requires an internet connection.
 
+Windows and Linux updates use the Electron updater release manifests. macOS automatic updates require a Developer ID signing certificate; for a public macOS installer, configure the signing/notarization secrets below. Unsigned macOS builds can be produced for testing but are not a complete auto-update distribution.
+
 ### Stable Android update signing
 
 For Android to install an update over an existing install, every release must use the same signing key. Create a private release keystore and add these GitHub Actions secrets:
@@ -32,6 +34,15 @@ base64 -w 0 chess-topper-release.jks
 ```
 
 Without those secrets, CI creates a debug-signed APK for testing. Debug APK signatures are not a stable public update-signing identity. For trusted public distribution, use a release key controlled by the maintainer and consider Google Play App Signing.
+
+### Desktop code signing
+
+For trusted Windows and macOS installers, keep certificate files and passwords in GitHub Actions secrets. Never commit certificates or passwords.
+
+- Windows: `WIN_CSC_LINK` (PFX certificate or its base64 content) and `WIN_CSC_KEY_PASSWORD`
+- macOS: `MAC_CSC_LINK` (Developer ID Application .p12 certificate or its base64 content), `MAC_CSC_KEY_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, and `APPLE_TEAM_ID`
+
+Without these secrets, CI can still produce test installers, but the operating system may show its normal publisher/security warnings. Chess Topper does not disable or bypass SmartScreen, Gatekeeper or Play Protect.
 
 ## Desktop native Stockfish
 
