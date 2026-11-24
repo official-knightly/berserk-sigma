@@ -1,20 +1,55 @@
 # Chess Topper
 
-Chess Topper is a chess training and game-review app. Every imported game is automatically reviewed with Stockfish 19 Lite on the device. It provides a mobile-first chess experience with game review, training, analysis boards, and Android packaging.
+Chess Topper is a free chess training, analysis and game-review application. Imported games are automatically analysed with Stockfish 19 Lite. The project includes an Android application, desktop installers for Windows/macOS/Linux, and a responsive web client.
 
 ## Live demo
 
 - Cloudflare: https://berserk-sigma.akatsuki-x-pain12.workers.dev
 - Vercel: https://berserk-sage.vercel.app
 
+## Android and desktop installers
+
+Push a version tag such as `v1.0.1` to run **Chess Topper Release**. The workflow publishes the APK as a standalone `Chess-Topper.apk` GitHub Release asset (not an APK inside a ZIP), plus Windows, macOS and Linux desktop installers. macOS ZIP update metadata is also published for Electron's updater.
+
+The Android updater checks the latest GitHub Release and opens the APK in the Android browser/package installer. Android still requires the user to approve the install. The app does not bypass Play Protect or Android's unknown-app safeguards.
+
+Desktop builds use Electron's GitHub updater. They check for updates on startup, show a notification, download the new installer payload, and restart to install. The desktop window loads the hosted Chess Topper client over HTTPS, so it requires an internet connection.
+
+### Stable Android update signing
+
+For Android to install an update over an existing install, every release must use the same signing key. Create a private release keystore and add these GitHub Actions secrets:
+
+- `ANDROID_KEYSTORE_BASE64` — base64-encoded keystore file
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_ALIAS`
+- `ANDROID_KEY_PASSWORD`
+
+Example keystore creation (keep the generated file and passwords private):
+
+```bash
+keytool -genkeypair -v -keystore chess-topper-release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias chess-topper
+base64 -w 0 chess-topper-release.jks
+```
+
+Without those secrets, CI creates a debug-signed APK for testing. Debug APK signatures are not a stable public update-signing identity. For trusted public distribution, use a release key controlled by the maintainer and consider Google Play App Signing.
+
+## Desktop native Stockfish
+
+The Windows desktop shell downloads the latest stable Stockfish release on first native analysis, selects the x64 or ARM64 package, verifies the executable architecture, and stores it under the application's user-data directory. Native engine downloads use HTTPS and the official Stockfish GitHub release. macOS and Linux use the in-app Stockfish WASM engine.
+
+Stockfish is GPLv3. Keep its upstream license and corresponding-source notices with distributed binaries.
+
 ## About
 
-This project is designed to play with Berserk's free analysis tooling in the browser. The app loads the engine as a WebAssembly worker, falls back to the remote LFS-hosted WASM when needed, and exposes a clean client-side interface for analysis and evaluation.
+Chess Topper keeps the Berserk engine available for play and uses Stockfish for game review. Browser, Android, macOS and Linux builds use the Stockfish WebAssembly worker. The Windows desktop build can download a native Stockfish executable from the official Stockfish release and verify its PE architecture before using it.
 
 ## Features
 
 - Chess board and analysis flows
-- Automatic Stockfish 19 Lite game review via a local WebAssembly worker
+- Automatic Stockfish 19 Lite game review with a native Windows engine option and WebAssembly fallback
+- In-app update notifications for Android and browser clients
+- Electron desktop auto-updater for Windows, macOS and Linux
+- User-provided Chess Topper knight logo on app, favicon and installers
 - Lichess and Chess.com related workflows
 - Fast Vite + React frontend
 - TypeScript-first app structure
