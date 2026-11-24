@@ -1,13 +1,20 @@
 name: Chess Topper Desktop Installers
+
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "desktop/**"
+      - "branding/**"
+      - "src-tauri/icons/**"
+      - ".github/workflows/desktop-installers.yml"
   pull_request:
     branches: [main]
-  push:
-    branches: [main, android/chess-topper]
-    paths: ["src-tauri/**", "desktop-web/**", "branding/**", ".github/workflows/desktop-installers.yml"]
+  workflow_dispatch:
+
 permissions:
   contents: read
+
 jobs:
   build:
     strategy:
@@ -15,32 +22,39 @@ jobs:
       matrix:
         include:
           - os: ubuntu-22.04
-            bundle: deb,appimage
           - os: macos-latest
-            bundle: dmg
           - os: windows-latest
-            bundle: msi,nsis
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: Install Linux build dependencies
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev libwebkit2gtk-4.1-dev
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - name: Install Tauri CLI
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Set up Rust for logo asset generation
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Tauri icon generator
         run: cargo install tauri-cli --locked
-      - name: Generate desktop icons from supplied Chess Topper logo
+
+      - name: Generate native icons from the supplied Chess Topper knight logo
         working-directory: src-tauri
         run: cargo tauri icon ../branding/chess-topper-icon.svg
+
+      - name: Install desktop dependencies
+        working-directory: desktop
+        run: npm install --no-audit --no-fund
+
       - name: Build desktop installer
-        working-directory: src-tauri
-        run: cargo tauri build --bundles ${{ matrix.bundle }}
-      - uses: actions/upload-artifact@v4
+        working-directory: desktop
+        run: npm run dist
+
+      - name: Upload desktop installers
+        uses: actions/upload-artifact@v4
         with:
-          name: chess-topper-${{ runner.os }}-installers
-          path: src-tauri/target/release/bundle/**
+          name: chess-topper-desktop-${{ runner.os }}
+          path: desktop/dist/**
           if-no-files-found: error
           retention-days: 30
