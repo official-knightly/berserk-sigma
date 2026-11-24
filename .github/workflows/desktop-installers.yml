@@ -44,6 +44,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: chess-topper-desktop-${{ runner.os }}
-          path: desktop/dist/**
+          path: |
+            desktop/dist/*.exe
+            desktop/dist/*.dmg
+            desktop/dist/*.AppImage
+            desktop/dist/*.deb
           if-no-files-found: error
           retention-days: 30
